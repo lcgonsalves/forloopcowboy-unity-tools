@@ -1,5 +1,10 @@
 using UnityEditor;
 using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ForLoopCowboyCommons.EditorHelpers
 {
@@ -24,7 +29,6 @@ namespace ForLoopCowboyCommons.EditorHelpers
             GUI.enabled = true;
         }
     }
-
 
     public static class ExtendedDebug
     {
@@ -134,6 +138,182 @@ namespace ForLoopCowboyCommons.EditorHelpers
             Vector3 direction = point - pivot;
             return pivot + rotation * direction;
         }
+
+    }
+
+    public static class EnumUtil {
+        public static IEnumerable<T> GetValues<T>() {
+            return (T[])Enum.GetValues(typeof(T));
+        }
+    }
+
+    #nullable enable
+    [System.Serializable]
+    public class Tuple<T1, T2>
+    {
+
+        [SerializeField]
+        private T1 leftValue;
+
+        [SerializeField]
+        private T2 rightValue;
+
+        public Left<T1>? l { get => leftValue != null ? new Left<T1>(leftValue) : null; set => leftValue = value != null ? value.content : default(T1); }
+        public Right<T2>? r { get => rightValue != null ? new Right<T2>(rightValue) : null; set => rightValue = value != null ? value.content : default(T2); }
+
+        public T1 Left { get => leftValue; }
+        public T2 Right { get => rightValue; }
+
+        public Tuple(T1 leftValue, T2 rightValue)
+        {
+            this.leftValue = leftValue;
+            this.rightValue = rightValue;
+        }
+
+        public Tuple(T1 leftValue)
+        {
+            this.leftValue = leftValue;
+        }
+
+        public Tuple(T2 rightValue)
+        {
+            this.rightValue = rightValue;
+        }
+
+        // So we can get a right from another anonymous right, left from another anonymous left, etc
+        public dynamic Get<T>(Side<T> side)
+        {
+            if (side is Left<T>) {
+                var l = this.l;
+                if (l != null) return l.content;
+            }
+
+            if (side is Right<T>) {
+                var r = this.r;
+                if (r != null) return r.content;
+            }
+
+            return null;
+        }
+
+        public void Set(Side<T1> s) => this.leftValue = s.content;
+        public void Set(Side<T2> s) => this.rightValue = s.content;
+        public Tuple() {}
+
+    }    
+
+    public interface Side<T> { T content { get; } }
+    public sealed class Left<T> : Side<T> { public T content { get; } public Left(T content) { this.content = content; } }
+    public sealed class Right<T> : Side<T> { public T content { get; } public Right(T content) { this.content = content; } }
+
+
+    public static class GameObjectHelpers
+    {
+        public static T CreateDeepCopy<T>(T obj)
+        {
+            using (var ms = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(ms, obj);
+                ms.Seek(0, SeekOrigin.Begin);
+                return (T)formatter.Deserialize(ms);
+            }
+        }
+
+        public static void SetLayerRecursively(this GameObject go, int layerNumber)
+        {
+            foreach (Transform trans in go.GetComponentsInChildren<Transform>(true))
+            {
+                trans.gameObject.layer = layerNumber;
+            }
+        }
+
+
+        public static Component GetOrElseAddComponent<Component> (this GameObject gObj)
+            where Component : UnityEngine.Component
+        {
+            Component c = gObj.GetComponent<Component>();
+            if (c == null) c = gObj.gameObject.AddComponent<Component>();
+
+            return c;
+        }
+
+        public static Component GetOrElseAddComponent<Component> (this MonoBehaviour mono)
+            where Component : UnityEngine.Component
+        {
+            return GameObjectHelpers.GetOrElseAddComponent<Component>(mono.gameObject);
+        }
+
+        // Executes function using coroutine after given delay
+        public static Coroutine RunAsyncWithDelay(this MonoBehaviour m, float delay, Action callback)
+        {
+            return m.StartCoroutine(Action(delay, callback));
+        }
+
+        public static Coroutine RunAsync(
+            this MonoBehaviour m, 
+            Action callback,
+            Func<bool> shouldStop, 
+            RoutineTypes type = RoutineTypes.Update,
+            float delay = 0f
+        ){
+            return m.StartCoroutine(Routine(type, callback, shouldStop, delay));
+        }
+
+    	// Runs coroutine forever
+        public static Coroutine RunAsync(this MonoBehaviour m, Action callback)
+        {
+            return m.RunAsync(callback, () => false);
+        }
+
+        // Runs coroutine on fixed update
+        public static Coroutine RunAsyncFixed(this MonoBehaviour m, Action callback, Func<bool> shouldStop)
+        {
+            return m.RunAsync(callback, shouldStop, RoutineTypes.FixedUpdate);
+        }
+
+        // Runs coroutine on fixed update forever
+        public static Coroutine RunAsyncFixed(this MonoBehaviour m, Action callback)
+        {
+            return m.RunAsync(callback, () => false, RoutineTypes.FixedUpdate);
+        }
+
+        private static IEnumerator Action(float delay, Action callback)
+        {
+                yield return new WaitForSeconds(delay);
+                callback();
+        }
+
+        public enum RoutineTypes
+        {
+            TimeInterval,
+            Update,
+            FixedUpdate
+        }
+
+        private static IEnumerator Routine(RoutineTypes type, Action callback, Func<bool> stopCondition, float delay = 0f)
+        {
+            while(stopCondition())
+            {
+                callback();
+
+                switch(type)
+                {
+                    case RoutineTypes.TimeInterval:
+                        yield return new WaitForSeconds(delay);
+                        break;
+
+                    case RoutineTypes.Update:
+                        yield return null;
+                        break;
+
+                    case RoutineTypes.FixedUpdate:
+                        yield return new WaitForFixedUpdate();
+                        break;
+                }
+            }
+        }
+
     }
 
 }

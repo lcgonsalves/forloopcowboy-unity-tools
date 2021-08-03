@@ -2,13 +2,17 @@ using UnityEngine;
 using UnityEditor;
 
 [CustomEditor(typeof(Transition))]
-public class DeprecatedMovementEditor : Editor
+public class TransitionEditor : Editor
 {
     public override void OnInspectorGUI()
     {
 
+        EditorUtility.SetDirty(target);
+
         EditorGUILayout.Space(1);
         Transition t = (Transition) target;
+
+        if (t.transition == null) t.transition = new AnimationCurve();
 
         EditorGUILayout.LabelField("Transition Properties", EditorStyles.boldLabel);
         EditorGUILayout.Space(1);
