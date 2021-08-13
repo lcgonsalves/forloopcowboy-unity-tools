@@ -19,7 +19,6 @@ namespace ForLoopCowboyCommons.Chronos
         private Coroutine easeInCoroutine = null;
         private Coroutine easeOutCoroutine = null;
 
-
         // Gradually warps time to the end of the transition.
         public void Warp(float warpFactor, bool interrupt = false)
         {
