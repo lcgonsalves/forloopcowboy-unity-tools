@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ForLoopCowboyCommons.Agent.CustomOrders;
 using Gemini;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -16,13 +17,16 @@ namespace ForLoopCowboyCommons.Agent
         // public api methods expose a generic interface
         
         [SerializeField]
-        private List<ExecuteUnityEventsStep> actionSteps = new List<ExecuteUnityEventsStep>(1);
+        private List<Order.ExecuteUnityEventsStep> unityEventsSteps = new List<Order.ExecuteUnityEventsStep>(1);
 
         [SerializeField] 
-        private List<WaitStep> waitSteps = new List<WaitStep>(1);
+        private List<Order.WaitStep> waitSteps = new List<Order.WaitStep>(1);
+        
+        [SerializeField] 
+        private List<SoldierControlStep> soldierSteps = new List<SoldierControlStep>(1);
 
         // cached iterator
-        private IList<OrderStep> _cachedIterator = null;
+        private IList<Order.Step> _cachedIterator = null;
         // true when new items are added, forcing iterator to regenerate
         private bool _dirty = false;
 
@@ -33,27 +37,32 @@ namespace ForLoopCowboyCommons.Agent
         /// needs to be performed when new elements are added to the collection. If no
         /// new elements have been added, a cached list is returned.
         /// </summary>
-        public IList<OrderStep> iterator
+        public IList<Order.Step> iterator
         {
             get
             {
                 if (_dirty || _cachedIterator == null)
                 {
-                    int totalNumberOfSteps = actionSteps.Count + waitSteps.Count;
+                    int totalNumberOfSteps = unityEventsSteps.Count + waitSteps.Count + soldierSteps.Count;
 
-                    var q = new IndexedPriorityQueue<OrderStep>(totalNumberOfSteps);
-                    var list = new List<OrderStep>(totalNumberOfSteps);
+                    var q = new IndexedPriorityQueue<Order.Step>(totalNumberOfSteps);
+                    var list = new List<Order.Step>(totalNumberOfSteps);
                     var globalIndex = 0;
                     
                     // inserting in queue orders the list
-                    foreach (var action in actionSteps)
+                    foreach (var action in unityEventsSteps)
                     {
                         q.Insert(globalIndex++, action);
                     }
 
-                    foreach (var waitAction in waitSteps)
+                    foreach (Order.WaitStep waitAction in waitSteps)
                     {
                         q.Insert(globalIndex++, waitAction);
+                    }
+                    
+                    foreach (var soldierControlStep in soldierSteps)
+                    {
+                        q.Insert(globalIndex++, soldierControlStep);
                     }
 
                     // now we convert it to a c# iterable
@@ -79,7 +88,7 @@ namespace ForLoopCowboyCommons.Agent
         /// Adds step to its serialized list, ordered by its globalIndex member variable.
         /// </summary>
         /// <param name="step">Step instance</param>
-        public void Add(OrderStep step)
+        public void Add(Order.Step step)
         {
             _dirty = true;
             AddAndUpdateIndices(step);
@@ -89,7 +98,7 @@ namespace ForLoopCowboyCommons.Agent
         /// Removes step from its serialized list.
         /// </summary>
         /// <param name="step">Step instance</param>
-        public void Remove(OrderStep step)
+        public void Remove(Order.Step step)
         {
             _dirty = true;
             RemoveAndUpdateIndices(step);
@@ -101,7 +110,7 @@ namespace ForLoopCowboyCommons.Agent
         /// </summary>
         /// <param name="step">Step</param>
         /// <param name="newGlobalIndex"></param>
-        public void UpdateGlobalIndexOf(OrderStep step, int newGlobalIndex)
+        public void UpdateGlobalIndexOf(Order.Step step, int newGlobalIndex)
         {
             bool isMoveDown = step.globalIndex > newGlobalIndex;
             bool isMoveUp = step.globalIndex < newGlobalIndex;
@@ -115,10 +124,10 @@ namespace ForLoopCowboyCommons.Agent
             
             switch (step)
             {
-                case ExecuteUnityEventsStep _:
-                    actionSteps[step.localIndex].globalIndex = newGlobalIndex;
+                case Order.ExecuteUnityEventsStep _:
+                    unityEventsSteps[step.localIndex].globalIndex = newGlobalIndex;
                     break;
-                case WaitStep _:
+                case Order.WaitStep _:
                     waitSteps[step.localIndex].globalIndex = newGlobalIndex;
                     break;
                 default:
@@ -129,22 +138,51 @@ namespace ForLoopCowboyCommons.Agent
             
         }
 
-        private void AddAndUpdateIndices(OrderStep step)
+        private void AddAndUpdateIndices(Order.Step step)
         {
+            switch (step)
+            {
+                case SoldierControlStep scs:
+                    soldierSteps.Add(scs);
+                    break;
+                
+                case Order.ExecuteUnityEventsStep es:
+                    unityEventsSteps.Add(es);
+                    break;
+                
+                case Order.WaitStep ws:
+                    waitSteps.Add(ws);
+                    break;
 
-            if (step is ExecuteUnityEventsStep es) actionSteps.Add(es);
-            else if (step is WaitStep ws) waitSteps.Add(ws);
-            else Debug.LogError($"No serialized collections for step of type ${step.GetType()}");
-            
+
+                default:
+                {
+                    Debug.LogError($"No serialized collections for step of type ${step.GetType()}");
+                    break;
+                }
+            }
+
             UpdateLocalIndices(step);
         }
         
-        private void RemoveAndUpdateIndices(OrderStep step)
+        private void RemoveAndUpdateIndices(Order.Step step)
         {
-            if (step is ExecuteUnityEventsStep es) actionSteps.Remove(es);
-            else if (step is WaitStep ws) waitSteps.Remove(ws);
-            else Debug.LogError($"No serialized collections for step of type ${step.GetType()}");
-            
+            switch (step)
+            {
+                case SoldierControlStep scs:
+                    soldierSteps.Remove(scs);
+                    break;
+                case Order.ExecuteUnityEventsStep es:
+                    unityEventsSteps.Remove(es);
+                    break;
+                case Order.WaitStep ws:
+                    waitSteps.Remove(ws);
+                    break;
+                default:
+                    Debug.LogError($"No serialized collections for step of type ${step.GetType()}");
+                    break;
+            }
+
             UpdateLocalIndices(step);
         }
 
@@ -153,28 +191,47 @@ namespace ForLoopCowboyCommons.Agent
         /// real index.
         /// </summary>
         /// <param name="step">decides which serializable collection to update</param>
-        private void UpdateLocalIndices(OrderStep step)
+        private void UpdateLocalIndices(Order.Step step)
         {
-            if (step is ExecuteUnityEventsStep)
+            switch (step)
             {
-                for (int i = 0; i < actionSteps.Count; i++)
+                case SoldierControlStep _:
                 {
-                    actionSteps[i].localIndex = i;
+                    for (int i = 0; i < soldierSteps.Count; i++)
+                    {
+                        soldierSteps[i].localIndex = i;
+                    }
+
+                    break;
                 }
-            }
-            else if (step is WaitStep)
-            {
-                for (int i = 0; i < waitSteps.Count; i++)
+                case Order.ExecuteUnityEventsStep _:
                 {
-                    waitSteps[i].localIndex = i;
+                    for (int i = 0; i < unityEventsSteps.Count; i++)
+                    {
+                        unityEventsSteps[i].localIndex = i;
+                    }
+
+                    break;
                 }
+                case Order.WaitStep _:
+                {
+                    for (int i = 0; i < waitSteps.Count; i++)
+                    {
+                        waitSteps[i].localIndex = i;
+                    }
+
+                    break;
+                }
+                
+                default:
+                    Debug.LogError($"No serialized collections for step of type ${step.GetType()}");
+                    break;
             }
-            else Debug.LogError($"No serialized collections for step of type ${step.GetType()}");
         }
         
         private void OnEnable()
         {
-            if (actionSteps == null) actionSteps = new List<ExecuteUnityEventsStep>(1);
+            if (unityEventsSteps == null) unityEventsSteps = new List<Order.ExecuteUnityEventsStep>(1);
         }
     }
 }

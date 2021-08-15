@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using ForLoopCowboyCommons.Agent;
+using ForLoopCowboyCommons.Agent.CustomOrders;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace ForLoopCowboyCommons.Editor
 {
@@ -12,16 +14,18 @@ namespace ForLoopCowboyCommons.Editor
     {
         
         private SerializedObject _getTarget;
-        private SerializedProperty _serializedActionSteps;
+        private SerializedProperty _serializedUnityEventsSteps;
         private SerializedProperty _serializedWaitSteps;
-        
+        private SerializedProperty _serializedSoldierSteps;
+
         private void OnEnable()
         {
             OrderSettings o = (OrderSettings) target;
             
             _getTarget = new SerializedObject(o);
-            _serializedActionSteps = _getTarget.FindProperty("actionSteps");
+            _serializedUnityEventsSteps = _getTarget.FindProperty("actionSteps");
             _serializedWaitSteps = _getTarget.FindProperty("waitSteps");
+            _serializedSoldierSteps = _getTarget.FindProperty("soldierSteps");
         }
 
         public override void OnInspectorGUI()
@@ -33,6 +37,7 @@ namespace ForLoopCowboyCommons.Editor
 
             bool addActionStep = GUILayout.Button("Add action step");
             bool addWaitStep = GUILayout.Button("Add wait step");
+            bool addSoldierStep = GUILayout.Button("Add soldier puppeteering step");
 
             foreach (var step in o.iterator)
             {
@@ -40,28 +45,38 @@ namespace ForLoopCowboyCommons.Editor
 
                 switch (step)
                 {
-                    case WaitStep _:
+                    case SoldierControlStep _:
+                        serializedStep = _serializedSoldierSteps.GetArrayElementAtIndex(step.localIndex);
+                        
+                        // soldier step has a custom property drawer.
+                        DrawStep(step, serializedStep, serializedStep);
+                        
+                        break;
+                    
+                    case Order.WaitStep _:
                     {
                         serializedStep = _serializedWaitSteps.GetArrayElementAtIndex(step.localIndex);
                         var waitStep = serializedStep?.FindPropertyRelative("waitTimeInSeconds");
                         if (waitStep != null) DrawStep(step, serializedStep, waitStep);
                         break;
                     }
-                    case ExecuteUnityEventsStep _:
+                    case Order.ExecuteUnityEventsStep _:
                     {
-                        serializedStep = _serializedActionSteps.GetArrayElementAtIndex(step.localIndex);
+                        serializedStep = _serializedUnityEventsSteps.GetArrayElementAtIndex(step.localIndex);
                         var actionStep = serializedStep?.FindPropertyRelative("actions");
                         if (actionStep != null) DrawStep(step, serializedStep, actionStep);
                         break;
                     }
+                    
                     default:
                         Debug.LogError($"Step type {step.GetType()} isn't properly handled!");
                         break;
                 }
             }
             
-            if (addActionStep) AddNewStep(new ExecuteUnityEventsStep());
-            if (addWaitStep) AddNewStep(new WaitStep(1f));
+            if (addActionStep) AddNewStep(new Order.ExecuteUnityEventsStep());
+            if (addWaitStep) AddNewStep(new Order.WaitStep(1f));
+            if (addSoldierStep) AddNewStep(new SoldierControlStep());
             
 
             if (GUI.changed)
@@ -70,10 +85,10 @@ namespace ForLoopCowboyCommons.Editor
             }
             
             _getTarget.ApplyModifiedProperties();
-            
+
         }
 
-        private void AddNewStep(OrderStep s)
+        private void AddNewStep(Order.Step s)
         {
             OrderSettings o = (OrderSettings) target;
             
@@ -81,24 +96,40 @@ namespace ForLoopCowboyCommons.Editor
             o.Add(s);
         }
 
-        private void DrawStep(OrderStep step, SerializedProperty serializedStep, SerializedProperty prop)
+        private void DrawStep(Order.Step step, SerializedProperty serializedStep, SerializedProperty prop)
         {
             DrawStep(step, serializedStep, new []{prop});
         }
-        private void DrawStep(OrderStep step, SerializedProperty serializedStep, IEnumerable<SerializedProperty> serializedStepProperties)
+        private void DrawStep(Order.Step step, SerializedProperty serializedStep, IEnumerable<SerializedProperty> serializedStepProperties)
         {
             // container for step
-            GUILayout.BeginVertical();
-            GUILayout.Space(10);
-            EditorGUILayout.PropertyField(serializedStep.FindPropertyRelative("name"));
+            GUILayout.BeginVertical(EditorStyles.helpBox);
             GUILayout.Space(5);
+            
+            // adding some breathing room for the text field
             GUILayout.BeginHorizontal();
+                GUILayout.Space(10);
+                EditorGUILayout.PropertyField(serializedStep.FindPropertyRelative("name"));
+            GUILayout.EndHorizontal();
+            
+            GUILayout.Space(10);
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(5);
 
             // class display
+            // breathing room on left side and top/bottom
+            GUILayout.BeginHorizontal(EditorStyles.helpBox);
+            GUILayout.Space(20);
+            GUILayout.BeginVertical();
+            GUILayout.Space(10);
             foreach (var prop in serializedStepProperties)
             {
-                EditorGUILayout.PropertyField(prop, new[] {GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.85f)});
+                EditorGUILayout.PropertyField(prop, true, new[] {GUILayout.Width(EditorGUIUtility.currentViewWidth * 0.70f)});
             }
+            GUILayout.Space(10);
+            GUILayout.EndVertical();
+            GUILayout.Space(2);
+            GUILayout.EndHorizontal();
 
             var btnSettings = new[]
             {
@@ -110,12 +141,13 @@ namespace ForLoopCowboyCommons.Editor
 
             // action buttons buttons
             GUILayout.BeginVertical();
-                bool moveUp = GUILayout.Button("↑", btnSettings);
-                bool moveDown = GUILayout.Button("↓", btnSettings);
-                bool delete = GUILayout.Button("x", btnSettings);
+            bool moveUp = GUILayout.Button("↑", btnSettings);
+            bool moveDown = GUILayout.Button("↓", btnSettings);
+            bool delete = GUILayout.Button("x", btnSettings);
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
+            GUILayout.Space(5);
             GUILayout.EndVertical();
             
             OrderSettings o = (OrderSettings) target;
@@ -123,7 +155,7 @@ namespace ForLoopCowboyCommons.Editor
             if (moveUp) o.UpdateGlobalIndexOf(step, step.globalIndex - 1);
             if (moveDown) o.UpdateGlobalIndexOf(step, step.globalIndex + 1);
             if (delete) o.Remove(step);
-
         }
+
     }
 }

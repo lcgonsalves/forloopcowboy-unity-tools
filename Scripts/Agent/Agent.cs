@@ -28,6 +28,9 @@ namespace ForLoopCowboyCommons.Agent
     /// </summary>
     public class Agent : MonoBehaviour
     {
+        protected static readonly int DefaultOrderCapacity = 15;
+        
+        [ReadOnly, SerializeField]
         private AgentState _currentState = AgentState.Ready;
         public AgentState currentState
         {
@@ -46,6 +49,9 @@ namespace ForLoopCowboyCommons.Agent
         }
         public int currentOrderID { get; private set; } = 0;
 
+        [Tooltip("Maximum number of orders that fit in the queue.")]
+        public int orderCapacity = DefaultOrderCapacity;
+
         public enum AgentState
         {
             Ready,
@@ -56,7 +62,20 @@ namespace ForLoopCowboyCommons.Agent
         // events
         protected event Action onReady;
 
-        private protected readonly IndexedPriorityQueue<Order> orderQueue = new IndexedPriorityQueue<Order>(10);
+        [SerializeField]
+        private protected List<Order> _orders = new List<Order>(DefaultOrderCapacity);
+
+        private protected readonly IndexedPriorityQueue<Order> orderQueue = new IndexedPriorityQueue<Order>(DefaultOrderCapacity);
+
+        private void Start()
+        {
+            orderQueue.Resize(_orders.Count);
+            // initialize queue with serialized orders
+            foreach (var order in _orders)
+            {
+                Enqueue(order);
+            }
+        }
 
         /// <summary>
         /// Adds order to the queue. Orders are executed as soon as the agent is Ready.
@@ -65,7 +84,7 @@ namespace ForLoopCowboyCommons.Agent
         public void Enqueue(Order order)
         {
             orderQueue.Insert(order);
-            if (currentState == AgentState.Ready) ExecuteNext();
+            if (currentState == AgentState.Ready) EventHandlerExecuteNext();
         }
         
         /// <summary>
@@ -79,18 +98,16 @@ namespace ForLoopCowboyCommons.Agent
             Order nextOrder = orderQueue.Pop();
 
             currentState = AgentState.Busy;
-            nextOrder.Execute(WaitForAndThen, FinishOrderAndTransitionToReadyState(currentOrderID));
+            nextOrder.Execute(this, WaitForAndThen, FinishOrderAndTransitionToReadyState(currentOrderID));
 
             return true;
         }
         
         /// <summary>
         /// Pops order from queue if available and executes it.
+        /// fucking events require a void-returning function but it wanna unsub at the end.
         /// </summary>
-        private void ExecuteNext()
-        {
-            TryExecuteNext(); // fucking events require a void-returning function but it wanna unsub at the end.
-        }
+        private void EventHandlerExecuteNext() { TryExecuteNext(); }
 
         private void WaitForAndThen(float seconds, Action onFinishWaiting)
         {
@@ -120,8 +137,8 @@ namespace ForLoopCowboyCommons.Agent
         }
 
         // Unity events
-        private void OnEnable() { onReady += ExecuteNext; }
-        private void OnDisable() { onReady -= ExecuteNext; }
+        private void OnEnable() { onReady += EventHandlerExecuteNext; }
+        private void OnDisable() { onReady -= EventHandlerExecuteNext; }
 
     }
 }
