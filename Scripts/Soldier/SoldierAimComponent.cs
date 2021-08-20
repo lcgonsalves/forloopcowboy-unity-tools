@@ -43,7 +43,7 @@ public class SoldierAimComponent : MonoBehaviour
         easeToAimTransition = soldierSettings.easeToAimTransition.GetPlayableInstance();
         aimToEaseTransition = soldierSettings.aimToEaseTransition.GetPlayableInstance();
 
-        AimAnimationLayer = animator?.GetLayerIndex(aimAnimationLayerName) ?? -1;
+        AimAnimationLayer = animator.GetLayerIndex(aimAnimationLayerName);
 
     }
 
@@ -157,8 +157,8 @@ public class SoldierAimComponent : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Handles.Label(new Vector3(transform.position.x, transform.position.y + 4f, transform.position.z), $"ADS anim: IsPlaying {easeToAimTransition.isPlaying} isFinished {easeToAimTransition.finished} ");
-        Handles.Label(new Vector3(transform.position.x, transform.position.y + 4.2f, transform.position.z), $"Stop Aim anim: IsPlaying {aimToEaseTransition.isPlaying} isFinished {aimToEaseTransition.finished} ");
+        Handles.Label(new Vector3(transform.position.x, transform.position.y + 4f, transform.position.z), $"ADS anim: IsPlaying {easeToAimTransition?.isPlaying} isFinished {easeToAimTransition?.finished} ");
+        Handles.Label(new Vector3(transform.position.x, transform.position.y + 4.2f, transform.position.z), $"Stop Aim anim: IsPlaying {aimToEaseTransition?.isPlaying} isFinished {aimToEaseTransition?.finished} ");
     }
 
 }

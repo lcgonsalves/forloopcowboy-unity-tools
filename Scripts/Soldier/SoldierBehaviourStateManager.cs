@@ -104,14 +104,14 @@ public class SoldierBehaviourStateManager
         var state = currentState = GetState(stateInfo.fullPathHash);
         
         // invoke state processor for a given state
-        GetStateProcessor(state)?.Invoke(this, new object[0]); // handlers do not take arguments
+        GetStateProcessor(state)?.Invoke(this, Array.Empty<object>()); // handlers do not take arguments
     }
 
     // Reads state of soldier and writes it to animator
     public void WriteStateParameters()
     {
         // if dead, set trigger and return (we dont want to continue tracking state at this point)
-        if (controller.Health == 0 && currentState != State.Dying) {
+        if (controller.health.IsDead && currentState != State.Dying) {
             animator.SetTrigger(StateParameters.Die.ToString());
             return;
         }
@@ -123,20 +123,23 @@ public class SoldierBehaviourStateManager
         animator.SetBool(StateParameters.EnemySpotted.ToString(), controller.spotted.Count > 0);
 
         // if current target is dead, announce it and reset target variable
-        if (controller.targetSoldier && controller.targetSoldier.Health == 0)
+        if (controller.target is {IsDead: true})
         {
             animator.SetTrigger(StateParameters.NoTargetToEngage.ToString());
-            controller.targetSoldier = null;
+            controller.target = null;
         }
-
+        
         // ready to engage if we can find a spotted target that is alive (and we are not targeting anybody currently)
-        if (controller.spotted.Count > 0 && controller.targetSoldier == null)
+        if (controller.spotted.Count > 0)
         {
             // select first target that has health
-            foreach (var target in controller.spotted) { if (target.Health > 0) { controller.targetSoldier = target; break; } }
-
+            foreach (var target in controller.spotted)
+            {;
+                if (target.IsAlive) { controller.target = target; break; }
+            }
+            
             // if we found a living target, proceed to engage otherwise 
-            var trigger = controller.targetSoldier == null ? StateParameters.NoTargetToEngage.ToString() :  StateParameters.Engage.ToString();
+            var trigger = controller.target == null ? StateParameters.NoTargetToEngage.ToString() :  StateParameters.Engage.ToString();
             animator.SetTrigger(trigger);
         }
 
@@ -160,8 +163,8 @@ public class SoldierBehaviourStateManager
     {
         // soldier spotted
         // stop moving and track it
-        var trgtSoldier = controller.targetSoldier;
-        var visibleTarget = controller.firstAvailableTargetColliderInview; // might be performance critial
+        var trgtSoldier = controller.target;
+        var visibleTarget = controller.firstAvailableTargetColliderInView; // might be performance critial
 
         if (trgtSoldier != null && visibleTarget != null) controller.aim.Track(visibleTarget);
     }
@@ -173,11 +176,11 @@ public class SoldierBehaviourStateManager
 
     private void ProcessEngage()
     {
-        var targetSoldier = controller.targetSoldier;
-        var visibleTarget = controller.firstAvailableTargetColliderInview;
+        var targetSoldier = controller.target;
+        var visibleTarget = controller.firstAvailableTargetColliderInView;
 
         // track enemy and periodically shoot at it (in bursts, when i get this shit to work)
-        if (targetSoldier && visibleTarget && targetSoldier.Health > 0) {
+        if (targetSoldier != null && visibleTarget != null && targetSoldier.Health > 0) {
             controller.aim.Aim(visibleTarget.position, controller.weaponController.OpenFire);
         } else controller.weaponController.CeaseFire();
 
@@ -189,6 +192,7 @@ public class SoldierBehaviourStateManager
         controller.weaponController.CeaseFire();
         controller.aim.StopTracking();
         controller.StopAllCoroutines();
+        controller.navigation.enabled = false;
 
         // stop IK
 

@@ -3,11 +3,15 @@ using ForLoopCowboyCommons.Damage;
 using System.Collections.Generic;
 using System.Collections;
 using System;
+using System.ComponentModel;
+using JetBrains.Annotations;
+using Unity.Collections;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.AI;
-using System.Linq;
 
+[RequireComponent(typeof(HealthComponent))]
+[RequireComponent(typeof(SoldierAimComponent))]
 // Exposes public methods to control the behavior of a soldier
 public class SoldierBehaviour : MonoBehaviour
 {
@@ -40,91 +44,52 @@ public class SoldierBehaviour : MonoBehaviour
     [Tooltip("Layer containing world geometry to detect lines of sight.")]
     public LayerMask environmentLayerMask;
 
-    public enum BehaviourStates
-    {
-        Idle,
-        Aware,
-        Moving,
-        Aiming,
-        TakingCover,
-        Reloading,
-        TakingDamage,
-        Dying,
-        Ragdoll,
-        Engage
-    }
-
     // consts
     protected int VELOCITY;
 
-    [ReadOnly]
+    [ForLoopCowboyCommons.EditorHelpers.ReadOnly]
     public List<Rigidbody> rigidbodies = new List<Rigidbody>(11);
 
-    [ReadOnly, Tooltip("Which transform will parent the gun.")]
+    [ForLoopCowboyCommons.EditorHelpers.ReadOnly, Tooltip("Which transform will parent the gun.")]
     public Transform rightHandReference;
 
-    [ReadOnly, Tooltip("Which transform will be used to cast line-of-sight rays from.")]
+    [ForLoopCowboyCommons.EditorHelpers.ReadOnly, Tooltip("Which transform will be used to cast line-of-sight rays from.")]
     public Transform headReference;
 
-    [ReadOnly, Tooltip("Which transform will be used as a target")]
+    [ForLoopCowboyCommons.EditorHelpers.ReadOnly, Tooltip("Which transform will be used as a target")]
     public Transform chestReference;
 
     public Vector3 eyesightSourcePosition { get => headReference?.position ?? transform.position; }
 
-    [ReadOnly]
+    [ForLoopCowboyCommons.EditorHelpers.ReadOnly]
     public bool isRagdolling = false;
 
+    [ForLoopCowboyCommons.EditorHelpers.ReadOnly]
+    public int numSpotted;
 
-    [SerializeField, ReadOnly]
-    private SoldierBehaviour _target;
+    [SerializeField, ForLoopCowboyCommons.EditorHelpers.ReadOnly] [CanBeNull] private HealthComponent _target;
 
     // cached references
 
     public NavMeshAgent navigation { get; private set; }
-
     public Animator animator { get; private set; }
-
     private GameObject weaponRef;
-
     private LayerMask enemyLayerMask = 0;
-
     public WeaponController weaponController { get; private set; }
-
     public SoldierAimComponent aim { get; private set; }
-
     public SoldierBehaviourStateManager stateManager { get; private set; }
+    public HealthComponent health { get; private set; }
 
     // Exposed state
 
-    private readonly HashSet<SoldierBehaviour> _spottedHashSet = new HashSet<SoldierBehaviour>();
-
-    public HashSet<SoldierBehaviour> spotted { get => _spottedHashSet; }
-
-    [SerializeField, ReadOnly]
-    private int health = 100;
-
-    public int Health
-    {
-        get => health;
-        set
-        {
-            health = Mathf.Clamp(value, 0, 100);
-            if (health == 0) onDeath?.Invoke();
-        }
-    }
+    public HashSet<IHasHealth> spotted { get; } = new HashSet<IHasHealth>();
 
     private bool isOverridingVelocity = false;
     public float currentVelocity { get => isOverridingVelocity ? overrideVelocity : navigation.velocity.magnitude; }
     private float overrideVelocity = 0f; // used to force animation
 
     // Coroutine refs
-
     private Coroutine scan, readState;
-
-    // event emitters
-
-    public event Action onDeath;
-
 
     // Start is called before the first frame update
     void Start()
@@ -151,19 +116,17 @@ public class SoldierBehaviour : MonoBehaviour
 
         // init weapon
         InitializeWeapon();
+        
+        // cache health component
+        health = GetComponent<HealthComponent>();
 
         // cache or create aim component
         aim = GetComponent<SoldierAimComponent>();
-        if (!aim)
-        {
-
-            // only initialize settings if no component exists
-            aim = gameObject.AddComponent<SoldierAimComponent>();
-            aim.soldierSettings = identity;
-            aim.eyeLevel = headReference;
-            aim.aimAnimationLayerName = "Aiming";
-
-        }
+        
+        // make sure references are consistent
+        aim.soldierSettings = identity;
+        aim.eyeLevel = headReference;
+        aim.aimAnimationLayerName = "Aiming";
 
         // pass weapon reference to aim component
         aim.weaponTransform = weaponRef.transform;
@@ -174,6 +137,7 @@ public class SoldierBehaviour : MonoBehaviour
             rb.isKinematic = true;
             var bulletDetector = rb.gameObject.AddComponent<SoldierLimbComponent>();
             bulletDetector.parent = this;
+            bulletDetector.healthComponent = health;
         }
 
         // set layer recursively
@@ -194,7 +158,7 @@ public class SoldierBehaviour : MonoBehaviour
 
     // Instantiates weapon in right hand and stores local reference
 
-    [SerializeField, ReadOnly]
+    [SerializeField, ForLoopCowboyCommons.EditorHelpers.ReadOnly]
     private Transform weaponGrabHandle;
     private void InitializeWeapon()
     {
@@ -253,7 +217,7 @@ public class SoldierBehaviour : MonoBehaviour
 
     public void DropWeapon()
     {
-        var weaponRB = weaponRef.gameObject.AddComponent<Rigidbody>();
+        weaponRef.gameObject.AddComponent<Rigidbody>();
         weaponRef.transform.parent = null;
     }
 
@@ -278,22 +242,32 @@ public class SoldierBehaviour : MonoBehaviour
         }
     }
 
-    public SoldierBehaviour targetSoldier
+    [CanBeNull]
+    public IHasHealth target
     {
         get => _target;
-        set => _target = value;
+        set => _target = value is HealthComponent component ? component : value?.transform.gameObject.GetOrElseAddComponent<HealthComponent>();
     }
 
     // If a target is set, iterates over its colliders and raycasts from eye position through environment.
     // Returns the transform of the collider if one is in view unobstructed or null otherwise.
-    public Transform firstAvailableTargetColliderInview
+    public Transform firstAvailableTargetColliderInView
     {
         get
         {
-            Transform[] potentialTargets = {
-                targetSoldier?.headReference,
-                targetSoldier?.chestReference
-            };
+            Transform[] potentialTargets;
+
+            var soldierComponent = target?.transform.gameObject.GetComponent<SoldierBehaviour>();
+
+            if (soldierComponent != null)
+            {
+                potentialTargets = new[]
+                {
+                    soldierComponent.headReference,
+                    soldierComponent.chestReference
+                };
+            }
+            else potentialTargets = new[] {target?.transform};
 
             Transform availableTarget = null;
 
@@ -302,7 +276,7 @@ public class SoldierBehaviour : MonoBehaviour
                 RaycastHit hit;
                 Transform potentialTarget = potentialTargets[i];
 
-                // return true if raycast hits AND that it hits a SoldierBehaviour
+                // return true if raycast hits the potential target, not the environment.
                 if (
                     (potentialTarget != null) && 
                     Physics.Raycast(
@@ -312,7 +286,7 @@ public class SoldierBehaviour : MonoBehaviour
                         100f,
                         enemyLayerMask | environmentLayerMask
                     ) && 
-                    (hit.transform.GetComponent<SoldierLimbComponent>() != null)
+                    (hit.transform.GetInstanceID() == potentialTarget.GetInstanceID())
                 ) availableTarget = potentialTarget;
 
             }
@@ -380,17 +354,19 @@ public class SoldierBehaviour : MonoBehaviour
             // interpolate between current position and final position using animation
             var destination = Vector3.Lerp(startPosition, position, animation.Evaluate(Time.deltaTime));
             // look at vector but use same Y value not to pitch-rotate transform
-            Vector3 lookAt = (new Vector3(destination.x, transform.position.y, destination.z) - transform.position).normalized;
+            var transformPosition = transform.position;
+            Vector3 lookAt = (new Vector3(destination.x, transformPosition.y, destination.z) - transformPosition).normalized;
             lookAt = Mathf.Approximately(lookAt.magnitude, 0f) ? transform.TransformDirection(Vector3.forward) : lookAt;
 
             // distance/time is the velocity this frame. override it. since we do it every frame the delta time is used
             // reduce it a bit
-            overrideVelocity = Vector3.Distance(transform.position, destination) * 0.5f / Time.deltaTime;
+            overrideVelocity = Vector3.Distance(transformPosition, destination) * 0.5f / Time.deltaTime;
 
             debugPosition = destination;
 
             transform.rotation = Quaternion.LookRotation(lookAt, Vector3.up);
-            transform.position = destination;
+            transformPosition = destination;
+            transform.position = transformPosition;
             yield return null;
         }
 
@@ -403,7 +379,7 @@ public class SoldierBehaviour : MonoBehaviour
     }
 
     // Coroutine for scanning and spotting living soldiers
-    Collider[] detected;
+    [ForLoopCowboyCommons.EditorHelpers.ReadOnly, SerializeField] private Collider[] detected;
     private IEnumerator ScanAndSpotSoldiers()
     {
         /* Collider[] */
@@ -418,23 +394,26 @@ public class SoldierBehaviour : MonoBehaviour
             {
                 var enemySoldierCollider = detected[i];
 
-                var component = enemySoldierCollider.GetComponentInParent<SoldierBehaviour>();
+                var component = enemySoldierCollider.GetComponentInParent<HealthComponent>();
                 if (!component) continue; // skip objects that are not soldiers
 
                 // default to transform if no head attached for some reason
                 Ray r = new Ray(eyesightSourcePosition, (enemySoldierCollider.transform.position - eyesightSourcePosition).normalized);
                 RaycastHit hit;
+                
+                Debug.DrawRay(r.origin, r.direction, new Color(1f, 0.92f, 0.41f));
 
                 // raycast on environment layer to see if there's obstructions
-                if (Physics.Raycast(r, out hit, 100f, environmentLayerMask | enemyLayerMask))
+                if (component.IsAlive && Physics.Raycast(r, out hit, 100f, environmentLayerMask | enemyLayerMask))
                 {
-                    if (/* hit.transform.GetComponentInParent<SoldierBehaviour>() && */ component.Health > 0) { spotted.Add(component); }
+                    // only spotted if component hit is the collider AND the target is alive
+                    if (hit.transform.gameObject.GetInstanceID() == component.gameObject.GetInstanceID()) { spotted.Add(component); }
                 }
 
             }
 
             // reset target if no spotted
-            if (spotted.Count == 0) targetSoldier = null;
+            if (spotted.Count == 0) target = null;
 
             yield return new WaitForSeconds(enemySpotInterval);
 
@@ -459,9 +438,10 @@ public class SoldierBehaviour : MonoBehaviour
 
         Gizmos.color = Color.green;
         // draw all colliders detected in spotting coroutine
-        if (detected != null) foreach (var collider in detected)
+        if (detected != null)
+            foreach (var detectedCollider in detected)
             {
-                if (collider != null) Gizmos.DrawWireSphere(collider.transform.position, 0.2f);
+                if (detectedCollider != null) Gizmos.DrawWireSphere(detectedCollider.transform.position, 0.2f);
             }
 
         Gizmos.color = Color.red;
@@ -479,7 +459,7 @@ public class SoldierBehaviour : MonoBehaviour
     {
         Handles.color = Color.blue;
 
-        Handles.Label(transform.TransformPoint(new Vector3(0, 2f, 0)), "Health " + Health);
+        Handles.Label(transform.TransformPoint(new Vector3(0, 2f, 0)), "Health " + health?.Health);
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(debugPosition, 0.15f);
@@ -494,17 +474,13 @@ public class SoldierBehaviour : MonoBehaviour
         spotted.Clear();
         weaponRef = null;
     }
-
-    public void Damage(int amount) { health = Mathf.Clamp(health - amount, 0, 100); }
-
-    public void Heal(int amount) { health = Mathf.Clamp(health + amount, 0, 100); }
-
-
+    
     /// Component to independently handle collision on each limb.
 
     public class SoldierLimbComponent : MonoBehaviour
     {
         internal SoldierBehaviour parent;
+        internal HealthComponent healthComponent;
 
         // if dying and detect collision, disable animator and imediately handle everything with physics
 
@@ -515,7 +491,7 @@ public class SoldierBehaviour : MonoBehaviour
 
             if (other.gameObject.CompareTag(DamageSystem.tag) && other.gameObject.TryGetComponent<SimpleDamageProvider>(out damageProvider))
             {
-                parent.Damage(damageProvider.GetDamageAmount());
+                healthComponent.Damage(damageProvider.GetDamageAmount());
             }
 
         }
