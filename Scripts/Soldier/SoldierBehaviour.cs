@@ -445,9 +445,9 @@ public class SoldierBehaviour : MonoBehaviour
             }
 
         Gizmos.color = Color.red;
-        foreach (SoldierBehaviour s in spotted)
+        foreach (var s in spotted)
         {
-            if (!s) continue;
+            if (s == null) continue;
             Gizmos.DrawLine(headReference.transform.position, s.transform.position);
             Gizmos.DrawSphere(new Vector3(s.transform.position.x, s.transform.position.y + 2f, s.transform.position.z), 0.15f);
         }
@@ -484,23 +484,21 @@ public class SoldierBehaviour : MonoBehaviour
 
         // if dying and detect collision, disable animator and imediately handle everything with physics
 
-        private void OnParticleCollision(GameObject other)
+        private void DamageSelfIfAppropriate(GameObject obj)
         {
-
-            SimpleDamageProvider damageProvider;
-
-            if (other.gameObject.CompareTag(DamageSystem.tag) && other.gameObject.TryGetComponent<SimpleDamageProvider>(out damageProvider))
+            if (obj.CompareTag(DamageSystem.tag) && obj.TryGetComponent<SimpleDamageProvider>(out var damageProvider))
             {
                 healthComponent.Damage(damageProvider.GetDamageAmount());
             }
+        }
 
+        private void OnParticleCollision(GameObject other)
+        {
+            DamageSelfIfAppropriate(other);
         }
 
         private void OnCollisionEnter(Collision other) {
-            if (other.gameObject.CompareTag("Missile"))
-            {
-                parent.EnableRagdoll();
-            }
+            DamageSelfIfAppropriate(other.gameObject);
         }
 
     }
