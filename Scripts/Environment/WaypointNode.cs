@@ -37,6 +37,11 @@ namespace ForLoopCowboyCommons.Environment
 
             Gizmos.color = new Color(0.79f, 1f, 0.03f);
             Gizmos.DrawSphere(transform.position, 0.25f);
+
+            if (TryGetNext(out var next))
+            {
+                Gizmos.DrawLine(transform.position, next.transform.position);
+            }
         }
     }
 }

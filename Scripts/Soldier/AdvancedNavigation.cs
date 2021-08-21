@@ -130,6 +130,8 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         {
 
             MoveTo(w.transform.position, speed);
+            
+            if (waypointChecker != null) StopCoroutine(waypointChecker);
 
             // check if close enough to waypoint, then if there's a next waypoint we follow it
             waypointChecker = this.RunAsync(
@@ -154,6 +156,12 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
                 GameObjectHelpers.RoutineTypes.TimeInterval,
                 0.25f
             );
+        }
+
+        public void Stop()
+        {
+            _navMeshAgent.ResetPath();
+            if (waypointChecker != null) StopCoroutine(waypointChecker);
         }
     }
 }
