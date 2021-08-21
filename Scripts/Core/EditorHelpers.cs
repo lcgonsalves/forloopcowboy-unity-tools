@@ -292,6 +292,29 @@ namespace ForLoopCowboyCommons.EditorHelpers
     public sealed class Left<T> : Side<T> { public T content { get; } public Left(T content) { this.content = content; } }
     public sealed class Right<T> : Side<T> { public T content { get; } public Right(T content) { this.content = content; } }
 
+    [Serializable]
+    public class LayerHelper : IHasLayer
+    {
+        [SerializeField]
+        private string layerName;
+
+        public LayerHelper(string layerName)
+        {
+            this.layerName = layerName;
+        }
+
+        public int Layer { get => LayerMask.NameToLayer(layerName); }
+
+        public LayerMask LayerMask { get => 1 << Layer; }
+        
+    }
+
+    public interface IHasLayer
+    {
+        int Layer { get; }
+        LayerMask LayerMask { get; }
+        
+    }
 
     public static class GameObjectHelpers
     {
@@ -379,7 +402,7 @@ namespace ForLoopCowboyCommons.EditorHelpers
 
         private static IEnumerator Routine(RoutineTypes type, Action callback, Func<bool> stopCondition, float delay = 0f)
         {
-            while(stopCondition())
+            while(stopCondition() == false)
             {
                 callback();
 

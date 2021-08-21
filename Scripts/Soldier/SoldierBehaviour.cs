@@ -9,9 +9,11 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.AI;
+using UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier;
 
 [RequireComponent(typeof(HealthComponent))]
 [RequireComponent(typeof(SoldierAimComponent))]
+[RequireComponent(typeof(AdvancedNavigation))]
 // Exposes public methods to control the behavior of a soldier
 public class SoldierBehaviour : MonoBehaviour
 {
@@ -27,7 +29,7 @@ public class SoldierBehaviour : MonoBehaviour
         get => _armyAssociation;
         set
         {
-            GameObjectHelpers.SetLayerRecursively(gameObject, value.Layer);
+            gameObject.SetLayerRecursively(value.Layer);
             _armyAssociation = value;
         }
     }
@@ -71,7 +73,9 @@ public class SoldierBehaviour : MonoBehaviour
 
     // cached references
 
-    public NavMeshAgent navigation { get; private set; }
+    public NavMeshAgent navMeshAgent { get; private set; }
+    public AdvancedNavigation navigation { get; private set;  }
+    
     public Animator animator { get; private set; }
     private GameObject weaponRef;
     private LayerMask enemyLayerMask = 0;
@@ -85,7 +89,7 @@ public class SoldierBehaviour : MonoBehaviour
     public HashSet<IHasHealth> spotted { get; } = new HashSet<IHasHealth>();
 
     private bool isOverridingVelocity = false;
-    public float currentVelocity { get => isOverridingVelocity ? overrideVelocity : navigation.velocity.magnitude; }
+    public float currentVelocity { get => isOverridingVelocity ? overrideVelocity : navMeshAgent.velocity.magnitude; }
     private float overrideVelocity = 0f; // used to force animation
 
     // Coroutine refs
@@ -99,8 +103,10 @@ public class SoldierBehaviour : MonoBehaviour
         GetComponentsInChildren<Rigidbody>(rigidbodies);
 
         // cache or create navmeshagent
-        navigation = GetComponent<NavMeshAgent>();
-        if (!navigation) navigation = gameObject.AddComponent<NavMeshAgent>();
+        navMeshAgent = this.GetOrElseAddComponent<NavMeshAgent>();
+        
+        // get required advanced navigation
+        navigation = GetComponent<AdvancedNavigation>();
 
         // cache or log error on animator
         animator = GetComponent<Animator>();
@@ -305,13 +311,13 @@ public class SoldierBehaviour : MonoBehaviour
 
         // stop crouching
         stateManager.SetCrouch(false);
-        aim.WeaponDown(() => { if (!navigation.enabled) { navigation.enabled = true; } navigation.SetDestination(position); navigation.isStopped = false; });
+        aim.WeaponDown(() => { if (!navMeshAgent.enabled) { navMeshAgent.enabled = true; } navMeshAgent.SetDestination(position); navMeshAgent.isStopped = false; });
     }
 
     public void StopWalkingAndScan()
     {
-        if (navigation.enabled) aim.WeaponDown(() => {
-                navigation.enabled = false;
+        if (navMeshAgent.enabled) aim.WeaponDown(() => {
+                navMeshAgent.enabled = false;
         });
 
     }
@@ -319,9 +325,9 @@ public class SoldierBehaviour : MonoBehaviour
     // moves transform to position instantly
     public void TeleportTo(Vector3 position)
     {
-        navigation.enabled = false;
+        navMeshAgent.enabled = false;
         transform.position = position;
-        navigation.enabled = true;
+        navMeshAgent.enabled = true;
     }
 
     private Coroutine snappingCoroutineInstance;
@@ -344,7 +350,7 @@ public class SoldierBehaviour : MonoBehaviour
         var startPosition = transform.position;
 
         // disable navigation while snapping
-        navigation.enabled = false;
+        navMeshAgent.enabled = false;
 
         // enable velocity override
         isOverridingVelocity = true;

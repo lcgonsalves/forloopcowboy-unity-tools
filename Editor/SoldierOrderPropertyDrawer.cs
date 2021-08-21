@@ -30,14 +30,14 @@ namespace ForLoopCowboyCommons.Editor
 
             switch (step.actionType)
             {
-                case SoldierControlStep.ControlOptions.Move:
+                case SoldierControlStep.ControlOptions.FollowNearestPath:
                     EditorGUI.PropertyField(
                         new Rect(
                             position.x,
                             position.y + actionTypeDropdownHeight + 5f,
                             position.width,
                             position.height - actionTypeDropdownHeight
-                            ), property.FindPropertyRelative("moveSettings"), true);
+                            ), property.FindPropertyRelative("followPathSettings"), true);
                     break;
                 case SoldierControlStep.ControlOptions.Idle:
                     // idle has no extra settings
@@ -56,8 +56,8 @@ namespace ForLoopCowboyCommons.Editor
             
             switch (step.actionType)
             {
-                case SoldierControlStep.ControlOptions.Move:
-                    settingsHeight = EditorGUI.GetPropertyHeight(property.FindPropertyRelative("moveSettings"), true);
+                case SoldierControlStep.ControlOptions.FollowNearestPath:
+                    settingsHeight = EditorGUI.GetPropertyHeight(property.FindPropertyRelative("followPathSettings"), true);
                     break;
                 default:
                     return settingsHeight;

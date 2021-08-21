@@ -7,7 +7,7 @@ namespace ForLoopCowboyCommons.Agent.CustomOrders
     /// Exposes functions to control the soldier.
     /// </summary>
     [System.Serializable]
-    public class SoldierControlStep : Order.SynchronousActionStep
+    public class SoldierControlStep : Order.AsyncActionStep
     {
         /// <summary>
         /// Exposes functions to the editor. Each function is a different
@@ -15,53 +15,62 @@ namespace ForLoopCowboyCommons.Agent.CustomOrders
         /// </summary>
         public enum ControlOptions
         {
-            Move,
+            FollowNearestPath,
             Idle
         }
 
-        public ControlOptions actionType = ControlOptions.Move;
+        public ControlOptions actionType = ControlOptions.FollowNearestPath;
 
-        public MoveCommandSettings moveSettings = new MoveCommandSettings();
+        public FollowPathCommandSettings followPathSettings = new FollowPathCommandSettings();
 
+        private void DoIfAgentIsSoldier(Agent agent, Action<SoldierBehaviour> componentCallback)
+        {
+            SoldierBehaviour component = agent.gameObject.GetComponent<SoldierBehaviour>();
+            if (component == null)
+            {
+                Debug.LogError(
+                    $"Agent is not a soldier! Please attach the {typeof(SoldierBehaviour)} script.");
+                return;
+            }
+
+            componentCallback(component);
+        }
+        
         public SoldierControlStep()
         {
             switch (actionType)
             {
-                case ControlOptions.Move:
-                    action = agent =>
-                    {
-                        SoldierBehaviour component = agent.gameObject.GetComponent<SoldierBehaviour>();
-                        if (component == null)
-                        {
-                            Debug.LogError(
-                                $"Agent is not a soldier! Please attach the {typeof(SoldierBehaviour)} script.");
-                            return;
-                        }
-                        else
-                        {
-                            MoveTo(component, Vector3.back);
-                        }
-                    };
+                case ControlOptions.FollowNearestPath:
+                    callbackWithTerminator = (agent, terminate) => 
+                        DoIfAgentIsSoldier(agent, c => FindNearestPathAndFollowIt(c, terminate));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        public static void MoveTo(SoldierBehaviour soldier, Vector3 destination)
+        public void FindNearestPathAndFollowIt(SoldierBehaviour soldier, Action terminate)
         {
-            soldier.WalkTo(destination);
+            var nodes = soldier.navigation.GetNearbyWaypointNodes(100f, 1);
+            var node = nodes.Length > 0 ? nodes[0] : null;
+            if (node != null)
+            {
+                if (followPathSettings.followUntilEnd) soldier.navigation.FollowWaypoint(node, followPathSettings.moveSpeed, terminate);
+                else soldier.navigation.FollowWaypointUntil(node, followPathSettings.moveSpeed, followPathSettings.neighborsToVisit, terminate);
+            }
         }
 
     }
 
     [Serializable]
-    public struct MoveCommandSettings
+    public struct FollowPathCommandSettings
     {
-        [SerializeField]
-        public Transform destination;
-        
         [SerializeField, Range(0f, 5f)]
         public float moveSpeed;
+
+        [SerializeField, Tooltip("When true, waypoint node is followed to completion.")] public bool followUntilEnd;
+        
+        [Range(0, 1000)]
+        [SerializeField, Tooltip("This number is ignored if follow until end is checked.")] public int neighborsToVisit;
     }
 }

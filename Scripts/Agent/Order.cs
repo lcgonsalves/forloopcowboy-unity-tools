@@ -143,7 +143,7 @@ namespace ForLoopCowboyCommons.Agent
         /// </summary>
         public class AsyncActionStep : Step
         {
-            private Action<Agent, Action> callbackWithTerminator;
+            protected Action<Agent, Action> callbackWithTerminator;
 
             /// <summary>
             /// Instantiates an async step.
@@ -152,6 +152,12 @@ namespace ForLoopCowboyCommons.Agent
             public AsyncActionStep(Action<Agent, Action> callbackWithTerminator)
             {
                 this.callbackWithTerminator = callbackWithTerminator;
+            }
+
+            // for internally defining terminator
+            protected AsyncActionStep()
+            {
+                this.callbackWithTerminator = null;
             }
 
             /// <summary>

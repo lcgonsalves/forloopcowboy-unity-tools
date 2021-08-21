@@ -192,7 +192,7 @@ public class SoldierBehaviourStateManager
         controller.weaponController.CeaseFire();
         controller.aim.StopTracking();
         controller.StopAllCoroutines();
-        controller.navigation.enabled = false;
+        controller.navMeshAgent.enabled = false;
 
         // stop IK
 

@@ -299,7 +299,7 @@ public class ArmComponent : MonoBehaviour
 
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.green;
-
+        
         foreach (var finger in armTransforms) {
             if (finger.Value) {
                 Gizmos.DrawSphere(finger.Value.position, 0.01f);
