@@ -85,6 +85,16 @@ namespace ForLoopCowboyCommons.Agent
             }
         }
 
+        /// <summary>
+        /// If has next, executes next.
+        /// If does not have next and settings tell it to repeat, order is executed again.
+        /// Otherwise, finish();
+        /// </summary>
+        /// <param name="agent"></param>
+        /// <param name="stepEnumerator"></param>
+        /// <param name="waitForSecondsAndThen"></param>
+        /// <param name="finish"></param>
+        /// <param name="hasNext"></param>
         private void EndStepAndIterateOrFinish(
             Agent agent,
             IEnumerator<Step> stepEnumerator,
@@ -94,6 +104,7 @@ namespace ForLoopCowboyCommons.Agent
         ) {
             // only iterate on recursion on callback
             if (hasNext) ExecuteStepRecursively(agent, stepEnumerator, waitForSecondsAndThen, finish);
+            else if (settings != null && settings.repeat) { Execute(agent, waitForSecondsAndThen, finish); }
             else finish();
         }
 

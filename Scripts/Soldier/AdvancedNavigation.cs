@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using ForLoopCowboyCommons.EditorHelpers;
 using ForLoopCowboyCommons.Environment;
@@ -21,6 +22,47 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         public float waypointReachedRadius = 1f;
         public WaypointConfiguration waypointConfiguration;
 
+        [SerializeField, ReadOnly] private WaypointNode _lastVisited = null;
+        [SerializeField, ReadOnly] private WaypointNode _lastWaypointPathStart = null;
+        [SerializeField, ReadOnly] private List<WaypointNode> _lastWaypointPath = new List<WaypointNode>(15);
+        
+        /// <summary>
+        /// Points to the last visited <c>WaypointNode</c>, or null if no
+        /// nodes have been visited yet.
+        /// </summary>
+        public WaypointNode LastVisited
+        {
+            get => _lastVisited;
+            private set
+            {
+                LastWaypointPath.Add(value);
+                _lastVisited = value;
+            }
+        }
+
+        /// <summary>
+        /// Points to the start of the most recent trajectory, or none if no trajectories have
+        /// been followed.
+        /// This is updated when the component begins to follow a waypoint chain. 
+        /// </summary>
+        public WaypointNode LastWaypointPathStart
+        {
+            get => _lastWaypointPathStart;
+            private set
+            {
+                LastWaypointPath.Clear();
+                _lastWaypointPathStart = value;
+            }
+        }
+
+        /// <summary>
+        /// List of all visited nodes in the last waypoint chain followed.
+        /// </summary>
+        public List<WaypointNode> LastWaypointPath
+        {
+            get => _lastWaypointPath;
+        }
+        
         // cached components
         private NavMeshAgent _navMeshAgent;
         
@@ -92,7 +134,23 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="onFinish">Callback when game object is close enough to the waypoint.</param>
         public void FollowWaypoint(WaypointNode w, float speed, Action onFinish)
         {
-            
+            LastWaypointPathStart = w;
+            FollowWaypointRec(w, speed, onFinish);
+        }
+        
+        /// <summary>
+        /// Recursive implementation, is unaware of context. When <c>FollowWaypoint</c> is called,
+        /// it signifies the beginning of a route follow. This recursive function signifies the
+        /// middle/end part of the process. Therefore in order to cache the "WaypointPathStart", we must
+        /// segregate these two functions.
+        /// </summary>
+        /// <param name="w">Waypoint to follow</param>
+        /// <param name="speed">Velocity of nav mesh component</param>
+        /// <param name="onFinish">Callback when game object is close enough to the waypoint.</param>
+        private void FollowWaypointRec(WaypointNode w, float speed, Action onFinish)
+        {
+
+            LastVisited = w;
             MoveTo(w.transform.position, speed);
             
             if (waypointChecker != null) StopCoroutine(waypointChecker);
@@ -105,7 +163,7 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
                     bool reached = Vector3.Distance(transform.position, w.transform.position) < waypointReachedRadius;
                     
                     if (reached && w.TryGetNext(out var next))
-                        FollowWaypoint(next, speed, onFinish);
+                        FollowWaypointRec(next, speed, onFinish);
                     else if (reached) onFinish();
 
                     return reached;
@@ -128,7 +186,16 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="onFinish">Callback when game object is close enough to the waypoint.</param>
         public void FollowWaypointUntil(WaypointNode w, float speed, int neighborsLeftToVisit, Action onFinish)
         {
+            LastWaypointPathStart = w;
+            FollowWaypointUntilRec(w, speed, neighborsLeftToVisit, onFinish);
+        }
 
+        /// <summary>
+        /// <see cref="FollowWaypointRec"/>
+        /// </summary>
+        private void FollowWaypointUntilRec(WaypointNode w, float speed, int neighborsLeftToVisit, Action onFinish)
+        {
+            LastVisited = w;
             MoveTo(w.transform.position, speed);
             
             if (waypointChecker != null) StopCoroutine(waypointChecker);
@@ -147,7 +214,7 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
                         
                         // termination: either when no neighbors left or when no next item
                         if (noMoreNeighborsToVisit || !hasNext) onFinish();
-                        else FollowWaypointUntil(next, speed, neighborsLeftToVisit - 1, onFinish);
+                        else FollowWaypointUntilRec(next, speed, neighborsLeftToVisit - 1, onFinish);
                         
                     }
 

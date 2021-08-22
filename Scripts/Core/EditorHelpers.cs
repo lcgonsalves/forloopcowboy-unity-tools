@@ -354,9 +354,9 @@ namespace ForLoopCowboyCommons.EditorHelpers
         }
 
         // Executes function using coroutine after given delay
-        public static Coroutine RunAsyncWithDelay(this MonoBehaviour m, float delay, Action callback)
+        public static Coroutine RunAsyncWithDelay(this MonoBehaviour m, float delayInSeconds, Action callback)
         {
-            return m.StartCoroutine(Action(delay, callback));
+            return m.StartCoroutine(Action(delayInSeconds, callback));
         }
 
         public static Coroutine RunAsync(

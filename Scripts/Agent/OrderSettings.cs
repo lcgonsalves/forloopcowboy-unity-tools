@@ -43,46 +43,58 @@ namespace ForLoopCowboyCommons.Agent
             {
                 if (_dirty || _cachedIterator == null)
                 {
-                    int totalNumberOfSteps = unityEventsSteps.Count + waitSteps.Count + soldierSteps.Count;
-
-                    var q = new IndexedPriorityQueue<Order.Step>(totalNumberOfSteps);
-                    var list = new List<Order.Step>(totalNumberOfSteps);
-                    var globalIndex = 0;
-                    
-                    // inserting in queue orders the list
-                    foreach (var action in unityEventsSteps)
-                    {
-                        q.Insert(globalIndex++, action);
-                    }
-
-                    foreach (Order.WaitStep waitAction in waitSteps)
-                    {
-                        q.Insert(globalIndex++, waitAction);
-                    }
-                    
-                    foreach (var soldierControlStep in soldierSteps)
-                    {
-                        q.Insert(globalIndex++, soldierControlStep);
-                    }
-
-                    // now we convert it to a c# iterable
-                    // this ensures that there are no duplicate indices
-                    for (int i = 0; i < totalNumberOfSteps; i++)
-                    {
-                        var correctedGlobalIndex = i;
-                        var step = q.Pop();
-                        step.globalIndex = i;
-                        list.Add(step);
-                    }
-
-                    _cachedIterator = list;
+                    var i = newIterator;
+                    _cachedIterator = i;
                     _dirty = false;
-                    
-                    return list;
+                    return i;
                 }
+
                 else return _cachedIterator;
             }
         }
+
+        public IList<Order.Step> newIterator
+        {
+            get
+            {
+                int totalNumberOfSteps = unityEventsSteps.Count + waitSteps.Count + soldierSteps.Count;
+
+                var q = new IndexedPriorityQueue<Order.Step>(totalNumberOfSteps);
+                var list = new List<Order.Step>(totalNumberOfSteps);
+                var globalIndex = 0;
+                    
+                // inserting in queue orders the list
+                foreach (var action in unityEventsSteps)
+                {
+                    q.Insert(globalIndex++, action);
+                }
+
+                foreach (Order.WaitStep waitAction in waitSteps)
+                {
+                    q.Insert(globalIndex++, waitAction);
+                }
+                    
+                foreach (var soldierControlStep in soldierSteps)
+                {
+                    q.Insert(globalIndex++, soldierControlStep);
+                }
+
+                // now we convert it to a c# iterable
+                // this ensures that there are no duplicate indices
+                for (int i = 0; i < totalNumberOfSteps; i++)
+                {
+                    var correctedGlobalIndex = i;
+                    var step = q.Pop();
+                    step.globalIndex = i;
+                    list.Add(step);
+                }
+
+                return list;    
+            }
+        }
+
+        [SerializeField] public bool repeat = false;
+        [SerializeField] public int repeatAmount = 1;
 
         /// <summary>
         /// Adds step to its serialized list, ordered by its globalIndex member variable.

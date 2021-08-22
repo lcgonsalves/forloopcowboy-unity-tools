@@ -17,7 +17,7 @@ namespace ForLoopCowboyCommons.Editor
             var step = PropertyDrawerUtil.GetValue<SoldierControlStep>(property);
 
             // add dropdown for switching the action types
-            var actionTypeSerialized = property.FindPropertyRelative("actionType");
+            var actionTypeSerialized = property.FindPropertyRelative("_actionType");
             var actionTypeDropdownHeight = EditorGUI.GetPropertyHeight(actionTypeSerialized);
             
             EditorGUI.PropertyField(
@@ -28,9 +28,10 @@ namespace ForLoopCowboyCommons.Editor
                     actionTypeDropdownHeight
                     ), actionTypeSerialized);
 
-            switch (step.actionType)
+            switch (step.ActionType)
             {
                 case SoldierControlStep.ControlOptions.FollowNearestPath:
+                case SoldierControlStep.ControlOptions.FollowLastPath:
                     EditorGUI.PropertyField(
                         new Rect(
                             position.x,
@@ -45,6 +46,9 @@ namespace ForLoopCowboyCommons.Editor
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            
+            // update the step with the serialized value so callbacks get updated.
+            step.UpdateActionTypeWithSerializedVersion();
 
             EditorGUI.EndProperty();
         }
@@ -54,16 +58,17 @@ namespace ForLoopCowboyCommons.Editor
             var step = PropertyDrawerUtil.GetValue<SoldierControlStep>(property);
             float settingsHeight = base.GetPropertyHeight(property, label);
             
-            switch (step.actionType)
+            switch (step.ActionType)
             {
                 case SoldierControlStep.ControlOptions.FollowNearestPath:
+                case SoldierControlStep.ControlOptions.FollowLastPath:
                     settingsHeight = EditorGUI.GetPropertyHeight(property.FindPropertyRelative("followPathSettings"), true);
                     break;
                 default:
                     return settingsHeight;
             }
 
-            return settingsHeight + EditorGUI.GetPropertyHeight(property.FindPropertyRelative("actionType"));
+            return settingsHeight + EditorGUI.GetPropertyHeight(property.FindPropertyRelative("_actionType"));
 
         }
     }

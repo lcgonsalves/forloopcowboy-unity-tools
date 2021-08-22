@@ -16,10 +16,36 @@ namespace ForLoopCowboyCommons.Agent.CustomOrders
         public enum ControlOptions
         {
             FollowNearestPath,
+            FollowLastPath,
             Idle
         }
 
-        public ControlOptions actionType = ControlOptions.FollowNearestPath;
+        [SerializeField] private ControlOptions _actionType;
+
+        public void UpdateActionTypeWithSerializedVersion()
+        {
+            switch (ActionType)
+            {
+                case ControlOptions.FollowNearestPath:
+                    AssignSoldierCallback(FindNearestPathAndFollowIt);
+                    break;
+                case ControlOptions.FollowLastPath:
+                    AssignSoldierCallback(FollowLastPath);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public ControlOptions ActionType
+        {
+            get => _actionType;
+            private set
+            {
+                _actionType = value;
+                UpdateActionTypeWithSerializedVersion();
+            }
+        }
 
         public FollowPathCommandSettings followPathSettings = new FollowPathCommandSettings();
 
@@ -35,29 +61,41 @@ namespace ForLoopCowboyCommons.Agent.CustomOrders
 
             componentCallback(component);
         }
-        
-        public SoldierControlStep()
+
+        public SoldierControlStep() : this(ControlOptions.FollowNearestPath) { }
+
+        public SoldierControlStep(ControlOptions actionType)
         {
-            switch (actionType)
-            {
-                case ControlOptions.FollowNearestPath:
-                    callbackWithTerminator = (agent, terminate) => 
-                        DoIfAgentIsSoldier(agent, c => FindNearestPathAndFollowIt(c, terminate));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            ActionType = actionType;
+        }
+
+        private void AssignSoldierCallback(Action<SoldierBehaviour, Action> callback)
+        {
+            callbackWithTerminator = (agent, terminate) => 
+                DoIfAgentIsSoldier(agent, c => callback(c, terminate));
         }
 
         public void FindNearestPathAndFollowIt(SoldierBehaviour soldier, Action terminate)
         {
-            var nodes = soldier.navigation.GetNearbyWaypointNodes(100f, 1);
+            var nodes = soldier.navigation.GetNearbyWaypointNodes(5f, 1);
             var node = nodes.Length > 0 ? nodes[0] : null;
             if (node != null)
             {
                 if (followPathSettings.followUntilEnd) soldier.navigation.FollowWaypoint(node, followPathSettings.moveSpeed, terminate);
                 else soldier.navigation.FollowWaypointUntil(node, followPathSettings.moveSpeed, followPathSettings.neighborsToVisit, terminate);
-            }
+            } else Debug.LogWarning("No nodes found nearby.");
+        }
+
+        public void FollowLastPath(SoldierBehaviour soldier, Action terminate)
+        {
+            if (followPathSettings.followUntilEnd)
+                soldier.navigation.FollowWaypoint(soldier.navigation.LastWaypointPathStart, followPathSettings.moveSpeed, terminate);
+            else soldier.navigation.FollowWaypointUntil(
+                soldier.navigation.LastWaypointPathStart, 
+                followPathSettings.moveSpeed,
+                followPathSettings.neighborsToVisit,
+                terminate
+            );
         }
 
     }

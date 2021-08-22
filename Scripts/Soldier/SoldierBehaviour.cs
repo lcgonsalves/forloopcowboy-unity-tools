@@ -106,7 +106,7 @@ public class SoldierBehaviour : MonoBehaviour
         navMeshAgent = this.GetOrElseAddComponent<NavMeshAgent>();
         
         // get required advanced navigation
-        navigation = GetComponent<AdvancedNavigation>();
+        navigation = this.GetOrElseAddComponent<AdvancedNavigation>();
 
         // cache or log error on animator
         animator = GetComponent<Animator>();

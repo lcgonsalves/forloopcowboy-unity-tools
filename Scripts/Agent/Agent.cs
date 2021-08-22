@@ -70,11 +70,14 @@ namespace ForLoopCowboyCommons.Agent
         private void Start()
         {
             orderQueue.Resize(_orders.Count);
-            // initialize queue with serialized orders
-            foreach (var order in _orders)
+            // initialize queue with serialized orders with a bit of delay
+            this.RunAsyncWithDelay(0.25f, () =>
             {
-                Enqueue(order);
-            }
+                foreach (var order in _orders)
+                {
+                    Enqueue(order);
+                }
+            });
         }
 
         /// <summary>
@@ -108,7 +111,7 @@ namespace ForLoopCowboyCommons.Agent
         /// fucking events require a void-returning function but it wanna unsub at the end.
         /// </summary>
         private void EventHandlerExecuteNext() { TryExecuteNext(); }
-
+        
         private void WaitForAndThen(float seconds, Action onFinishWaiting)
         {
             currentState = AgentState.Waiting;
@@ -137,8 +140,15 @@ namespace ForLoopCowboyCommons.Agent
         }
 
         // Unity events
-        private void OnEnable() { onReady += EventHandlerExecuteNext; }
-        private void OnDisable() { onReady -= EventHandlerExecuteNext; }
+        private void OnEnable()
+        {
+            onReady += EventHandlerExecuteNext;
+        }
+
+        private void OnDisable()
+        {
+            onReady -= EventHandlerExecuteNext;
+        }
 
     }
 }
