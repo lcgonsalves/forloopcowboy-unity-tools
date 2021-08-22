@@ -18,8 +18,6 @@ namespace ForLoopCowboyCommons.Editor
         private SerializedProperty _serializedWaitSteps;
         private SerializedProperty _serializedSoldierSteps;
 
-        private bool rinseAndRepeat = false;
-
         private void OnEnable()
         {
             OrderSettings o = (OrderSettings) target;
@@ -80,9 +78,7 @@ namespace ForLoopCowboyCommons.Editor
             GUILayout.Space(15);
             EditorGUILayout.BeginHorizontal();
             
-            rinseAndRepeat = EditorGUILayout.Toggle(new GUIContent("Rinse & Repeat?"), rinseAndRepeat);
-
-            _getTarget.FindProperty("repeat").boolValue = rinseAndRepeat;
+            _getTarget.FindProperty("repeat").boolValue = EditorGUILayout.Toggle(new GUIContent("Rinse & Repeat?"), _getTarget.FindProperty("repeat").boolValue);
 
             GUI.enabled = o.repeat;
             EditorGUILayout.PropertyField(serializedObject.FindProperty("repeatAmount"), new GUIContent("how many times?"));
@@ -93,14 +89,13 @@ namespace ForLoopCowboyCommons.Editor
             if (addActionStep) AddNewStep(new Order.ExecuteUnityEventsStep());
             if (addWaitStep) AddNewStep(new Order.WaitStep(1f));
             if (addSoldierStep) AddNewStep(new SoldierControlStep());
+            
+            _getTarget.ApplyModifiedProperties();
 
             if (GUI.changed)
             {
                 EditorUtility.SetDirty(o);
             }
-            
-            _getTarget.ApplyModifiedProperties();
-
         }
 
         private void AddNewStep(Order.Step s)
