@@ -132,8 +132,8 @@ namespace ForLoopCowboyCommons.Agent
             {
                 if (oid == currentOrderID)
                 {
-                    currentState = AgentState.Ready;
                     currentOrderID++;
+                    currentState = AgentState.Ready;
                 }
                 else Debug.LogError($"Order ID is invalid. Current order is {currentOrderID} but order {oid} attempted to terminate.");
             };

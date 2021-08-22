@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using ForLoopCowboyCommons.EditorHelpers;	
 
+[RequireComponent(typeof(Animator))]
 public class ArmComponent : MonoBehaviour
 {
     [Header("Animator Parameters"), ReadOnly]

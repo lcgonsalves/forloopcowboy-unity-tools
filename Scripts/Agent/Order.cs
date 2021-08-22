@@ -42,30 +42,51 @@ namespace ForLoopCowboyCommons.Agent
         {
             this.priority = priority;
         }
-
+        
         /// <summary>
         /// Executes the order.
         /// </summary>
         /// <param name="agent">The game object executing this order.</param>
         /// <param name="waitForSecondsAndThen">Function to allow Order to pause execution routine of Actor momentarily. Second argument is a callback that runs when waiting is finished.</param>
         /// <param name="finish">Function to be run when execution is done. This triggers the Actor to execute next Order! Careful with leaks here.</param>
+        /// <param name="repetitions">Number of times to execute the order after it has finished. Overrides settings</param>
+        public void Execute(
+            Agent agent,
+            Action<float, Action> waitForSecondsAndThen,
+            Action finish,
+            int repetitions
+        )
+        {
+            var enumerator = steps.GetEnumerator();
+            enumerator.MoveNext();
+
+            ExecuteStepRecursively(agent, enumerator, waitForSecondsAndThen, finish, repetitions);
+        }
+
+        /// <summary>
+        /// Executes the order. If repetitions are defined in the settings, they will be used.
+        /// </summary>
+        /// <param name="agent"></param>
+        /// <param name="waitForSecondsAndThen"></param>
+        /// <param name="finish"></param>
         public void Execute(
             Agent agent,
             Action<float, Action> waitForSecondsAndThen,
             Action finish
         )
         {
-            var enumerator = steps.GetEnumerator();
-            enumerator.MoveNext();
+            int repetitions = 0;
+            if (settings != null && settings.repeat) repetitions = settings.repeatAmount;
             
-            ExecuteStepRecursively(agent, enumerator, waitForSecondsAndThen, finish);
-        }   
+            Execute(agent, waitForSecondsAndThen, finish, repetitions);
+        }
 
         private void ExecuteStepRecursively(
             Agent agent,
             IEnumerator<Step> stepEnumerator,
             Action<float, Action> waitForSecondsAndThen,
-            Action finish
+            Action finish,
+            int repetitionsLeft = 0
         )
         {
             var current = stepEnumerator.Current;
@@ -77,10 +98,10 @@ namespace ForLoopCowboyCommons.Agent
             {
                 // special case - nothing to execute, we just wait.
                 case WaitStep waitStep:
-                    waitForSecondsAndThen(waitStep.waitTimeInSeconds, () => EndStepAndIterateOrFinish(agent, stepEnumerator, waitForSecondsAndThen, finish, hasNext));
+                    waitForSecondsAndThen(waitStep.waitTimeInSeconds, () => EndStepAndIterateOrFinish(agent, stepEnumerator, waitForSecondsAndThen, finish, hasNext, repetitionsLeft));
                     break;
                 default:
-                    current.Execute(agent, () => EndStepAndIterateOrFinish(agent, stepEnumerator, waitForSecondsAndThen, finish, hasNext));
+                    current.Execute(agent, () => EndStepAndIterateOrFinish(agent, stepEnumerator, waitForSecondsAndThen, finish, hasNext, repetitionsLeft));
                     break;
             }
         }
@@ -90,21 +111,17 @@ namespace ForLoopCowboyCommons.Agent
         /// If does not have next and settings tell it to repeat, order is executed again.
         /// Otherwise, finish();
         /// </summary>
-        /// <param name="agent"></param>
-        /// <param name="stepEnumerator"></param>
-        /// <param name="waitForSecondsAndThen"></param>
-        /// <param name="finish"></param>
-        /// <param name="hasNext"></param>
         private void EndStepAndIterateOrFinish(
             Agent agent,
             IEnumerator<Step> stepEnumerator,
             Action<float, Action> waitForSecondsAndThen,
             Action finish,
-            bool hasNext
+            bool hasNext,
+            int repetitionsLeft
         ) {
             // only iterate on recursion on callback
             if (hasNext) ExecuteStepRecursively(agent, stepEnumerator, waitForSecondsAndThen, finish);
-            else if (settings != null && settings.repeat) { Execute(agent, waitForSecondsAndThen, finish); }
+            else if (settings != null && settings.repeat && repetitionsLeft > 0) { Execute(agent, waitForSecondsAndThen, finish, repetitionsLeft - 1); }
             else finish();
         }
 

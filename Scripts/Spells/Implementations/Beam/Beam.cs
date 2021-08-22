@@ -23,6 +23,7 @@ public class Beam : Spell
             if (instances.main == null) throw new System.NullReferenceException("Beam requires main effect.");
 
             instances.main.transform.position = start.position;
+            
             float originalAimSpeed = -1;
             Transition.TransitionState transitionInstance = sensitivityTransition.GetPlayableInstance();
 
@@ -37,7 +38,8 @@ public class Beam : Spell
 
 
             System.DateTime startTime = System.DateTime.Now;
-            Coroutine handTracker = caster.RunAsyncFixed(
+            
+            caster.RunAsyncFixed(
                 () => {
                     instances.main.gameObject.SetActive(true);
 
@@ -63,7 +65,7 @@ public class Beam : Spell
                     }
 
                 },
-                () => System.DateTime.Now - startTime < TimeSpan.FromSeconds(sensitivityTransition.duration)
+                () => DateTime.Now - startTime >= TimeSpan.FromSeconds(sensitivityTransition.duration)
             );
 
             // now we tell the caster to figure it out and stop drawing the beam in the given duration
