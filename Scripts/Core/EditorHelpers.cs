@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 
 namespace ForLoopCowboyCommons.EditorHelpers
 {
@@ -227,6 +228,19 @@ namespace ForLoopCowboyCommons.EditorHelpers
 
     }
 
+    public static class StringUtil
+    {
+        /// <summary>
+        /// Turns AStringWithCamelCase into A String With Camel Case.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string ToHumanReadable(this string s)
+        {
+            return Regex.Replace(s, @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1");
+        }
+    }
+    
     public static class EnumUtil {
         public static IEnumerable<T> GetValues<T>() {
             return (T[])Enum.GetValues(typeof(T));

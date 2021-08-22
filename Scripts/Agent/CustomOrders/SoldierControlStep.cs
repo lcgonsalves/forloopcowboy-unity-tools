@@ -1,4 +1,5 @@
 using System;
+using ForLoopCowboyCommons.EditorHelpers;
 using UnityEngine;
 
 namespace ForLoopCowboyCommons.Agent.CustomOrders
@@ -16,8 +17,7 @@ namespace ForLoopCowboyCommons.Agent.CustomOrders
         public enum ControlOptions
         {
             FollowNearestPath,
-            FollowLastPath,
-            Idle
+            FollowLastPath
         }
 
         [SerializeField] private ControlOptions _actionType;
@@ -35,6 +35,18 @@ namespace ForLoopCowboyCommons.Agent.CustomOrders
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            
+            // auto-update name- changing action type makes previous name obsolete.
+            // only change if current name matches a different state's name - if user overrode the name, keep as is
+            bool currentNameIsObsolete = false;
+
+            foreach (var option in EnumUtil.GetValues<ControlOptions>())
+            {
+                currentNameIsObsolete |= name == null || name.Equals(option.ToString().ToHumanReadable());
+            }
+            
+            if (currentNameIsObsolete) name = ActionType.ToString().ToHumanReadable();
+
         }
 
         public ControlOptions ActionType
@@ -67,6 +79,7 @@ namespace ForLoopCowboyCommons.Agent.CustomOrders
         public SoldierControlStep(ControlOptions actionType)
         {
             ActionType = actionType;
+            name = actionType.ToString().ToHumanReadable();
         }
 
         private void AssignSoldierCallback(Action<SoldierBehaviour, Action> callback)

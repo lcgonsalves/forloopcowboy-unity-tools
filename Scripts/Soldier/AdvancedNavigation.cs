@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using ForLoopCowboyCommons.EditorHelpers;
 using ForLoopCowboyCommons.Environment;
+using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -65,7 +67,64 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         
         // cached components
         private NavMeshAgent _navMeshAgent;
-        
+
+        /// <summary>
+        /// Stores the state of navigation, allowing for pausing and continuing.
+        /// </summary>
+        [System.Serializable]
+        public struct NavigationState
+        {
+            /// <summary>
+            /// Speed at which navigation is occurring.
+            /// </summary>
+            public float speed { get; }
+
+            /// <summary>
+            /// Number of neighbors left to visit in the chain.
+            /// When null, visits entire chain.
+            /// </summary>
+            public int? neighborsLeftToVisit { get; }
+
+            /// <summary>
+            /// To be called when navingation reaches the destination.
+            /// </summary>
+            internal Action terminator { get; }
+            
+            /// <summary>
+            /// Next target to be 
+            /// </summary>
+            [CanBeNull] public WaypointNode nextTarget { get; private set; }
+            
+            internal void Deconstruct(
+                out float speed,
+                out Action terminator,
+                [CanBeNull] out WaypointNode nextTarget,
+                out int? neighborsLeftToVisit)
+            {
+                speed = this.speed;
+                terminator = this.terminator;
+                nextTarget = this.nextTarget;
+                neighborsLeftToVisit = this.neighborsLeftToVisit;
+            }
+
+            internal NavigationState(WaypointNode nextTarget, float speed, Action terminator, int? neighborsLeftToVisit = null)
+            {
+                this.nextTarget = nextTarget;
+                this.speed = speed;
+                this.neighborsLeftToVisit = neighborsLeftToVisit;
+                this.terminator = terminator;
+            }
+            
+            internal NavigationState(float speed, Action terminator, int? neighborsLeftToVisit = null) : this(null, speed, terminator, neighborsLeftToVisit) {}
+        }
+
+        /// <summary>
+        /// State of the navigation component.
+        /// When null it means there is no navigation in progress.
+        /// This is set when navigation starts and cleared on finish.
+        /// </summary>
+        public NavigationState? state { get; private set; }
+
         private void OnEnable()
         {
             _navMeshAgent = this.GetOrElseAddComponent<NavMeshAgent>();
@@ -135,7 +194,11 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         public void FollowWaypoint(WaypointNode w, float speed, Action onFinish)
         {
             LastWaypointPathStart = w;
-            FollowWaypointRec(w, speed, onFinish);
+            FollowWaypointRec(w, speed, () =>
+            {
+                state = null;
+                onFinish();
+            });
         }
         
         /// <summary>
@@ -149,8 +212,7 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="onFinish">Callback when game object is close enough to the waypoint.</param>
         private void FollowWaypointRec(WaypointNode w, float speed, Action onFinish)
         {
-
-            LastVisited = w;
+            state = new NavigationState(w, speed, onFinish);
             MoveTo(w.transform.position, speed);
             
             if (waypointChecker != null) StopCoroutine(waypointChecker);
@@ -161,6 +223,9 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
                 () =>
                 {
                     bool reached = Vector3.Distance(transform.position, w.transform.position) < waypointReachedRadius;
+                    
+                    // only set visited when reached
+                    if (reached) LastVisited = w;
                     
                     if (reached && w.TryGetNext(out var next))
                         FollowWaypointRec(next, speed, onFinish);
@@ -187,7 +252,11 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         public void FollowWaypointUntil(WaypointNode w, float speed, int neighborsLeftToVisit, Action onFinish)
         {
             LastWaypointPathStart = w;
-            FollowWaypointUntilRec(w, speed, neighborsLeftToVisit, onFinish);
+            FollowWaypointUntilRec(w, speed, neighborsLeftToVisit, () =>
+            {
+                state = null;
+                onFinish();
+            });
         }
 
         /// <summary>
@@ -195,7 +264,7 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
         /// </summary>
         private void FollowWaypointUntilRec(WaypointNode w, float speed, int neighborsLeftToVisit, Action onFinish)
         {
-            LastVisited = w;
+            state = new NavigationState(w, speed, onFinish, neighborsLeftToVisit);
             MoveTo(w.transform.position, speed);
             
             if (waypointChecker != null) StopCoroutine(waypointChecker);
@@ -209,6 +278,8 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
 
                     if (reachedDestination)
                     {
+                        LastVisited = w;
+                        
                         bool noMoreNeighborsToVisit = neighborsLeftToVisit <= 0;
                         bool hasNext = w.TryGetNext(out var next);
                         
@@ -225,10 +296,70 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
             );
         }
 
+        /// <summary>
+        /// Resets nav mesh agent's path and stops waypoint checker coroutine.
+        /// Keeps state so navigation can be restarted.
+        /// </summary>
+        /// <returns>True if was able to pause.</returns>
+        public bool Pause()
+        {
+            bool canPause = state != null && waypointChecker != null;
+            
+            if (canPause)
+            {
+                _navMeshAgent.ResetPath();
+                StopCoroutine(waypointChecker);
+            }
+            else
+            {
+                var statemsg = $"State is {(state == null ? "" : "not")} null";
+                var wayptmsg = $"Waypoint checker coroutine is {(waypointChecker == null ? "" : "not")} null";
+                Debug.LogWarning($"Cannot pause when nothing is playing! {statemsg}, {wayptmsg}");
+            }
+
+            return canPause;
+        }
+
+
+        /// <summary>
+        /// If state is defined, re-triggers a follow waypoint
+        /// routine using the state information.
+        /// </summary>
+        /// <returns>True if resumed.</returns>
+        public bool Resume()
+        {
+            bool canResume = state != null;
+            
+            if (canResume)
+            {
+                var (speed, terminator, nextTarget, neighborsLeftToVisit) = (NavigationState) state;
+                
+                // existence of state.neighborsLeftToVisit implies usage of `FollowWaypointUntil`
+                // use recursive call here because we don't want to start a new path - we are simply continuing the last, so no need to reset other variables.
+                if (neighborsLeftToVisit != null)
+                    FollowWaypointUntilRec(nextTarget, speed, (int) neighborsLeftToVisit, terminator);
+                else FollowWaypointRec(nextTarget, speed, terminator);
+                
+
+            }
+            else
+            {
+                var statemsg = $"State is {(state == null ? "" : "not")} null";
+                Debug.LogWarning($"Cannot resume when state was not saved! {statemsg}.");
+            }
+
+            return canResume;
+        }
+        
+        
+        /// <summary>
+        /// Pauses and resets state.
+        /// </summary>
         public void Stop()
         {
-            _navMeshAgent.ResetPath();
-            if (waypointChecker != null) StopCoroutine(waypointChecker);
+            Pause();
+            state = null;
         }
+        
     }
 }

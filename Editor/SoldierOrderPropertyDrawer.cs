@@ -40,9 +40,6 @@ namespace ForLoopCowboyCommons.Editor
                             position.height - actionTypeDropdownHeight
                             ), property.FindPropertyRelative("followPathSettings"), true);
                     break;
-                case SoldierControlStep.ControlOptions.Idle:
-                    // idle has no extra settings
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
