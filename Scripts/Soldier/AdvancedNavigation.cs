@@ -295,20 +295,36 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
                 0.25f
             );
         }
+        
+        /// <returns>True if following a waypoint.</returns>
+        public bool IsFollowingPath()
+        {
+            return state != null && waypointChecker != null;
+        }
 
+        /// <returns>True if has a valid navigation state to restore.</returns>
+        public bool IsAbleToResumeNavigating(bool coroutineMustBeStopped = false)
+        {
+            bool isCoroutineStopped = waypointChecker == null;
+            bool coroutineStateIsValid = coroutineMustBeStopped ? isCoroutineStopped : true; // either coroutine must be stopped && it is stopped or it's valid.
+                
+            return state != null && coroutineStateIsValid;
+        }
+        
         /// <summary>
         /// Resets nav mesh agent's path and stops waypoint checker coroutine.
         /// Keeps state so navigation can be restarted.
         /// </summary>
-        /// <returns>True if was able to pause.</returns>
+        /// <returns>Return value of <see cref="IsFollowingPath"/>, true if was able to pause.</returns>
         public bool Pause()
         {
-            bool canPause = state != null && waypointChecker != null;
+            bool canPause = IsFollowingPath();
             
             if (canPause)
             {
                 _navMeshAgent.ResetPath();
                 StopCoroutine(waypointChecker);
+                waypointChecker = null;
             }
             else
             {
@@ -320,15 +336,14 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
             return canPause;
         }
 
-
         /// <summary>
         /// If state is defined, re-triggers a follow waypoint
-        /// routine using the state information.
+        /// routine using the state information. 
         /// </summary>
-        /// <returns>True if resumed.</returns>
+        /// <returns>Return value of <see cref="IsAbleToResumeNavigating"/>, true indicating that the navigation was able to resume.</returns>
         public bool Resume()
         {
-            bool canResume = state != null;
+            bool canResume = IsAbleToResumeNavigating();
             
             if (canResume)
             {
@@ -350,8 +365,7 @@ namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
 
             return canResume;
         }
-        
-        
+
         /// <summary>
         /// Pauses and resets state.
         /// </summary>

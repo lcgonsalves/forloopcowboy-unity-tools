@@ -11,6 +11,8 @@ public class BallOfEnergy : Spell
 
     public Transition handBackTransition;
 
+    public float throwAngle = 0f;
+
     protected Dictionary<int, BulletController> hoveringBullets = new Dictionary<int, BulletController>();
 
     public override void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
@@ -92,7 +94,18 @@ public class BallOfEnergy : Spell
 
     protected override void Execute(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
     {
-        var b = BulletSystem.SpawnAndFire(bullet, GetCastPointFor(source), direction);
+        // direction is from screen. we project a point forward in the range, then find the 
+        // direction from the hand to said projected point to correct for this.
+        var castPoint = GetCastPointFor(source);
+        var projectedPoint = caster.mainCamera.transform.position + (direction.normalized * range);
+        
+        // override projected point with raycast hit for better precision if within range
+        if (Physics.Raycast(new Ray(caster.mainCamera.transform.position, direction), out var hit, range))
+            projectedPoint = hit.point;
+            
+        var correctedDirection = Quaternion.AngleAxis(throwAngle, Vector3.left) * (projectedPoint - castPoint).normalized;
+
+        var b = BulletSystem.SpawnAndFire(bullet, castPoint, correctedDirection);
         b.rb.AddTorque(5f, 3f, 0f);
 
         if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))

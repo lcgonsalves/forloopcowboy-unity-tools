@@ -18,8 +18,6 @@ public class SpellUserBehaviour : MonoBehaviour, Spell.SpellCaster
 
     public InputActionReference holdToSelectOtherAction;
 
-    public CinemachineStateDrivenCamera vcam;
-
     public Chronos chronos { get; private set; }
 
 
