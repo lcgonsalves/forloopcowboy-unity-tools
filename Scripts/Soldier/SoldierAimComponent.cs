@@ -130,8 +130,6 @@ public class SoldierAimComponent : MonoBehaviour
             float weight = easeToAimTransition.Evaluate(Time.deltaTime);
             animator?.SetLayerWeight(AimAnimationLayer, weight);
 
-            Debug.Log("transition to ADS");;
-
             yield return null;
         }
 

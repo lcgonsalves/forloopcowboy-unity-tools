@@ -9,9 +9,8 @@ public class SoldierBehaviourStateManager
 
     public enum State
     {
-        Idle,
+        Ready,
         Aware,
-        Moving,
         Aiming,
         TakingCover,
         Reloading,
@@ -44,21 +43,21 @@ public class SoldierBehaviourStateManager
     Animator animator;
     Dictionary<int, State> stateHashes = new Dictionary<int, State>();
     Dictionary<State, MethodInfo> stateProcessors = new Dictionary<State, MethodInfo>();
-    SoldierBehaviour controller;
+    SoldierBehaviour soldier;
 
     public SoldierBehaviourStateManager(SoldierBehaviour soldierToControl) 
     {
-        this.controller = soldierToControl;
+        this.soldier = soldierToControl;
         this.animator = soldierToControl.animator;
 
         if (soldierToControl == null || animator == null) throw new NullReferenceException("Soldier must exist and have an animator in order use the state manager.");
 
         BEHAVIOUR_STATE_LAYER = animator.GetLayerIndex(BEHAVIOUR_STATE_LAYER_NAME);
-
+        
         // initialize hashes'
         foreach(State state in Enum.GetValues(typeof(State)))
         {
-            stateHashes.Add(SoldierBehaviourStateManager.GenerateStateHash(state), state);
+            stateHashes.Add(GenerateStateHash(state), state);
         }
     }
 
@@ -111,62 +110,72 @@ public class SoldierBehaviourStateManager
     public void WriteStateParameters()
     {
         // if dead, set trigger and return (we dont want to continue tracking state at this point)
-        if (controller.health.IsDead && currentState != State.Dying) {
+        if (soldier.health.IsDead && currentState != State.Dying) {
             animator.SetTrigger(StateParameters.Die.ToString());
             return;
         }
 
-        // update velocity
-        animator.SetFloat(StateParameters.Velocity.ToString(), controller.currentVelocity);
-
         // update whether soldier has spotted someone or not when it has detected enemies
-        animator.SetBool(StateParameters.EnemySpotted.ToString(), controller.spotted.Count > 0);
+        animator.SetBool(StateParameters.EnemySpotted.ToString(), soldier.spotted.Count > 0);
 
         // if current target is dead, announce it and reset target variable
-        if (controller.target is {IsDead: true})
+        if (soldier.target is {IsDead: true})
         {
             animator.SetTrigger(StateParameters.NoTargetToEngage.ToString());
-            controller.target = null;
+            soldier.target = null;
         }
         
         // ready to engage if we can find a spotted target that is alive (and we are not targeting anybody currently)
-        if (controller.spotted.Count > 0)
+        if (soldier.spotted.Count > 0)
         {
             // select first target that has health
-            foreach (var target in controller.spotted)
-            {;
-                if (target.IsAlive) { controller.target = target; break; }
+            foreach (var target in soldier.spotted)
+            {
+                if (target.IsAlive) { soldier.target = target; break; }
             }
             
-            // if we found a living target, proceed to engage otherwise 
-            var trigger = controller.target == null ? StateParameters.NoTargetToEngage.ToString() :  StateParameters.Engage.ToString();
+            // if we found a living target, proceed to engage otherwise
+            var trigger = soldier.target == null ? StateParameters.NoTargetToEngage.ToString() :  StateParameters.Engage.ToString();
             animator.SetTrigger(trigger);
+        }
+        else
+        {
+            // reset engagement when no targets
+            animator.SetTrigger(StateParameters.NoTargetToEngage.ToString());
+            
+            // resume trajectory if one was started
+            if (soldier.navigation.IsAbleToResumeNavigating()) soldier.navigation.Resume();
+            
+            // update velocity if no soldiers are spotted.
+            animator.SetFloat(StateParameters.Velocity.ToString(), soldier.currentVelocity);
         }
 
     }
 
     public void SetCrouch(bool value)
     {
-        controller.animator.SetBool(SoldierBehaviourStateManager.StateParameters.Crouched.ToString(), value);
+        soldier.animator.SetBool(SoldierBehaviourStateManager.StateParameters.Crouched.ToString(), value);
     }
 
     //// DEFINE HERE THE INDIVIDUAL STATE PROCESSORS ////
 
-    private void ProcessIdle() 
+    private void ProcessReady() 
     {
         // not aiming
         // waiting to spot a soldier
-        controller.aim.StopTracking();
+        soldier.aim.StopTracking();
     }
 
     private void ProcessAware()
     {
         // soldier spotted
         // stop moving and track it
-        var trgtSoldier = controller.target;
-        var visibleTarget = controller.firstAvailableTargetColliderInView; // might be performance critial
+        var trgtSoldier = soldier.target;
+        var visibleTarget = soldier.firstAvailableTargetColliderInView; // might be performance critial
 
-        if (trgtSoldier != null && visibleTarget != null) controller.aim.Track(visibleTarget);
+        if (soldier.navigation.IsFollowingPath()) soldier.navigation.Pause();
+
+        if (trgtSoldier != null && visibleTarget != null) soldier.aim.Track(visibleTarget);
     }
 
     private void ProcessMoving()
@@ -176,23 +185,23 @@ public class SoldierBehaviourStateManager
 
     private void ProcessEngage()
     {
-        var targetSoldier = controller.target;
-        var visibleTarget = controller.firstAvailableTargetColliderInView;
+        var targetSoldier = soldier.target;
+        var visibleTarget = soldier.firstAvailableTargetColliderInView;
 
         // track enemy and periodically shoot at it (in bursts, when i get this shit to work)
         if (targetSoldier != null && visibleTarget != null && targetSoldier.Health > 0) {
-            controller.aim.Aim(visibleTarget.position, controller.weaponController.OpenFire);
-        } else controller.weaponController.CeaseFire();
+            soldier.aim.Aim(visibleTarget.position, () => soldier.weaponController.OpenFire(true));
+        } else soldier.weaponController.CeaseFire();
 
     }
 
     private void ProcessDying()
     {
         // stop everything and let death animation play
-        controller.weaponController.CeaseFire();
-        controller.aim.StopTracking();
-        controller.StopAllCoroutines();
-        controller.navMeshAgent.enabled = false;
+        soldier.weaponController.CeaseFire();
+        soldier.aim.StopTracking();
+        soldier.StopAllCoroutines();
+        soldier.navMeshAgent.enabled = false;
 
         // stop IK
 

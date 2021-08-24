@@ -303,6 +303,11 @@ public class SpellUserBehaviour : MonoBehaviour, Spell.SpellCaster
             DestroyInstances(spell, arms.r);
         }
 
+        leftHandInput.action.Disable();
+        rightHandInput.action.Disable();
+        actionSelect.action.Disable();
+        holdToSelectOtherAction.action.Disable();
+
         void DestroyInstances(Spell spell, Side<ArmComponent> side)
         {
             Spell.InstanceConfiguration instances = null;

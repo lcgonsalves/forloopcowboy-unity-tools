@@ -1,8 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 using ForLoopCowboyCommons.EditorHelpers;
 using ForLoopCowboyCommons.Damage;
+using Random = UnityEngine.Random;
 
 public class WeaponController : MonoBehaviour
 {
@@ -20,11 +23,28 @@ public class WeaponController : MonoBehaviour
 
     public bool isFiring { get => currentlyFiring; private set { currentlyFiring = value; } }
 
+    public bool shouldFire = false;
+    
+    [Serializable]
+    public struct BurstSettings
+    {
+        public bool enabled;
+        
+        public float maxBurstLength;
+        public float minBurstLength;
+        
+        public float maxBreakLength;
+        public float minBreakLength;
+    }
+
+    public BurstSettings burstSettings;
+
     // internal variables
 
     public Transform muzzle { get; private set; }
 
     private Coroutine firingCoroutine;
+    private Coroutine burstCoroutine;
 
     private ParticleSystem bulletEmitter;
 
@@ -50,8 +70,11 @@ public class WeaponController : MonoBehaviour
         dmgProvider.min = weaponSettings.minimumDamage;
         dmgProvider.max = weaponSettings.maximumDamage;
 
-        // begin coroutine
+        // begin firing coroutine
         firingCoroutine = StartCoroutine(FiringCoroutine());
+        
+        // begin burst managment coroutine
+        burstCoroutine = StartCoroutine(BurstCoroutine());
 
     }
 
@@ -60,12 +83,12 @@ public class WeaponController : MonoBehaviour
         // do while alive
         while (true)
         {
-
-            while (isFiring && bulletsInClip > 0)
+            while (shouldFire && isFiring && bulletsInClip > 0)
             {
                 bulletEmitter.Emit(1);
                 foreach (var emitter in peripheralEmitters)
                 {
+                    // todo: use bullet system here instead
                     emitter.Emit(1);
                 }
 
@@ -81,15 +104,35 @@ public class WeaponController : MonoBehaviour
 
         }
     }
-
-    public void OpenFire()
+    
+    
+    private IEnumerator BurstCoroutine()
     {
-        isFiring = true;
+        while (true)
+        {
+            if (burstSettings.enabled && shouldFire)
+            {
+                var burstTime = Random.Range(burstSettings.minBurstLength, burstSettings.maxBurstLength);
+                var breakTime = Random.Range(burstSettings.minBreakLength, burstSettings.maxBreakLength);
+
+                isFiring = !isFiring; // toggle
+
+                // pick correct wait time depending on whether it was firing or waiting
+                yield return isFiring ? new WaitForSeconds(burstTime) : new WaitForSeconds(breakTime);
+            }
+            else yield return null;
+        }
+    }
+
+    public void OpenFire(bool burst = false)
+    {
+        burstSettings.enabled = burst;
+        shouldFire = true;
     }
 
     public void CeaseFire()
     {
-        isFiring = false;
+        shouldFire = false;
     }
 
     public void Reload() { bulletsInClip = weaponSettings.clipSize; }

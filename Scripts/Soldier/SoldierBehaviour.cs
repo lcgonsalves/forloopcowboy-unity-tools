@@ -195,8 +195,8 @@ public class SoldierBehaviour : MonoBehaviour
 
         if (!animator) return;
 
-        // disable IK when dying
-        if (stateManager != null && stateManager.currentState == SoldierBehaviourStateManager.State.Dying)
+        // disable IK when dying or reloading
+        if (stateManager is {currentState: SoldierBehaviourStateManager.State.Dying} || stateManager is {currentState: SoldierBehaviourStateManager.State.Reloading})
         {
             animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 0);
         }
