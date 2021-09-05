@@ -1,8 +1,9 @@
 using System;
-using ForLoopCowboyCommons.EditorHelpers;
+using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Agent.CustomOrders
+namespace forloopcowboy_unity_tools.Scripts.Agent.CustomOrders
 {
     /// <summary>
     /// Exposes functions to control the soldier.

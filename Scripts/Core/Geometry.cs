@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Geometry
+namespace forloopcowboy_unity_tools.Scripts.Core
 {
 
     // some geometry helpers

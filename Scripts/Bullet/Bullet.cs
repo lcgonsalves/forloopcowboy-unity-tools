@@ -1,19 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu]
-public class Bullet : ScriptableObject
+namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
-    public GameObject prefab;
+    [CreateAssetMenu]
+    public class Bullet : ScriptableObject
+    {
+        public GameObject prefab;
 
-    public GameObject onImpact;
+        public GameObject onImpact;
 
-    public float muzzleVelocity = 100f;
+        public float muzzleVelocity = 100f;
 
-    public int maxBounces = 0;
+        public int maxBounces = 0;
 
-    [Tooltip("in seconds")]
-    public float lifetime = 10f;
+        [Tooltip("in seconds")]
+        public float lifetime = 10f;
 
+    }
 }

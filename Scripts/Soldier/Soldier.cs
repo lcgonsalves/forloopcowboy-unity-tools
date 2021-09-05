@@ -1,16 +1,20 @@
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
-[CreateAssetMenu]
-public class Soldier : ScriptableObject
+namespace forloopcowboy_unity_tools.Scripts.Soldier
 {
-    public GameObject prefab;
+    [CreateAssetMenu]
+    public class Soldier : ScriptableObject
+    {
+        public GameObject prefab;
 
-    public Weapon weapon;
+        public Weapon.Weapon weapon;
 
-    public float visibilityRange = 10f;
+        public float visibilityRange = 10f;
 
-    // how many seconds does it take to aim
-    public Transition easeToAimTransition;
-    public Transition aimToEaseTransition;
+        // how many seconds does it take to aim
+        public Transition easeToAimTransition;
+        public Transition aimToEaseTransition;
 
+    }
 }

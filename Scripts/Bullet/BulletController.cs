@@ -1,75 +1,77 @@
 using System.Collections;
-using System.Collections.Generic;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
-using ForLoopCowboyCommons.EditorHelpers;
 
-public class BulletController : MonoBehaviour
+namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
-    public Bullet Settings;
-
-    public Rigidbody rb;
-
-    // start @ -1 because it fucking bounces the character's hand first
-    int bouncesSoFar = -1;
-
-    public virtual void ResetBullet()
+    public class BulletController : MonoBehaviour
     {
-        bouncesSoFar = -1;
-        rb.velocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-    }
+        public Bullet Settings;
 
-    private void OnEnable() {
-        if (!GetComponentInChildren<Collider>()) Debug.LogError("Bullet must have a collider");
-        rb = gameObject.GetOrElseAddComponent<Rigidbody>();
-    }
+        public Rigidbody rb;
 
-    public void Fire(Vector3 direction)
-    {
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        rb.AddForce(direction.normalized * Settings.muzzleVelocity, ForceMode.VelocityChange);
-    }
+        // start @ -1 because it fucking bounces the character's hand first
+        int bouncesSoFar = -1;
 
-    private void OnCollisionEnter(Collision other) {
-        bouncesSoFar++;
-
-        if (bouncesSoFar == 0) OnFirstImpact(other);
-
-        // enough bounces, disable object
-        if (bouncesSoFar >= Settings?.maxBounces) OnFinalImpact(other);
-        else OnImpact(other); // on impact is called only while bounces is < max 
-    }
-
-    private Coroutine killSequence = null;
-
-    // Initiates kill sequence if one has not been initiated. Does not override. CancelKillSequence() first.
-    public void InitiateKillSequence(float delayInSeconds)
-    {
-        if (killSequence == null && gameObject.activeSelf)
+        public virtual void ResetBullet()
         {
-            killSequence = StartCoroutine(KillIn(delayInSeconds));
+            bouncesSoFar = -1;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         }
-    }
 
-    // Stops coroutine if one has been started.
-    public void CancelKillSequence()
-    {
-        if (killSequence != null)
+        private void OnEnable() {
+            if (!GetComponentInChildren<Collider>()) Debug.LogError("Bullet must have a collider");
+            rb = gameObject.GetOrElseAddComponent<Rigidbody>();
+        }
+
+        public void Fire(Vector3 direction)
         {
-            StopCoroutine(killSequence);
-            killSequence = null;
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.AddForce(direction.normalized * Settings.muzzleVelocity, ForceMode.VelocityChange);
         }
+
+        private void OnCollisionEnter(Collision other) {
+            bouncesSoFar++;
+
+            if (bouncesSoFar == 0) OnFirstImpact(other);
+
+            // enough bounces, disable object
+            if (bouncesSoFar >= Settings?.maxBounces) OnFinalImpact(other);
+            else OnImpact(other); // on impact is called only while bounces is < max 
+        }
+
+        private Coroutine killSequence = null;
+
+        // Initiates kill sequence if one has not been initiated. Does not override. CancelKillSequence() first.
+        public void InitiateKillSequence(float delayInSeconds)
+        {
+            if (killSequence == null && gameObject.activeSelf)
+            {
+                killSequence = StartCoroutine(KillIn(delayInSeconds));
+            }
+        }
+
+        // Stops coroutine if one has been started.
+        public void CancelKillSequence()
+        {
+            if (killSequence != null)
+            {
+                StopCoroutine(killSequence);
+                killSequence = null;
+            }
+        }
+
+        private IEnumerator KillIn(float delayInSeconds)
+        {
+            yield return new WaitForSeconds(delayInSeconds);
+            gameObject.SetActive(false);
+        }
+
+        protected virtual void OnFirstImpact(Collision other){}
+        protected virtual void OnImpact(Collision other){}
+        protected virtual void OnFinalImpact(Collision other){}
+
     }
-
-    private IEnumerator KillIn(float delayInSeconds)
-    {
-        yield return new WaitForSeconds(delayInSeconds);
-        gameObject.SetActive(false);
-    }
-
-    protected virtual void OnFirstImpact(Collision other){}
-    protected virtual void OnImpact(Collision other){}
-    protected virtual void OnFinalImpact(Collision other){}
-
 }

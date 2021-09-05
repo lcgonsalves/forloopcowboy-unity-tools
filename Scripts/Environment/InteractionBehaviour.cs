@@ -1,48 +1,51 @@
-using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class InteractionBehaviour : MonoBehaviour
+namespace forloopcowboy_unity_tools.Scripts.Environment
 {
-    // inputs
+    public class InteractionBehaviour : MonoBehaviour
+    {
+        // inputs
 
-   public LayerMask interactLayer;
+        public LayerMask interactLayer;
 
-   public float interactDistance;
+        public float interactDistance;
 
-    // cached references
-    PlayerControls controls;
+        // cached references
+        PlayerControls controls;
 
-    Camera mainCamera;
+        Camera mainCamera;
 
-    private void OnEnable() {
+        private void OnEnable() {
         
-        controls = new PlayerControls();
+            controls = new PlayerControls();
 
-        controls.Default.Interact.Enable();
-        controls.Default.Interact.performed += TryInteraction;
-
-    }
-
-    private void Start() {
-        mainCamera = Camera.main;
-    }
-
-    private void TryInteraction(InputAction.CallbackContext ctx) {
-
-        RaycastHit hit;
-        Ray rayFromCenterOfScreen = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
-
-        // raycast outwards from screen
-        if (Physics.Raycast(rayFromCenterOfScreen, out hit, interactDistance, interactLayer)) {
-
-            hit.transform.gameObject.GetComponent<InteractableObject>()?.Interact();
+            controls.Default.Interact.Enable();
+            controls.Default.Interact.performed += TryInteraction;
 
         }
 
-    }
+        private void Start() {
+            mainCamera = Camera.main;
+        }
 
-    private void OnGUI() {
+        private void TryInteraction(InputAction.CallbackContext ctx) {
+
+            RaycastHit hit;
+            Ray rayFromCenterOfScreen = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
+
+            // raycast outwards from screen
+            if (Physics.Raycast(rayFromCenterOfScreen, out hit, interactDistance, interactLayer)) {
+
+                hit.transform.gameObject.GetComponent<InteractableObject>()?.Interact();
+
+            }
+
+        }
+
+        private void OnGUI() {
         
-    }
+        }
 
+    }
 }

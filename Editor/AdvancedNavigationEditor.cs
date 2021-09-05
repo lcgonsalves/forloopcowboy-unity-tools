@@ -1,11 +1,11 @@
 using System;
-using ForLoopCowboyCommons.EditorHelpers;
-using ForLoopCowboyCommons.Environment;
+using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.Environment;
+using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEditor;
 using UnityEngine;
-using UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier;
 
-namespace ForLoopCowboyCommons.Editor
+namespace forloopcowboy_unity_tools.Editor
 {
     [CustomEditor(typeof(AdvancedNavigation))]
     public class AdvancedNavigationEditor : UnityEditor.Editor

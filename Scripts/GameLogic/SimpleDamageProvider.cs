@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Damage
+namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
     /// Damage providers are tagged with "IDamaging" in the game
     public class SimpleDamageProvider : MonoBehaviour, IDamaging

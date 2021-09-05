@@ -1,8 +1,8 @@
 using System;
-using ForLoopCowboyCommons.EditorHelpers;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Damage
+namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
     public class HealthComponent : MonoBehaviour, IHasHealth
     {

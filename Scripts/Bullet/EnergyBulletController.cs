@@ -1,68 +1,69 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class EnergyBulletController : BulletController
+namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
-
-    public bool dieOnImpact = true;
-
-    public override void ResetBullet()
+    public class EnergyBulletController : BulletController
     {
-        base.ResetBullet();
 
-        // Disable main particle system emission (it glows)
-        var ps = GetComponent<ParticleSystem>();
-        var emission = ps.emission;
-        emission.enabled = true;
+        public bool dieOnImpact = true;
 
-        // Disable all children except named "dead-spell" or "impact"
-        for (int i = 0; i < transform.childCount; i++)
+        public override void ResetBullet()
         {
-            var c = transform.GetChild(i);
-            c.gameObject.SetActive(c.name != "dead-spell");
-        }
-    }
+            base.ResetBullet();
 
-    // Spawn an explosion and kill spell. Initiate kill sequence.
-    protected override void OnFirstImpact(Collision other)
-    {
-        if (!dieOnImpact) return;
-    }
+            // Disable main particle system emission (it glows)
+            var ps = GetComponent<ParticleSystem>();
+            var emission = ps.emission;
+            emission.enabled = true;
 
-    protected override void OnImpact(Collision other)
-    {
-        if (!dieOnImpact) return;
-
-        if (Settings.onImpact)
-        {
-            var impactExplosion = Instantiate(Settings.onImpact, other.contacts[0].point, Quaternion.identity);
-            Destroy(impactExplosion, 3f);
+            // Disable all children except named "dead-spell" or "impact"
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var c = transform.GetChild(i);
+                c.gameObject.SetActive(c.name != "dead-spell");
+            }
         }
 
-        // Disable main particle system emission (it glows)
-        var ps = GetComponent<ParticleSystem>();
-        var emission = ps.emission;
-        emission.enabled = false;
-
-        // Disable all children except named "dead-spell" or "impact"
-        for (int i = 0; i < transform.childCount; i++)
+        // Spawn an explosion and kill spell. Initiate kill sequence.
+        protected override void OnFirstImpact(Collision other)
         {
-            var c = transform.GetChild(i);
-            c.gameObject.SetActive(c.name == "dead-spell");
+            if (!dieOnImpact) return;
         }
 
-        // reset kill sequence (we don't know which impact will be the last)
-        CancelKillSequence();
-        InitiateKillSequence(Settings.lifetime);
+        protected override void OnImpact(Collision other)
+        {
+            if (!dieOnImpact) return;
+
+            if (Settings.onImpact)
+            {
+                var impactExplosion = Instantiate(Settings.onImpact, other.contacts[0].point, Quaternion.identity);
+                Destroy(impactExplosion, 3f);
+            }
+
+            // Disable main particle system emission (it glows)
+            var ps = GetComponent<ParticleSystem>();
+            var emission = ps.emission;
+            emission.enabled = false;
+
+            // Disable all children except named "dead-spell" or "impact"
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var c = transform.GetChild(i);
+                c.gameObject.SetActive(c.name == "dead-spell");
+            }
+
+            // reset kill sequence (we don't know which impact will be the last)
+            CancelKillSequence();
+            InitiateKillSequence(Settings.lifetime);
+
+        }
+
+        protected override void OnFinalImpact(Collision other)
+        {
+            if (!dieOnImpact) return;
+
+            InitiateKillSequence(Settings.lifetime);
+        }
 
     }
-
-    protected override void OnFinalImpact(Collision other)
-    {
-        if (!dieOnImpact) return;
-
-        InitiateKillSequence(Settings.lifetime);
-    }
-
 }

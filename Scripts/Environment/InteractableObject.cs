@@ -1,15 +1,18 @@
 using UnityEngine;
 
-public class InteractableObject : MonoBehaviour
+namespace forloopcowboy_unity_tools.Scripts.Environment
 {
+    public class InteractableObject : MonoBehaviour
+    {
 
-    public void Interact() {
+        public void Interact() {
         
-        var animator = GetComponent<Animator>();
-        var currentAnimatorState = animator?.GetBool("open") ?? false;
+            var animator = GetComponent<Animator>();
+            var currentAnimatorState = animator?.GetBool("open") ?? false;
 
-        animator?.SetBool("open", !currentAnimatorState);
+            animator?.SetBool("open", !currentAnimatorState);
 
-    } 
+        } 
 
+    }
 }

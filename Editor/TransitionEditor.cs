@@ -1,36 +1,40 @@
-using UnityEngine;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEditor;
+using UnityEngine;
 
-[CustomEditor(typeof(Transition))]
-public class TransitionEditor : Editor
+namespace forloopcowboy_unity_tools.Editor
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(Transition))]
+    public class TransitionEditor : UnityEditor.Editor
     {
+        public override void OnInspectorGUI()
+        {
 
-        EditorUtility.SetDirty(target);
+            EditorUtility.SetDirty(target);
 
-        EditorGUILayout.Space(1);
-        Transition t = (Transition) target;
+            EditorGUILayout.Space(1);
+            Transition t = (Transition) target;
 
-        if (t.transition == null) t.transition = new AnimationCurve();
+            if (t.transition == null) t.transition = new AnimationCurve();
 
-        EditorGUILayout.LabelField("Transition Properties", EditorStyles.boldLabel);
-        EditorGUILayout.Space(1);
+            EditorGUILayout.LabelField("Transition Properties", EditorStyles.boldLabel);
+            EditorGUILayout.Space(1);
 
-        GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Duration");
             t.duration = EditorGUILayout.Slider(t.duration, 0.01f, 10f);
-        GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();
 
-        GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Amplitude (max value)");
             t.amplitude = EditorGUILayout.Slider(t.amplitude, 0.01f, 10f);
-        GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();
 
-        t.transition = EditorGUILayout.CurveField(t.transition, Color.green, new Rect(0,0, 1, t.amplitude));
+            t.transition = EditorGUILayout.CurveField(t.transition, Color.green, new Rect(0,0, 1, t.amplitude));
 
-        EditorGUILayout.Space(1);
+            EditorGUILayout.Space(1);
 
 
+        }
     }
 }

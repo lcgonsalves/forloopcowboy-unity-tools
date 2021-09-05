@@ -1,7 +1,6 @@
-using System;
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Environment
+namespace forloopcowboy_unity_tools.Scripts.Environment
 {
     public class WaypointNode : MonoBehaviour
     {

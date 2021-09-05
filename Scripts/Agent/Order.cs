@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using Object = UnityEngine.Object;
 
-namespace ForLoopCowboyCommons.Agent
+namespace forloopcowboy_unity_tools.Scripts.Agent
 {
     [Serializable]
     public class Order : IComparable

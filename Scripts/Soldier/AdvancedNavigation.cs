@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using ForLoopCowboyCommons.EditorHelpers;
-using ForLoopCowboyCommons.Environment;
+using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.Environment;
 using JetBrains.Annotations;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace UnityTemplateProjects.forloopcowboy_unity_tools.Scripts.Soldier
+namespace forloopcowboy_unity_tools.Scripts.Soldier
 {
     /// <summary>
     /// Component that exposes methods for navigating using waypoints.

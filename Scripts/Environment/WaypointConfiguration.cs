@@ -1,7 +1,7 @@
-using ForLoopCowboyCommons.EditorHelpers;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Environment
+namespace forloopcowboy_unity_tools.Scripts.Environment
 {
     [CreateAssetMenu(fileName = "New Waypoint Configuration", menuName = "Waypoint Config", order = 0)]
     public class WaypointConfiguration : ScriptableObject, IHasLayer

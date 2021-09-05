@@ -1,7 +1,7 @@
 using System;
 using UnityEngine.Assertions;
- 
-namespace Gemini
+
+namespace forloopcowboy_unity_tools.Scripts.Core
 {
     public sealed class IndexedPriorityQueue<T> where T : IComparable
     {

@@ -1,8 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Chronos
+namespace forloopcowboy_unity_tools.Scripts.Chronos
 {
 
     public class Chronos : MonoBehaviour

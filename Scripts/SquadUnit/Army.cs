@@ -1,13 +1,16 @@
-using ForLoopCowboyCommons.EditorHelpers;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
-[CreateAssetMenu]
-public class Army : ScriptableObject, IHasLayer
+namespace forloopcowboy_unity_tools.Scripts.SquadUnit
 {
-    public string key = "Untitled Army";
+    [CreateAssetMenu]
+    public class Army : ScriptableObject, IHasLayer
+    {
+        public string key = "Untitled Army";
 
-    [SerializeField] private LayerHelper layerConfiguration = new LayerHelper("Everything");
+        [SerializeField] private LayerHelper layerConfiguration = new LayerHelper("Everything");
     
-    public int Layer => layerConfiguration.Layer;
-    public LayerMask LayerMask => layerConfiguration.LayerMask;
+        public int Layer => layerConfiguration.Layer;
+        public LayerMask LayerMask => layerConfiguration.LayerMask;
+    }
 }

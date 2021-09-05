@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using ForLoopCowboyCommons.EditorHelpers;
 
-namespace ForLoopCowboyCommons.Damage
+namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
     public interface IDamaging
     {

@@ -1,10 +1,10 @@
 using System;
-using ForLoopCowboyCommons.Agent.CustomOrders;
-using ForLoopCowboyCommons.EditorHelpers;
+using forloopcowboy_unity_tools.Scripts.Agent.CustomOrders;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEditor;
 using UnityEngine;
 
-namespace ForLoopCowboyCommons.Editor
+namespace forloopcowboy_unity_tools.Editor
 {
     [CustomPropertyDrawer(typeof(SoldierControlStep))]
     public class SoldierOrderPropertyDrawer : PropertyDrawer

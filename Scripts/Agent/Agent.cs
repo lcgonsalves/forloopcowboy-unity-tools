@@ -1,15 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using ForLoopCowboyCommons.Agent;
-using ForLoopCowboyCommons.EditorHelpers;
-using Gemini;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
-using UnityEditor.Animations;
-using UnityEditor;
-using UnityEngine.Events;
 
-namespace ForLoopCowboyCommons.Agent
+namespace forloopcowboy_unity_tools.Scripts.Agent
 {
     
     /// <summary>

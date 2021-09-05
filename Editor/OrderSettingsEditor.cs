@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using ForLoopCowboyCommons.Agent;
-using ForLoopCowboyCommons.Agent.CustomOrders;
+using forloopcowboy_unity_tools.Scripts.Agent;
+using forloopcowboy_unity_tools.Scripts.Agent.CustomOrders;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-namespace ForLoopCowboyCommons.Editor
+namespace forloopcowboy_unity_tools.Editor
 {
     [CustomEditor(typeof(OrderSettings))]
     public class OrderSettingsEditor : UnityEditor.Editor

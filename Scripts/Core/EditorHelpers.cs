@@ -1,5 +1,3 @@
-using UnityEditor;
-using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,8 +6,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
+using UnityEditor;
+using UnityEngine;
 
-namespace ForLoopCowboyCommons.EditorHelpers
+namespace forloopcowboy_unity_tools.Scripts.Core
 {
 
     public class ReadOnlyAttribute : PropertyAttribute { }

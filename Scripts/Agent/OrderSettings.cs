@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using ForLoopCowboyCommons.Agent.CustomOrders;
-using Gemini;
-using JetBrains.Annotations;
+using forloopcowboy_unity_tools.Scripts.Agent.CustomOrders;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace ForLoopCowboyCommons.Agent
+namespace forloopcowboy_unity_tools.Scripts.Agent
 {
     // todo: implement ICollection
     [CreateAssetMenu(fileName = "Untitled Order Settings", menuName = "Order", order = 0), Serializable]
