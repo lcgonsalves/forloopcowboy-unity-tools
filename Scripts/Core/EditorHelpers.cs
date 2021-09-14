@@ -241,6 +241,22 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         }
     }
     
+    [Serializable]
+    public struct IKSettings
+    {
+        public AvatarIKGoal limb;
+        public Transform target;
+        public IKWeightSettings<Vector3> translation;
+        public IKWeightSettings<Vector3> rotation;
+    }
+
+    [Serializable]
+    public struct IKWeightSettings<T>
+    {
+        public T value;
+        [Range(0f, 1f)] public float weight;
+    }
+    
     public static class EnumUtil {
         public static IEnumerable<T> GetValues<T>() {
             return (T[])Enum.GetValues(typeof(T));
@@ -307,24 +323,25 @@ namespace forloopcowboy_unity_tools.Scripts.Core
     public sealed class Right<T> : Side<T> { public T content { get; } public Right(T content) { this.content = content; } }
 
     [Serializable]
-    public class LayerHelper : IHasLayer
+    public class LayerHelper
     {
-        [SerializeField]
-        private string layerName;
+        
+        public LayerHelper() { }
 
-        public LayerHelper(string layerName)
+        public int Layer(string layerName)
         {
-            this.layerName = layerName;
+            return LayerMask.NameToLayer(layerName);
         }
 
-        public int Layer { get => LayerMask.NameToLayer(layerName); }
-
-        public LayerMask LayerMask { get => 1 << Layer; }
+        public LayerMask LayerMaskFor(string layerName) { return 1 << Layer(layerName); }
+        public LayerMask LayerMaskFor(int layer) { return 1 << layer; }
         
     }
 
     public interface IHasLayer
     {
+        string LayerName { get; }
+        
         int Layer { get; }
         LayerMask LayerMask { get; }
         

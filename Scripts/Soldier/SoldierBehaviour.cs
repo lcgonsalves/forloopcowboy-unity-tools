@@ -13,7 +13,7 @@ using UnityEngine.AI;
 namespace forloopcowboy_unity_tools.Scripts.Soldier
 {
     [RequireComponent(typeof(HealthComponent))]
-    [RequireComponent(typeof(SoldierAimComponent))]
+    [RequireComponent(typeof(AimComponent))]
     [RequireComponent(typeof(AdvancedNavigation))]
 // Exposes public methods to control the behavior of a soldier
     public class SoldierBehaviour : MonoBehaviour
@@ -81,7 +81,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         private GameObject weaponRef;
         private LayerMask enemyLayerMask = 0;
         public WeaponController weaponController { get; private set; }
-        public SoldierAimComponent aim { get; private set; }
+        public AimComponent aim { get; private set; }
         public SoldierBehaviourStateManager stateManager { get; private set; }
         public HealthComponent health { get; private set; }
 
@@ -128,7 +128,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             health = GetComponent<HealthComponent>();
 
             // cache or create aim component
-            aim = GetComponent<SoldierAimComponent>();
+            aim = GetComponent<AimComponent>();
         
             // make sure references are consistent
             aim.soldierSettings = identity;
@@ -136,7 +136,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             aim.aimAnimationLayerName = "Aiming";
 
             // pass weapon reference to aim component
-            aim.weaponTransform = weaponRef.transform;
+            aim.weapon = weaponRef.GetComponent<WeaponController>();
 
             // begin with ragdoll disabled
             foreach (var rb in rigidbodies)
@@ -312,14 +312,14 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
             // stop crouching
             stateManager.SetCrouch(false);
-            aim.WeaponDown(() => { if (!navMeshAgent.enabled) { navMeshAgent.enabled = true; } navMeshAgent.SetDestination(position); navMeshAgent.isStopped = false; });
+            // aim.DeeprecatedWeaponDown(() => { if (!navMeshAgent.enabled) { navMeshAgent.enabled = true; } navMeshAgent.SetDestination(position); navMeshAgent.isStopped = false; });
         }
 
         public void StopWalkingAndScan()
         {
-            if (navMeshAgent.enabled) aim.WeaponDown(() => {
-                navMeshAgent.enabled = false;
-            });
+            // if (navMeshAgent.enabled) aim.DeeprecatedWeaponDown(() => {
+            //     navMeshAgent.enabled = false;
+            // });
 
         }
 

@@ -6,9 +6,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
     [CreateAssetMenu]
     public class Soldier : ScriptableObject
     {
-        public GameObject prefab;
-
-        public Weapon.Weapon weapon;
+        public Weapon.Weapon startingWeapon;
 
         public float visibilityRange = 10f;
 

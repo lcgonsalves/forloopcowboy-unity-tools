@@ -108,7 +108,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             
             var correctedDirection = Quaternion.AngleAxis(throwAngle, Vector3.left) * (projectedPoint - castPoint).normalized;
 
-            var b = BulletSystem.SpawnAndFire(bullet, castPoint, correctedDirection);
+            var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection);
             b.rb.AddTorque(5f, 3f, 0f);
 
             if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))

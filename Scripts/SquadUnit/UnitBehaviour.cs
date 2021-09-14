@@ -19,12 +19,9 @@ namespace forloopcowboy_unity_tools.Scripts.SquadUnit
 
         public List<Army> enemies = new List<Army>(1);
 
-        // controls
-
-        private Controls controls;
-
         // debug
         public InputActionReference debugAction;
+        public InputActionReference cursor;
 
         // internal state
 
@@ -43,10 +40,8 @@ namespace forloopcowboy_unity_tools.Scripts.SquadUnit
 
             if (armyAssociation && enemies.Contains(armyAssociation)) Debug.LogWarning("Enemies includes self. This might result in unexpected behaviour.");
 
-            controls = new Controls();
-
-            controls.Default.Cursor.Enable();
-            controls.Default.Cursor.performed += ctx => cursorPosition = ctx.ReadValue<Vector2>();
+            cursor.action.Enable();
+            cursor.action.performed += ctx => cursorPosition = ctx.ReadValue<Vector2>();
 
         }
 
@@ -67,24 +62,26 @@ namespace forloopcowboy_unity_tools.Scripts.SquadUnit
             foreach (var unit in units)
             {
 
-                Vector3 position = transform.TransformPoint(new Vector3(offset, 0, 0));
-                var obj = Instantiate(unit.prefab, position, Quaternion.identity);
-                var component = obj.GetComponent<SoldierBehaviour>();
-
-                // give weapon
-                component.weapon = unit.weapon;
-
-                // set identity
-                component.identity = unit;
-
-                // set army association
-                component.armyAssociation = armyAssociation;
-
-                // set enemies
-                component.enemies = enemies;
-
-                if (component != null) living.Add(component); else Debug.LogError("Unit " + unit.name + "doesn't have a soldier behaviour attached.");
-                offset += spacing;
+                // todo: fix
+                
+                // Vector3 position = transform.TransformPoint(new Vector3(offset, 0, 0));
+                // var obj = Instantiate(unit.prefab, position, Quaternion.identity);
+                // var component = obj.GetComponent<SoldierBehaviour>();
+                //
+                // // give weapon
+                // component.weapon = unit.startingWeapon;
+                //
+                // // set identity
+                // component.identity = unit;
+                //
+                // // set army association
+                // component.armyAssociation = armyAssociation;
+                //
+                // // set enemies
+                // component.enemies = enemies;
+                //
+                // if (component != null) living.Add(component); else Debug.LogError("Unit " + unit.name + "doesn't have a soldier behaviour attached.");
+                // offset += spacing;
             }
 
         }

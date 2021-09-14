@@ -192,7 +192,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
             // track enemy and periodically shoot at it (in bursts, when i get this shit to work)
             if (targetSoldier != null && visibleTarget != null && targetSoldier.Health > 0) {
-                soldier.aim.Aim(visibleTarget.position, () => soldier.weaponController.OpenFire(true));
+                // soldier.aim.DeprecatedAim(visibleTarget.position, () => soldier.weaponController.OpenFire(true));
             } else soldier.weaponController.CeaseFire();
 
         }

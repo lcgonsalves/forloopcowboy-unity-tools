@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Weapon
@@ -16,15 +17,19 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
         public Bullet.Bullet ammo;
 
+        [Obsolete]
         public static Transform GrabPointA(GameObject obj)
         {
             return obj.transform.Find("GrabPointA");
         }
+        
+        [Obsolete]
         public static Transform GrabPointB(GameObject obj)
         {
             return obj.transform.Find("GrabPointB");
         }
 
+        [Obsolete]
         public static Transform MuzzlePosition(GameObject obj)
         {
             return obj.transform.Find("Muzzle");

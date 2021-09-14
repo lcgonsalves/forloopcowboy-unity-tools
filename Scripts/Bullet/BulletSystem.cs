@@ -17,7 +17,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 
         public List<Bullet> bullets = new List<Bullet>();
 
-        private static Dictionary<int, Queue<BulletController>> queueDictionary = new Dictionary<int, Queue<BulletController>>();
+        private Dictionary<int, Queue<BulletController>> queueDictionary = new Dictionary<int, Queue<BulletController>>();
 
         private void OnEnable() {
 
@@ -29,7 +29,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 
         }
 
-        public static BulletController Spawn(Bullet bulletAsset, Vector3 position, Vector3 direction)
+        public BulletController Spawn(Bullet bulletAsset, Vector3 position, Vector3 direction)
         {
         
             if (!queueDictionary.ContainsKey(bulletAsset.GetHashCode())) queueDictionary.Add(bulletAsset.GetHashCode(), new Queue<BulletController>());
@@ -63,7 +63,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         }
 
         // Either spawns or repossesses a bullet
-        public static BulletController SpawnAndFire(Bullet bulletAsset, Vector3 position, Vector3 direction) {
+        public BulletController SpawnAndFire(Bullet bulletAsset, Vector3 position, Vector3 direction) {
 
             if (!queueDictionary.ContainsKey(bulletAsset.GetHashCode())) queueDictionary.Add(bulletAsset.GetHashCode(), new Queue<BulletController>());
         

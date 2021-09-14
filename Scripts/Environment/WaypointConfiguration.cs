@@ -1,5 +1,6 @@
 using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment
 {
@@ -8,11 +9,12 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
     {
         private static readonly string lm = "Waypoint";
         
-        [ReadOnly, SerializeField] private string layerMask = lm;
+        [FormerlySerializedAs("layerMask")] [SerializeField] private string layerName = lm;
         
-        private LayerHelper lh = new LayerHelper(lm);
-        
-        public int Layer => lh.Layer;
-        public LayerMask LayerMask => lh.LayerMask;
+        private LayerHelper lh = new LayerHelper();
+
+        public string LayerName => layerName;
+        public int Layer => lh.Layer(LayerName);
+        public LayerMask LayerMask => lh.LayerMaskFor(Layer);
     }
 }

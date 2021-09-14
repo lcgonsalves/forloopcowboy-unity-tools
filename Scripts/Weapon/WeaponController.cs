@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using UnityEngine;
@@ -8,6 +9,7 @@ using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Weapon
 {
+    [RequireComponent(typeof(BulletSystem)), SelectionBase]
     public class WeaponController : MonoBehaviour
     {
         public Weapon weaponSettings;
@@ -47,9 +49,9 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         private Coroutine firingCoroutine;
         private Coroutine burstCoroutine;
 
-        private ParticleSystem bulletEmitter;
-
         public List<ParticleSystem> peripheralEmitters = new List<ParticleSystem>();
+
+        private BulletSystem _bulletSystem;
 
         void Start()
         {
@@ -59,23 +61,14 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             // cache gameobject
             muzzle = Weapon.MuzzlePosition(gameObject);
 
-            // cache emitter
-            bulletEmitter = GetComponentInChildren<ParticleSystem>();
-            if (!bulletEmitter) {
-                bulletEmitter = gameObject.AddComponent<ParticleSystem>();
-                Debug.LogError("Gun must have a particle system in the hierarchy.");
-            }
-
-            // attach damage component to emitter
-            var dmgProvider = bulletEmitter.gameObject.AddComponent<SimpleDamageProvider>();
-            dmgProvider.min = weaponSettings.minimumDamage;
-            dmgProvider.max = weaponSettings.maximumDamage;
-
             // begin firing coroutine
             firingCoroutine = StartCoroutine(FiringCoroutine());
         
             // begin burst managment coroutine
             burstCoroutine = StartCoroutine(BurstCoroutine());
+            
+            // cache bullet system
+            _bulletSystem = GetComponent<BulletSystem>();
 
         }
 
@@ -86,10 +79,10 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             {
                 while (shouldFire && isFiring && bulletsInClip > 0)
                 {
-                    bulletEmitter.Emit(1);
+                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzle.position, muzzle.forward);
+
                     foreach (var emitter in peripheralEmitters)
                     {
-                        // todo: use bullet system here instead
                         emitter.Emit(1);
                     }
 

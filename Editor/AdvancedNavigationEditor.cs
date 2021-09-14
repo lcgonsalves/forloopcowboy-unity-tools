@@ -107,7 +107,7 @@ namespace forloopcowboy_unity_tools.Editor
             // for exposing movement
             void FollowWaypointAndDisplayNotification()
             {
-                navigation.FollowWaypoint(forcedTarget, speed, () =>
+                navigation.FollowWaypointUntil(forcedTarget, speed, depth, () =>
                 {
                     showTerminationMessage = true;
                     navigation.RunAsyncWithDelay(2f, () => showTerminationMessage = false);
@@ -150,6 +150,14 @@ namespace forloopcowboy_unity_tools.Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("waypointReachedRadius"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("maxSpeed"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("maxAngularSpeed"));
+
+            
+            EditorGUILayout.Space(15);
+            
+            GUILayout.Label("Animator Settings", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("animatorUpdateSettings.enabled"), new GUIContent("Update animator state?"));
+            GUI.enabled = navigation.animatorUpdateSettings.enabled;
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("animatorUpdateSettings.updateVelocity"));
             EditorGUILayout.EndVertical();
 
             serializedObject.ApplyModifiedProperties();

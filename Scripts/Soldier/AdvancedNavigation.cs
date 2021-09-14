@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Environment;
 using JetBrains.Annotations;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -126,6 +127,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         private void OnEnable()
         {
             _navMeshAgent = this.GetOrElseAddComponent<NavMeshAgent>();
+            _animator = this.GetComponent<Animator>();
         }
 
         public WaypointNode[] GetNearbyWaypointNodes(float maxDistance, float maxHeight, int maxNumNodes)
@@ -373,5 +375,36 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             state = null;
         }
         
+        // Feature: Navigation updates animator
+
+        [Serializable]
+        public class AnimatorUpdateSettings
+        {
+            public bool enabled;
+            
+            [Tooltip("When true, will update the animator with \"Velocity\" float parameter, normalized.")]
+            public bool updateVelocity;
+            
+        }
+
+        [SerializeField]
+        public AnimatorUpdateSettings animatorUpdateSettings;
+        private Animator _animator;
+
+        private void Update()
+        {
+            if (animatorUpdateSettings.enabled)
+            {
+                if (!_animator)
+                {
+                    Debug.LogError("Cannot update animator state with no animator.");
+                    return;
+                }
+                
+                if (animatorUpdateSettings.updateVelocity)
+                    _animator.SetFloat("Velocity", _navMeshAgent.velocity.magnitude / maxSpeed);
+                
+            }
+        }
     }
 }

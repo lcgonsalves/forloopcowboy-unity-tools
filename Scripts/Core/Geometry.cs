@@ -70,6 +70,12 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             return angle;
         }
 
+        public struct Transformation
+        {
+            public Quaternion quaternion;
+            public Vector3 vector3;
+        }
+        
     }
 
 }
