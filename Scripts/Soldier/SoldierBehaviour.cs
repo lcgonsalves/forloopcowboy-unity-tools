@@ -21,7 +21,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         // Inputs
 
         [SerializeField]
-        public Soldier identity;
+        public PlaceableUnit identity;
 
         [SerializeField]
         private Army _armyAssociation;
@@ -129,11 +129,6 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
             // cache or create aim component
             aim = GetComponent<AimComponent>();
-        
-            // make sure references are consistent
-            aim.soldierSettings = identity;
-            aim.eyeLevel = headReference;
-            aim.aimAnimationLayerName = "Aiming";
 
             // pass weapon reference to aim component
             aim.weapon = weaponRef.GetComponent<WeaponController>();
@@ -333,7 +328,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         private Coroutine snappingCoroutineInstance;
 
-        // snaps using default transition, DISABLES NAVIGATION
+        // snaps using default tweenTransition, DISABLES NAVIGATION
         public void SnapTo(Vector3 position) { SnapTo(position, Transition.Linear); }
         public void SnapTo(Vector3 position, Transition transition)
         {
@@ -396,7 +391,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             {
 
                 // sphere check around soldier, filter for all targets not of the same army association
-                var numColliders = Physics.OverlapSphereNonAlloc(transform.position, identity.visibilityRange, detected, enemyLayerMask);
+                var numColliders = Physics.OverlapSphereNonAlloc(transform.position, /*identity.visibilityRange*/ 10f, detected, enemyLayerMask);
                 for (int i = 0; i < numColliders; i++)
                 {
                     var enemySoldierCollider = detected[i];
@@ -441,7 +436,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         {
 
             Gizmos.color = Color.cyan;
-            Gizmos.DrawWireSphere(transform.position, identity.visibilityRange);
+            Gizmos.DrawWireSphere(transform.position, /*identity.visibilityRange*/ 10f);
 
             Gizmos.color = Color.green;
             // draw all colliders detected in spotting coroutine

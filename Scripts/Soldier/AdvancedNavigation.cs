@@ -26,7 +26,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         [SerializeField, ReadOnly] private WaypointNode _lastVisited = null;
         [SerializeField, ReadOnly] private WaypointNode _lastWaypointPathStart = null;
         [SerializeField, ReadOnly] private List<WaypointNode> _lastWaypointPath = new List<WaypointNode>(15);
-        
+
         /// <summary>
         /// Points to the last visited <c>WaypointNode</c>, or null if no
         /// nodes have been visited yet.
@@ -199,6 +199,15 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 state = null;
                 onFinish();
             });
+        }
+
+        /// <summary>
+        /// Follows waypoint at default speed and does nothing when it ends.
+        /// </summary>
+        /// <param name="w"></param>
+        public void FollowWaypoint(WaypointNode w)
+        {
+            FollowWaypoint(w, 1.5f, () => { });
         }
         
         /// <summary>

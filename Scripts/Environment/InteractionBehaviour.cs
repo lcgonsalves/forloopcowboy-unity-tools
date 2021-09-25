@@ -11,17 +11,14 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
         public float interactDistance;
 
-        // cached references
-        PlayerControls controls;
+        public InputActionReference interact;
 
         Camera mainCamera;
 
         private void OnEnable() {
-        
-            controls = new PlayerControls();
 
-            controls.Default.Interact.Enable();
-            controls.Default.Interact.performed += TryInteraction;
+            interact.action.Enable();
+            interact.action.performed += TryInteraction;
 
         }
 
@@ -41,10 +38,6 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
             }
 
-        }
-
-        private void OnGUI() {
-        
         }
 
     }

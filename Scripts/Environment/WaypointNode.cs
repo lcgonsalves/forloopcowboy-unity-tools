@@ -1,4 +1,5 @@
 using forloopcowboy_unity_tools.Scripts.Core;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment
@@ -21,12 +22,35 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
                 return true;
             }
         }
+        
+        /// <param name="newNext"></param>
+        /// <returns>The former next waypoint if one existed.</returns>
+        [CanBeNull]
+        public WaypointNode SetNext(WaypointNode newNext)
+        {
+            var former = next;
+            next = newNext;
+            return former;
+        }
 
+        public WaypointNode GetEnd()
+        {
+            var temp = next;
+            while (temp.HasNext)
+            {
+                temp = temp.next;
+            }
+
+            return temp;
+        }
+        
+        
         public bool HasNext => TryGetNext(out _);
 
         private void OnEnable()
         {
-            gameObject.layer = configuration.Layer;
+            if (configuration)
+                gameObject.layer = configuration.Layer;
         }
 
         private void OnDrawGizmos()

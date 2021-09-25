@@ -240,21 +240,39 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             return Regex.Replace(s, @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1");
         }
     }
+
+    public interface IKSettings
+    {
+        public AvatarIKGoal limb { get; }
+        public Transform target { get; }
+        public IKWeightSettings<Vector3> translation { get; }
+        public IKWeightSettings<Vector3> rotation { get; }
+    }
     
     [Serializable]
-    public struct IKSettings
+    public class SimpleIKSettings : IKSettings
     {
-        public AvatarIKGoal limb;
-        public Transform target;
-        public IKWeightSettings<Vector3> translation;
-        public IKWeightSettings<Vector3> rotation;
+        public AvatarIKGoal _limb;
+        public Transform _target;
+        public IKWeightSettings<Vector3> _translation;
+        public IKWeightSettings<Vector3> _rotation;
+
+        public AvatarIKGoal limb => _limb;
+        public Transform target => _target;
+        public IKWeightSettings<Vector3> translation => _translation;
+        public IKWeightSettings<Vector3> rotation => _rotation;
     }
 
     [Serializable]
-    public struct IKWeightSettings<T>
+    public class IKWeightSettings<T>
     {
         public T value;
-        [Range(0f, 1f)] public float weight;
+        [Range(0f, 1f)] public float weight = 0f;
+
+        public void SetWeight(float newWeight)
+        {
+            weight = newWeight;
+        }
     }
     
     public static class EnumUtil {

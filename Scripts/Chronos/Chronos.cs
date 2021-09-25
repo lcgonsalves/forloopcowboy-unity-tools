@@ -7,10 +7,10 @@ namespace forloopcowboy_unity_tools.Scripts.Chronos
     public class Chronos : MonoBehaviour
     {
 
-        [SerializeField, Tooltip("Duration and transition between regular time and fractional time.")]
+        [SerializeField, Tooltip("Duration and tweenTransition between regular time and fractional time.")]
         public Transition easeIn;
 
-        [SerializeField, Tooltip("Duration and transition between regular time and fractional time.")]
+        [SerializeField, Tooltip("Duration and tweenTransition between regular time and fractional time.")]
         public Transition easeOut;
 
         // cached coroutine references
@@ -18,7 +18,7 @@ namespace forloopcowboy_unity_tools.Scripts.Chronos
         private Coroutine easeInCoroutine = null;
         private Coroutine easeOutCoroutine = null;
 
-        // Gradually warps time to the end of the transition.
+        // Gradually warps time to the end of the tweenTransition.
         public void Warp(float warpFactor, bool interrupt = false)
         {
             if (interrupt) { StopCoroutine(easeInCoroutine); StopCoroutine(easeOutCoroutine); easeInCoroutine = null; easeOutCoroutine = null; }
@@ -42,7 +42,7 @@ namespace forloopcowboy_unity_tools.Scripts.Chronos
             }
         }
 
-        // Gradually returns time scale to normal to the end of the transition.
+        // Gradually returns time scale to normal to the end of the tweenTransition.
         public void Normalize(bool interrupt = true)
         {
             if (easeOutCoroutine == null)

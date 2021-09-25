@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Core
 {
-    /// Defines a transition.
+    /// Defines a tweenTransition.
     [CreateAssetMenu]
     public class Transition : ScriptableObject
     {
@@ -27,13 +27,13 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public class TransitionState
         {
 
-            /// return true if transition is finished
+            /// return true if tweenTransition is finished
             public bool finished { get; private set; }
 
-            /// Returns true if the transition has started and has not finished
+            /// Returns true if the tweenTransition has started and has not finished
             public bool isPlaying { get; private set; }
 
-            /// Initialized to from transition scriptable object, but individual instances can be altered.
+            /// Initialized to from tweenTransition scriptable object, but individual instances can be altered.
             public float duration;
 
             public event Action<float> onFinish;
@@ -76,7 +76,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 return currentAnimationValue;
             }
 
-            /// Evaluates transition with a specific increment
+            /// Evaluates tweenTransition with a specific increment
             public float Evaluate(float increment)
             {
                 float output;
@@ -109,26 +109,26 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 return output;
             }
 
-            /// Evaluates transition at its current state using increment (defaults to DeltaTime).
-            /// Use ResetAnimation() in order to reset the transition.
+            /// Evaluates tweenTransition at its current state using increment (defaults to DeltaTime).
+            /// Use ResetAnimation() in order to reset the tweenTransition.
             /// Returns floating point value between zero and amplitude.
             public float Evaluate() { return Evaluate(Time.deltaTime); }
 
         }
 
-        /// Returns the transition evaluated at its end 
+        /// Returns the tweenTransition evaluated at its end 
         public static float Instant(AnimationCurve transition) {
             return transition.Evaluate(1);
         }
 
-        /// Returns the transition evaluated in the beginning
+        /// Returns the tweenTransition evaluated in the beginning
         public static float Peek(AnimationCurve transition) {
             return transition.Evaluate(0);
         }
         public TransitionState GetPlayableInstance() { return new TransitionState(duration, transition, instant); }
         public TransitionState GetPlayableInstance(float overrideDuration) { return new TransitionState(overrideDuration, transition, instant); }
 
-        /// Simple linear transition from [0, 0] => [1, 1]
+        /// Simple linear tweenTransition from [0, 0] => [1, 1]
         public static Transition Linear { get => new Transition(1, 1); }
 
         /// Plays animation once, calling the updating function at each pass.
@@ -136,9 +136,13 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         /// TransitionState passed is reusable - it is the same instance each time, after being reevaluated.
         /// Callbacks can refer to this last value by calling Snapshot() on the state as this uses
         /// a cache to make it a bit more efficient in repeat usages.
-        public IEnumerator PlayOnceWithUpdater(Action<TransitionState> updatingFunction, Action<TransitionState> onFinish, float updateInterval = 0f)
-        {
-            var transitionInstance = GetPlayableInstance();
+        public IEnumerator PlayOnceWithUpdater(
+            Action<TransitionState> updatingFunction,
+            Action<TransitionState> onFinish,
+            float updateInterval = 0f,
+            float? overrideDuration = null
+        ) {
+            var transitionInstance = overrideDuration.HasValue ? GetPlayableInstance(overrideDuration.Value) : GetPlayableInstance();
             transitionInstance.onFinish += _ => onFinish(transitionInstance);
 
             while (!transitionInstance.finished)
@@ -158,6 +162,16 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             float updateInterval = 0f
         ){
             return self.StartCoroutine(PlayOnceWithUpdater(updatingFunction, onFinish, updateInterval));
+        }
+        
+        public Coroutine PlayOnceWithDuration(
+            MonoBehaviour self,
+            Action<TransitionState> updatingFunction, 
+            Action<TransitionState> onFinish,
+            float overrideDuration,
+            float updateInterval = 0f
+        ){
+            return self.StartCoroutine(PlayOnceWithUpdater(updatingFunction, onFinish, updateInterval, overrideDuration));
         }
 
         public Coroutine PlayOnce(

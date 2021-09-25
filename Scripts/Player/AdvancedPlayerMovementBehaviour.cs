@@ -18,7 +18,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             [Tooltip("Controls how we interpolate between self and the interpolated point P (see code). Both transitions must finish in order to complete the animation.")]
             public Transition transition;
 
-            [Tooltip("Controls how we transition horizontally when grabbing a ledge. Both transitions must finish in order to complete the animation.")]
+            [Tooltip("Controls how we tweenTransition horizontally when grabbing a ledge. Both transitions must finish in order to complete the animation.")]
             public Transition horizontalInterpolation;
 
             [Tooltip("Scales animation time depending on the distance to the ledge. Longer distance = longer animations if the box is checked.")]

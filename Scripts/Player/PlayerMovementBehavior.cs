@@ -309,7 +309,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 
             controller.enabled = true;
 
-            // instantiate transition states
+            // instantiate tweenTransition states
             groundedMomentumBuildup = momentumSettings.grounded.momentumBuildup.GetPlayableInstance();
             groundedMomentumDropoff = momentumSettings.grounded.momentumDropoff.GetPlayableInstance();
 
@@ -380,7 +380,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 // reset dropoff transitions that could have been playing
                 groundedMomentumDropoff.ResetAnimation();
 
-                // sync both animations to smooth transition the curves (don't restart an animation if in the middle of it)
+                // sync both animations to smooth tweenTransition the curves (don't restart an animation if in the middle of it)
                 g_buildup = groundedMomentumBuildup.Evaluate(Time.fixedDeltaTime);
 
                 interpolatedMovement = Vector3.Lerp(curVelocityWithNoUp, moveWithNoUp, g_buildup);
@@ -392,7 +392,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 // reset dropoff transitions that could have been playing
                 groundedMomentumBuildup.ResetAnimation();
 
-                // sync both animations to smooth transition the curves (don't restart an animation if in the middle of it)
+                // sync both animations to smooth tweenTransition the curves (don't restart an animation if in the middle of it)
                 g_dropoff = groundedMomentumDropoff.Evaluate(Time.fixedDeltaTime);
 
                 // using moveWithNoUp in this instance means that we either drop off to zero or we drop off from a higher speed to max speed

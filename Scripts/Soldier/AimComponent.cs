@@ -1,29 +1,14 @@
 using System;
-using System.Collections;
-using BehaviorDesigner.Runtime.Tasks;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Weapon;
-using UnityEditor;
 using UnityEngine;
-using Action = System.Action;
 
 namespace forloopcowboy_unity_tools.Scripts.Soldier
 {
     /// Exposes methods for aiming at points
     public class AimComponent : MonoBehaviour
     {
-        public Soldier soldierSettings;
-
-        [UnityEngine.Tooltip("Where the height is calculated from.")]
-        public Transform eyeLevel;
-
-        [UnityEngine.Tooltip("This means that the character can look up maximum 60 deg")]
-        public Vector2 maxLookAngle = new Vector2(60, 50);
-        public Vector2 minLookAngle = new Vector2(-60, -50);
-
-        [HideInInspector, Obsolete]
-        public string aimAnimationLayerName;
-
+        public Transition easeToAimTransition;
         public WeaponController weapon;
         
         [HideInInspector]
@@ -35,7 +20,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         private Transform trackedTarget = null;
 
-        private void Update()
+        protected void Update()
         {
             if (isTracking && (trackedTarget != null)) 
             { 
@@ -81,7 +66,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 Quaternion initialWeaponRotation = weaponTransform.rotation;
                 Quaternion initialBodyRotation = bodyTransform.rotation;
                 
-                aimTransition = soldierSettings.easeToAimTransition.PlayOnce(
+                aimTransition = easeToAimTransition.PlayOnce(
                     this,
                     state =>
                     {
@@ -91,6 +76,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                             Quaternion.LookRotation(new Vector3(target.x, bodyTransform.position.y, target.z) - bodyTransform.position),
                             state.Snapshot()
                         );
+
+                        if (!weaponTransform) return; 
                         
                         // weapon aims directly at point
                         weaponTransform.rotation = Quaternion.Lerp(
@@ -102,14 +89,14 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                     finishState =>
                     {
                         bodyTransform.rotation = Quaternion.LookRotation(new Vector3(target.x, bodyTransform.position.y, target.z) - bodyTransform.position);
-                        weaponTransform.rotation = Quaternion.LookRotation(target - weaponTransform.position);
+                        if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target - weaponTransform.position);
                     }
                 );
             }
             else
             {
                 bodyTransform.rotation = Quaternion.LookRotation(new Vector3(target.x, bodyTransform.position.y, target.z) - bodyTransform.position);
-                weaponTransform.rotation = Quaternion.LookRotation(target - weaponTransform.position);
+                if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target - weaponTransform.position);
             }
         }
 

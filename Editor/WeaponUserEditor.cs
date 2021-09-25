@@ -55,6 +55,11 @@ namespace forloopcowboy_unity_tools.Editor
                 user.HolsterActive();
                 user.EquipWeapon(weaponsInHolsters[switchWeaponIndex]);
             }
+
+            if (GUILayout.Button("Unequip"))
+            {
+                user.HolsterActive();
+            }
             
             EditorGUILayout.EndHorizontal();
             
@@ -106,6 +111,8 @@ namespace forloopcowboy_unity_tools.Editor
                 GUILayout.EndVertical(); // holsters end
             }
 
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("animatorSettings"));
+            
             if (GUI.changed) EditorUtility.SetDirty(target);
             
             serializedObject.ApplyModifiedProperties();
@@ -311,5 +318,7 @@ namespace forloopcowboy_unity_tools.Editor
             }
 
         }
+
+
     }
 }

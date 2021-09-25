@@ -4,10 +4,10 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
 /// <summary>
-/// Task that plays a given transition, setting a shared variable's value
+/// Task that plays a given tweenTransition, setting a shared variable's value
 /// and executing a child task until it finishes the animation.
 /// </summary>
-[TaskCategory("Common")]
+[TaskCategory("Custom")]
 public class TransitionTask : BehaviorDesigner.Runtime.Tasks.Composite
 {
     public SharedFloat currentValue = 0f;

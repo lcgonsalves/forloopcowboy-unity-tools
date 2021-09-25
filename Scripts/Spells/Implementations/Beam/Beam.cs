@@ -32,7 +32,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
                 var movementBehaviour = caster.gameObject.GetComponent<AdvancedPlayerMovementBehaviour>();
                 if (movementBehaviour != null)
                 {
-                    // transition should be like a bell curve if you want things to return to normal == retard
+                    // tweenTransition should be like a bell curve if you want things to return to normal == retard
                     originalAimSpeed = movementBehaviour.aimSettings.AimSpeed;
 
                 }

@@ -28,6 +28,62 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             Vector3 correctiveTranslation { get; set; }
         }
 
+        [Serializable]
+        public struct AnimatorIntegrationSettings
+        {
+            [Serializable] public struct WeaponTypeAnimParams
+            {
+                public WeaponType weaponType;
+                public string animParamName;
+
+                public WeaponTypeAnimParams(WeaponType weaponType) : this()
+                {
+                    this.weaponType = weaponType;
+                    animParamName = weaponType.ToString();
+                }
+            }
+            
+            public void Enable() { enabled = true; }
+            public void Disable() { enabled = false; }
+            
+            public bool enabled;
+            
+            [Tooltip("Whenever a weapon of said type is selected, the component will set a bool of the defined string.")]
+            public List<WeaponTypeAnimParams> animatorParameters;
+
+            /// <summary>
+            /// Applies all of the defined parameters to the
+            /// animator given the active weapon item.
+            /// </summary>
+            /// <param name="animator"></param>
+            /// <param name="activeWeapon"></param>
+            public void ApplyParameters(Animator animator, WeaponItem? activeWeapon)
+            {
+                // if null, just set everything to false
+                if (!activeWeapon.HasValue)
+                {
+                    foreach (var animatorParameter in animatorParameters)
+                    {
+                        animator.SetBool(animatorParameter.animParamName, false);
+                    }
+                }
+                
+                // if weapon is selected, set everything to false except those of type, which are true
+                else
+                {
+                    var type = activeWeapon.Value.type;
+                    foreach (var animatorParameter in animatorParameters)
+                    {
+                        animator.SetBool(animatorParameter.animParamName, animatorParameter.weaponType == type);
+                    }
+                }
+            }
+            
+        }
+
+        [SerializeField] private AnimatorIntegrationSettings animatorSettings;
+        private Animator _animator;
+        
         /// <summary>
         /// Saves local rotation and position
         /// of weapon transforms in container.
@@ -216,6 +272,10 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             }
         }
 
+        /// <summary>
+        /// Fires every time a new weapon is equipped, an old weapon is unequipped.
+        /// </summary>
+        public event Action<WeaponItem?> onWeaponChanged;
         
         /// <summary>
         /// Equips first holstered weapon of the given type.
@@ -252,13 +312,20 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             else if (holsterOrWeapon is WeaponHolster holster)
                 _active = holster.content;
 
+            else _active = null;
+
             Equip(_active, triggerHandTransform);
 
             // attempt to refresh it
             if (aimComponent is null) aimComponent = GetComponent<AimComponent>();
 
-            if (aimComponent != null && _active.HasValue && _active.Value.weapon != null)
-                aimComponent.weapon = _active.Value.weapon;
+            if (aimComponent != null)
+            {
+                aimComponent.weapon = _active.HasValue && _active.Value.weapon != null ? _active.Value.weapon : null;
+            }
+            
+            onWeaponChanged?.Invoke(_active);
+                
         }
 
         /// <summary>
@@ -282,6 +349,9 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
                 _active = null;
             }
+            
+            if (aimComponent != null) aimComponent.weapon = null;
+            onWeaponChanged?.Invoke(null);
         }
 
         /// <summary>
@@ -292,7 +362,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="to"></param>
         public static void Equip(WeaponContainer from, Transform to)
         {
-            if (from.weaponTransform != null)
+            if (from?.weaponTransform != null)
             {
                 from.weaponTransform.SetParent(to);
                 ApplyTransformationsToWeapon(from);
@@ -331,8 +401,6 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             return nonNull;
         }
 
-        
-
         private void Start()
         {
             // upon start, holster all weapons
@@ -344,8 +412,38 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             // if there is an active weapon already assigned, equip it
             if (_active.HasValue) EquipWeapon(_active);
             
+            // set initial animator params
+            if (animatorSettings.enabled)
+            {
+                if (GetAnimator())
+                {
+                    animatorSettings.ApplyParameters(_animator, _active);
+                }
+            }
+            
+            // update at every weapon change
+            onWeaponChanged += item =>
+            {
+                if (animatorSettings.enabled && GetAnimator())
+                {
+                    animatorSettings.ApplyParameters(_animator, item);
+                }
+            };
+
         }
 
+        bool GetAnimator()
+        {
+            _animator = GetComponent<Animator>();
+
+            if (!_animator)
+            {
+                Debug.LogError("Animator settings is enabled but no animator could be found.");
+                animatorSettings.Disable();
+            }
+
+            return _animator;
+        }
 
         private void OnDrawGizmosSelected()
         {
