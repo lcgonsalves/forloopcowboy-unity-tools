@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
-    public class HealthComponent : MonoBehaviour, IHasHealth
+    public class HealthComponent : MonoBehaviour, IHasHealth, IManagedGameObject
     {
         public event Action onDeath;
         
@@ -15,6 +15,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private int _maxHealth = 100;
         public int MaxHealth => _maxHealth;
 
+        [Tooltip("Game Objects with the health component and that are spawned using the UnitManager will be destroyed this many seconds after their health reaches zero.")]
+        public float gameObjectDestroyDelay = 5f;
+        
         public int Health
         {
             get => health;
@@ -25,6 +28,22 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             }
         }
 
+        private void Start()
+        {
+            AttachOnDeathListeners();
+        }
+
+        private void AttachOnDeathListeners()
+        {
+            onDeath += () =>
+            {
+                this.RunAsyncWithDelay(gameObjectDestroyDelay, () =>
+                {
+                    _shouldDestroy = true;
+                });
+            };
+        }
+
         public bool IsAlive => Health > 0;
 
         public bool IsDead => !IsAlive;
@@ -32,6 +51,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public void Damage(int amount) { HasHealthDefaults.Damage(this, amount); }
 
         public void Heal(int amount) { HasHealthDefaults.Heal(this, amount); }
-        
+
+        private bool _shouldDestroy = false;
+        public bool ShouldDestroy()
+        {
+            // see AttachOnDeathListeners()
+            return _shouldDestroy;
+        }
     }
 }

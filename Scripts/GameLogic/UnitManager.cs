@@ -125,8 +125,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             {
                 var instance = Instantiate(prefab, spawnAt.node.transform.position, Quaternion.identity);
                 var navigation = instance.GetComponent<AdvancedNavigation>();
-                var managedGameObj =
-                    instance.GetOrElseAddComponent<UnitManagerGameObjectExtension.ManagedMonoBehaviour>();
+                var managedGameObj = instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
 
                 if (navigation == null)
                     throw new NullReferenceException(
@@ -245,15 +244,26 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 gameObject = obj;
             }
         }
+    }
+    
+    /// <summary>
+    /// Extend this class and attach it to game objects
+    /// you will spawn using the UnitManager. By creating a custom
+    /// implementation of this class you can define the criteria
+    /// for destruction of a given object. Simply override the function
+    /// ShouldDestroy().
+    /// 
+    /// Any GameObject can be spawned, but they will be attached with the
+    /// default implementation of ManagedMonoBehaviour, which by default
+    /// never allows the object to be destroyed.
+    /// </summary>
+    public class ManagedMonoBehaviour : MonoBehaviour, IManagedGameObject
+    {
+        public new GameObject gameObject => base.gameObject;
 
-        public class ManagedMonoBehaviour : MonoBehaviour, IManagedGameObject
+        public virtual bool ShouldDestroy()
         {
-            public new GameObject gameObject => base.gameObject;
-
-            public virtual bool ShouldDestroy()
-            {
-                return false;
-            }
+            return false;
         }
     }
 
