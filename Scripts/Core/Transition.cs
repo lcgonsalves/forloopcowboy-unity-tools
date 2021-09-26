@@ -154,6 +154,23 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 else new WaitForSeconds(interval);
             }
         }
+        
+        public IEnumerator PlayOnceWithFixedUpdater(
+            Action<TransitionState> updatingFunction,
+            Action<TransitionState> onFinish,
+            float? overrideDuration = null
+        ) {
+            var transitionInstance = overrideDuration.HasValue ? GetPlayableInstance(overrideDuration.Value) : GetPlayableInstance();
+            transitionInstance.onFinish += _ => onFinish(transitionInstance);
+
+            while (!transitionInstance.finished)
+            {
+                var interval = Time.fixedDeltaTime;
+                transitionInstance.Evaluate(interval);
+                updatingFunction(transitionInstance);
+                yield return new WaitForFixedUpdate();
+            }
+        }
 
         public Coroutine PlayOnce(
             MonoBehaviour self,
@@ -162,6 +179,15 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             float updateInterval = 0f
         ){
             return self.StartCoroutine(PlayOnceWithUpdater(updatingFunction, onFinish, updateInterval));
+        }
+        
+        public Coroutine PlayOnceOnFixedUpdateWithDuration(
+            MonoBehaviour self,
+            Action<TransitionState> updatingFunction, 
+            Action<TransitionState> onFinish,
+            float overrideDuration
+        ){
+            return self.StartCoroutine(PlayOnceWithFixedUpdater(updatingFunction, onFinish, overrideDuration));
         }
         
         public Coroutine PlayOnceWithDuration(

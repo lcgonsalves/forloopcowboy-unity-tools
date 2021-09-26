@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
@@ -23,6 +25,52 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         public Vector3 toRotation;
         public bool useLocalRotation = false;
         public bool startFromCurrentRotation = true;
+
+        [Serializable]
+        public class TransitionPreset
+        {
+            public string name = "Untitled Preset";
+            public Transition tweenTransition;
+            public float tweenDuration;
+        
+            public Transition untweenTransition;
+            public float untweenDuration;
+        
+            [Header("Translation")]
+            public Vector3 from;
+            public Vector3 to;
+            public bool useLocalPosition = false;
+            public bool startFromCurrentPosition = true;
+
+            [Header("Rotation")]
+            public Vector3 fromRotation;
+            public Vector3 toRotation;
+            public bool useLocalRotation = false;
+            public bool startFromCurrentRotation = true;
+
+            private TransitionPreset(TransitionTweener tweener)
+            {
+                this.tweenTransition = tweener.tweenTransition;
+                this.tweenDuration = tweener.tweenDuration;
+                this.untweenTransition = tweener.untweenTransition;
+                this.untweenDuration = tweener.untweenDuration;
+                this.@from = tweener.@from;
+                this.to = tweener.to;
+                this.useLocalPosition = tweener.useLocalPosition;
+                this.startFromCurrentPosition = tweener.startFromCurrentPosition;
+                this.fromRotation = tweener.fromRotation;
+                this.toRotation = tweener.toRotation;
+                this.useLocalRotation = tweener.useLocalRotation;
+                this.startFromCurrentRotation = tweener.startFromCurrentRotation;
+            }
+
+            public static TransitionPreset FromTweener(TransitionTweener tweener)
+            {
+                return new TransitionPreset(tweener);
+            }
+        }
+
+        [SerializeField] private List<TransitionPreset> presets = new List<TransitionPreset>();
 
         public bool runOnStart = false;
 
@@ -62,11 +110,68 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
             toRotation = transform.rotation.eulerAngles;
         }
 
+        [ContextMenu("Save settings to preset.")]
+        public void SaveToPreset()
+        {
+            presets.Add(TransitionPreset.FromTweener(this));
+        }
 
         [ContextMenu("Tween")]
         public void Tween()
         {
             Tween(true);
+        }
+
+        public void Tween(string presetName, bool interrupt)
+        {
+            var presetWithName = presets.Find(_ => _.name == presetName);
+            if (presetWithName != null) Tween(presetWithName, interrupt);
+        }
+        
+        public void Untween(string presetName, bool interrupt)
+        {
+            var presetWithName = presets.Find(_ => _.name == presetName);
+            if (presetWithName != null) Untween(presetWithName, interrupt);
+        }
+
+        /// <summary>
+        /// This overrides the current settings of the game object. If you want to keep
+        /// these settings save them to a preset.
+        /// </summary>
+        /// <param name="preset"></param>
+        /// <param name="interrupt"></param>
+        public void Tween(TransitionPreset preset, bool interrupt)
+        {
+            ApplyPreset(preset);
+            Tween(interrupt);
+        }
+        
+        /// <summary>
+        /// This overrides the current settings of the game object. If you want to keep
+        /// these settings save them to a preset.
+        /// </summary>
+        /// <param name="preset"></param>
+        /// <param name="interrupt"></param>
+        public void Untween(TransitionPreset preset, bool interrupt)
+        {
+            ApplyPreset(preset);
+            Untween(interrupt);
+        }
+
+        private void ApplyPreset(TransitionPreset preset)
+        {
+            this.tweenTransition = preset.tweenTransition;
+            this.tweenDuration = preset.tweenDuration;
+            this.untweenTransition = preset.untweenTransition;
+            this.untweenDuration = preset.untweenDuration;
+            this.@from = preset.@from;
+            this.to = preset.to;
+            this.useLocalPosition = preset.useLocalPosition;
+            this.startFromCurrentPosition = preset.startFromCurrentPosition;
+            this.fromRotation = preset.fromRotation;
+            this.toRotation = preset.toRotation;
+            this.useLocalRotation = preset.useLocalRotation;
+            this.startFromCurrentRotation = preset.startFromCurrentRotation;
         }
         
         [ContextMenu("UnTween")]
@@ -97,7 +202,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
             startingPosition = useLocalPosition ? transform.localPosition : transform.position;
             startingRotation = useLocalRotation ? transform.localRotation : transform.rotation;
 
-            currentTween = tweenTransition.PlayOnceWithDuration(
+            currentTween = tweenTransition.PlayOnceOnFixedUpdateWithDuration(
                 this,
                 _ => TweenTransition(_, startingPosition, startingRotation, to, Quaternion.Euler(toRotation)),
                 _ => TweenTransition(_, startingPosition, startingRotation, to, Quaternion.Euler(toRotation)),

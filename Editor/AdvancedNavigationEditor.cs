@@ -15,6 +15,7 @@ namespace forloopcowboy_unity_tools.Editor
         private int depth = 1;
         private float speed = 1f;
         private bool showTerminationMessage = false;
+        private static bool showNavigationPath = false;
         
         public override void OnInspectorGUI()
         {
@@ -58,19 +59,25 @@ namespace forloopcowboy_unity_tools.Editor
                     GUILayout.BeginVertical(EditorStyles.helpBox, new []{GUILayout.MinHeight(30)});
                     
                     if (navigation.LastWaypointPath.Count == 0) GUILayout.Label("No recent path.");
-                    
-                    for (int i = 0; i < navigation.LastWaypointPath.Count; i++)
+                    else
                     {
-                        var obj = navigation.LastWaypointPath[i];
-                        var label = $"({i}.)";
+                        showNavigationPath = EditorGUILayout.Foldout(showNavigationPath, "Nodes");
+                        if (showNavigationPath)
+                        {
+                            for (int i = 0; i < navigation.LastWaypointPath.Count; i++)
+                            {
+                                var obj = navigation.LastWaypointPath[i];
+                                var label = $"({i}.)";
                         
-                        GUILayout.BeginHorizontal();
+                                GUILayout.BeginHorizontal();
                         
-                        GUILayout.Label(label);
-                        EditorGUILayout.ObjectField(obj, typeof(WaypointNode), true);
+                                GUILayout.Label(label);
+                                EditorGUILayout.ObjectField(obj, typeof(WaypointNode), true);
                         
-                        GUILayout.EndHorizontal();
+                                GUILayout.EndHorizontal();
                         
+                            }
+                        }
                     }
                     
                     GUILayout.EndVertical();
