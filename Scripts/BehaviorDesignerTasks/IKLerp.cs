@@ -1,5 +1,6 @@
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
+using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEngine;
 
@@ -8,8 +9,9 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
     [TaskCategory("Custom")]
     public class IKLerp : Action
     {
-        public AimComponentWithIK ikController;
-        public float ikValue;
+        public SharedGameObject objectWithIKController;
+        private AimComponentWithIK ikController;
+        public float ikTargetValue;
         public bool writeToSharedValue;
         public SharedFloat currentIKRotationWeight;
         public SharedFloat currentIKPositionWeight;
@@ -17,14 +19,19 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
 
         private bool hasCompleted = false;
         private Coroutine previousLerp;
-        
+
+        public override void OnAwake()
+        {
+            ikController = objectWithIKController.Value.GetOrElseAddComponent<AimComponentWithIK>();
+        }
+
         public override void OnStart()
         {
             if (!isCurrentlyLerpingArm.Value)
             {
                 if (previousLerp != null) ikController.StopCoroutine(previousLerp);
                 isCurrentlyLerpingArm = true;
-                previousLerp = ikController.LerpIKFor(ikController.weapon, ikValue, () =>
+                previousLerp = ikController.LerpIKFor(ikController.weapon, ikTargetValue, () =>
                 {
                     isCurrentlyLerpingArm = false;
                     hasCompleted = true;

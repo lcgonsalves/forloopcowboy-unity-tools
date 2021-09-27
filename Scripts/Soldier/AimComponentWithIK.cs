@@ -123,6 +123,18 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             }
         }
 
+        public bool TryGetSettings(WeaponController wpn, out WeaponIKSettings settings)
+        {
+            if (settingsForWeapon.TryGetValue(weapon.GetInstanceID(), out var s))
+            {
+                settings = s;
+                return true;
+            }
+
+            settings = (WeaponIKSettings) null;
+            return false;
+        }
+
         /// <summary>
         /// Lerps ik weights for target weapon, both to given weight.
         /// When lerp is done, calls onEnd;
@@ -199,7 +211,11 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
     {
         public WeaponController forWeapon;
 
-        public WeaponIKSettings()
+        private static IKWeightSettings<Vector3> defaultSettings = new IKWeightSettings<Vector3>();
+
+        public new string path => target.GetPathFrom(forWeapon.transform.name);
+
+        public WeaponIKSettings() : base(defaultSettings, defaultSettings)
         {
             this._limb = AvatarIKGoal.LeftHand;
         }

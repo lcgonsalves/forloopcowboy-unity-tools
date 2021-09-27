@@ -244,7 +244,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
     public interface IKSettings
     {
         public AvatarIKGoal limb { get; }
-        public Transform target { get; }
+        public string path { get; }
         public IKWeightSettings<Vector3> translation { get; }
         public IKWeightSettings<Vector3> rotation { get; }
     }
@@ -252,13 +252,29 @@ namespace forloopcowboy_unity_tools.Scripts.Core
     [Serializable]
     public class SimpleIKSettings : IKSettings
     {
-        public AvatarIKGoal _limb;
-        public Transform _target;
-        public IKWeightSettings<Vector3> _translation;
-        public IKWeightSettings<Vector3> _rotation;
+        [SerializeField] protected AvatarIKGoal _limb;
+        [SerializeField] protected Transform _target;
+        [SerializeField] protected IKWeightSettings<Vector3> _translation;
+        [SerializeField] protected IKWeightSettings<Vector3> _rotation;
 
-        public AvatarIKGoal limb => _limb;
-        public Transform target => _target;
+        public SimpleIKSettings(IKWeightSettings<Vector3> translation, IKWeightSettings<Vector3> rotation)
+        {
+            _translation = translation;
+            _rotation = rotation;
+        }
+
+        public AvatarIKGoal limb
+        {
+            get => _limb;
+            set => _limb = value;
+        }
+        public string path => target.GetPathFrom();
+
+        public Transform target
+        {
+            get => _target;
+            set => _target = value;
+        }
         public IKWeightSettings<Vector3> translation => _translation;
         public IKWeightSettings<Vector3> rotation => _rotation;
     }
@@ -363,6 +379,40 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         int Layer { get; }
         LayerMask LayerMask { get; }
         
+    }
+
+    public static class TransformHelpers
+    {
+        public static Transform? FindRecursively(this Transform t, string name)
+        {
+            if (t.childCount == 0) return null;
+            for (int i = 0; i < t.childCount; i++)
+            {
+                var child = t.GetChild(i);
+                if (child)
+                {
+                    if (child.name == name) return child;
+                    var found = child.FindRecursively(name);
+                    if (found != null) return found;
+                }
+            }
+
+            return null;
+        }
+        
+            public static string GetPathFrom(this Transform current, string stopAt = "Root")
+            {
+                string path = current.name;
+                while (current.parent)
+                {
+                    current = current.parent;
+                    if (current.name == stopAt) break;
+                    
+                    path = $"{current.name}/{path}";
+                }
+
+                return path;
+            }
     }
 
     public static class GameObjectHelpers

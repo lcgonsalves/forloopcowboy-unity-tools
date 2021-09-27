@@ -8,7 +8,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
     public class BulletSystem : MonoBehaviour
     {
         [Tooltip("Number of bullets kind that are spawned before previous bullet is recycled.")]
-        public static int maximum = 100;
+        public int maximum = 100;
 
         [SerializeField, ReadOnly]
         static private int currentActive = 0;

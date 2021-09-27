@@ -41,6 +41,12 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                     this.weaponType = weaponType;
                     animParamName = weaponType.ToString();
                 }
+                
+                public WeaponTypeAnimParams(WeaponType weaponType, string animParamName) : this()
+                {
+                    this.weaponType = weaponType;
+                    this.animParamName = animParamName;
+                }
             }
             
             public void Enable() { enabled = true; }
@@ -50,6 +56,12 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             
             [Tooltip("Whenever a weapon of said type is selected, the component will set a bool of the defined string.")]
             public List<WeaponTypeAnimParams> animatorParameters;
+
+            public AnimatorIntegrationSettings(bool enabled)
+            {
+                this.enabled = enabled;
+                animatorParameters = new List<WeaponTypeAnimParams>();
+            }
 
             /// <summary>
             /// Applies all of the defined parameters to the
@@ -81,7 +93,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             
         }
 
-        [SerializeField] private AnimatorIntegrationSettings animatorSettings;
+        [SerializeField] public AnimatorIntegrationSettings animatorSettings;
         private Animator _animator;
         
         /// <summary>
@@ -296,7 +308,6 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             
             EquipWeapon(firstNonEmptyContainer);
         }
-        
 
         /// <summary>
         /// Equips weapon by making it the active weapon and
