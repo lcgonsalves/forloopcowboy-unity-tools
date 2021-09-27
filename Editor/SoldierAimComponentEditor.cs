@@ -37,6 +37,12 @@ namespace forloopcowboy_unity_tools.Editor
             EditorGUILayout.EndHorizontal();
             
             DrawIKGUI();
+
+            if (GUI.changed)
+            {
+                EditorUtility.SetDirty(target);
+                serializedObject.ApplyModifiedProperties();
+            }
         }
 
         private static int selectedIKSettingsToExport = 0;
