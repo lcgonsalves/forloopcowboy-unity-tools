@@ -22,11 +22,12 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
 
         public override void OnAwake()
         {
-            ikController = objectWithIKController.Value.GetOrElseAddComponent<AimComponentWithIK>();
+            ikController = objectWithIKController.Value != null ? objectWithIKController.Value.GetOrElseAddComponent<AimComponentWithIK>() : null;
         }
 
         public override void OnStart()
         {
+            ikController = objectWithIKController.Value != null ? objectWithIKController.Value.GetOrElseAddComponent<AimComponentWithIK>() : null;
             if (!isCurrentlyLerpingArm.Value)
             {
                 if (previousLerp != null) ikController.StopCoroutine(previousLerp);

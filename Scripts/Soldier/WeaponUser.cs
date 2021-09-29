@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,7 +73,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             public void ApplyParameters(Animator animator, WeaponItem? activeWeapon)
             {
                 // if null, just set everything to false
-                if (!activeWeapon.HasValue)
+                if (activeWeapon == null)
                 {
                     foreach (var animatorParameter in animatorParameters)
                     {
@@ -83,7 +84,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 // if weapon is selected, set everything to false except those of type, which are true
                 else
                 {
-                    var type = activeWeapon.Value.type;
+                    var type = activeWeapon.type;
                     foreach (var animatorParameter in animatorParameters)
                     {
                         animator.SetBool(animatorParameter.animParamName, animatorParameter.weaponType == type);
@@ -124,9 +125,9 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         }
 
         [Serializable]
-        public struct WeaponItem : WeaponContainer
+        public class WeaponItem : WeaponContainer
         {
-            public WeaponController weapon;
+            public WeaponController? weapon;
             public WeaponType type;
 
             [SerializeField, Tooltip("Only applies when weapon is in hand.")]
@@ -139,6 +140,10 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             {
                 this.weapon = weapon;
                 this.type = type;
+            }
+
+            public WeaponItem()
+            {
                 _correctiveRotation = Vector3.zero;
                 _correctiveTranslation = Vector3.zero;
             }
@@ -235,7 +240,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 return content?.Equals(item) ?? false;
             }
             
-            [CanBeNull] public Transform weaponTransform => content?.weaponTransform != null ? content.Value.weaponTransform?.transform : null;
+            // intellij did this, i trust it
+            [CanBeNull] public Transform weaponTransform => content?.weaponTransform != null ? content.weaponTransform != null ? content.weaponTransform.transform : null : null;
 
             public Vector3 correctiveRotation
             {
@@ -298,7 +304,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         {
             WeaponContainer firstNonEmptyContainer = null;
 
-            firstNonEmptyContainer = holsters.Find(_ => _.type == ofType && _.content.HasValue);
+            firstNonEmptyContainer = holsters.Find(_ => _.type == ofType && _.content != null);
             
             if (firstNonEmptyContainer == null)
                 firstNonEmptyContainer = inventory.Find(_ => _.type == ofType && _.weapon != null);
@@ -332,7 +338,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
             if (aimComponent != null)
             {
-                aimComponent.weapon = _active.HasValue && _active.Value.weapon != null ? _active.Value.weapon : null;
+                aimComponent.weapon = _active != null && _active.weapon != null ? _active.weapon : null;
             }
             
             onWeaponChanged?.Invoke(_active);
@@ -345,13 +351,13 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// </summary>
         public void HolsterActive()
         {
-            if (_active.HasValue)
+            if (_active != null)
             {
-                var active = _active.Value;
+                var active = _active;
                 
                 foreach (var holster in holsters)
                 {
-                    if (holster.Contains(active) || !holster.content.HasValue)
+                    if (holster.Contains(active) || holster.content == null)
                     {
                         HolsterWeapon(holster);
                         break;
@@ -401,15 +407,16 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// <returns>True if weapon exists.</returns>
         public bool TryGetActiveWeapon(out WeaponItem weapon)
         {
-            var nonNull = _active.HasValue;
+            var nonNull = _active != null;
 
             if (nonNull)
             {
-                weapon = (WeaponItem) _active;
+                weapon = _active;
+                return nonNull;
             }
-            else weapon = new WeaponItem();
-
-            return nonNull;
+            weapon = (WeaponItem) null;
+            
+            return false;
         }
 
         private void Start()
@@ -421,7 +428,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             }
             
             // if there is an active weapon already assigned, equip it
-            if (_active.HasValue) EquipWeapon(_active);
+            if (_active != null) EquipWeapon(_active);
             
             // set initial animator params
             if (animatorSettings.enabled)

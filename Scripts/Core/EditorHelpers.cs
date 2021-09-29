@@ -383,7 +383,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
 
     public static class TransformHelpers
     {
-        public static Transform? FindRecursively(this Transform t, string name)
+        public static Transform? FindRecursively(this Transform t, Func<Transform, bool> predicate)
         {
             if (t.childCount == 0) return null;
             for (int i = 0; i < t.childCount; i++)
@@ -391,28 +391,48 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 var child = t.GetChild(i);
                 if (child)
                 {
-                    if (child.name == name) return child;
-                    var found = child.FindRecursively(name);
+                    if (predicate(child)) return child;
+                    var found = child.FindRecursively(predicate);
                     if (found != null) return found;
                 }
             }
 
             return null;
         }
-        
-            public static string GetPathFrom(this Transform current, string stopAt = "Root")
-            {
-                string path = current.name;
-                while (current.parent)
-                {
-                    current = current.parent;
-                    if (current.name == stopAt) break;
-                    
-                    path = $"{current.name}/{path}";
-                }
 
-                return path;
+        public static void FindAllRecursively(this Transform t, Func<Transform, bool> predicate, List<Transform> result)
+        {
+            if (t.childCount == 0) return;
+            for (int i = 0; i < t.childCount; i++)
+            {
+                var child = t.GetChild(i);
+                if (child)
+                {
+                    if (predicate(child))
+                    {
+                        result.Add(child);
+                    }
+                    else
+                    {
+                        child.FindAllRecursively(predicate, result);
+                    }
+                }
             }
+        }
+
+        public static string GetPathFrom(this Transform current, string stopAt = "Root")
+        {
+            string path = current.name;
+            while (current.parent)
+            {
+                current = current.parent;
+                if (current.name == stopAt) break;
+
+                path = $"{current.name}/{path}";
+            }
+
+            return path;
+        }
     }
 
     public static class GameObjectHelpers

@@ -16,8 +16,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         protected Animator _animator;
         protected Dictionary<int, WeaponIKSettings> settingsForWeapon = new Dictionary<int, WeaponIKSettings>();
 
-        [SerializeField] protected Transition ikLerpIn;
-        [SerializeField] protected Transition ikLerpOut;
+        [SerializeField] public Transition ikLerpIn;
+        [SerializeField] public Transition ikLerpOut;
 
         // [Serializable]
         // public struct AnimatorIntegrationSettings
@@ -211,7 +211,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
     {
         public WeaponController forWeapon;
 
-        private static IKWeightSettings<Vector3> defaultSettings = new IKWeightSettings<Vector3>();
+        private static IKWeightSettings<Vector3> defaultSettings => new IKWeightSettings<Vector3>();
 
         public new string path => target.GetPathFrom(forWeapon.transform.name);
 

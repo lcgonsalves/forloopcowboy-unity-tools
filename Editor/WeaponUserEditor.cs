@@ -81,7 +81,7 @@ namespace forloopcowboy_unity_tools.Editor
             
                 if (GUILayout.Button("Add weapon to inventory"))
                 {
-                    var obj = new WeaponUser.WeaponItem();
+                    var obj = new WeaponUser.WeaponItem(null, WeaponUser.WeaponType.Primary);
                     
                     user.inventory.Add(obj);
                     weaponsUnholstered.Add(obj);
@@ -144,7 +144,7 @@ namespace forloopcowboy_unity_tools.Editor
             GUILayout.BeginHorizontal();
 
             var items = new List<WeaponUser.WeaponItem?>(weaponsUnholstered.Count + 1);
-            if (holster.content.HasValue)
+            if (holster.content != null)
             {
                 // get from list to get most updated value
                 var updatedHolsterContent = weaponsInHolsters.Find(_ => _.Equals(holster.content));
@@ -165,10 +165,10 @@ namespace forloopcowboy_unity_tools.Editor
 
             var selectedItem = items[selected];
 
-            if (selectedItem.HasValue)
+            if (selectedItem != null)
             {
                 WeaponUser.WeaponItem selectedWeaponItem = (WeaponUser.WeaponItem) selectedItem;
-                if (!selectedItem.Equals(holster.content))
+                if (holster.content != null && !selectedItem.Equals(holster.content))
                 {
                     weaponsUnholstered.Remove(selectedWeaponItem);
                     weaponsInHolsters.Add(selectedWeaponItem);

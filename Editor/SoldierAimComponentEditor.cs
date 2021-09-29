@@ -57,7 +57,7 @@ namespace forloopcowboy_unity_tools.Editor
                 var listOfAvailableSettings = ik.supportHandIKSettings?.Select(_ => _.forWeapon?.name ?? "None").ToArray();
                 
                 selectedIKSettingsToExport = EditorGUILayout.Popup(
-                    selectedIKSettingsToExport < listOfAvailableSettings.Length ? selectedIKSettingsToExport : 0,
+                    listOfAvailableSettings != null && selectedIKSettingsToExport < listOfAvailableSettings.Length ? selectedIKSettingsToExport : 0,
                     listOfAvailableSettings
                 );
 
