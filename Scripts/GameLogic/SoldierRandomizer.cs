@@ -19,6 +19,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     [CreateAssetMenu(fileName = "Untitled Soldier Randomizer Settings", menuName = "NPC/New Soldier Randomizer Settings...", order = 2)]
     public class SoldierRandomizer : ScriptableObject
     {
+        public uint prefabRandomizerSeed = 69;
         
         public Transition aimTransition;
         public AnimatorController animatorController;
@@ -32,6 +33,35 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public List<GameObject> characterRigPrefabs;
         public List<Weapon.Weapon> weapons;
         public int maxNumberOfWeapons = 2;
+
+        /// <summary>
+        /// To prevent the same rig prefab from being picked
+        /// repeatedly, we maintain a stack of indices that is
+        /// re-filled when it is empty, by randomly picking indices.
+        /// </summary>
+        protected Stack<GameObject> prefabsToInstantiate = new Stack<GameObject>();
+
+        private void OnEnable()
+        {
+            RefreshPrefabStack();
+        }
+
+        private void RefreshPrefabStack()
+        {
+            RefreshPrefabStack(prefabRandomizerSeed);
+        }
+
+        private void ReRandomizePrefabStack()
+        {
+            RefreshPrefabStack( (uint) Random.Range(0, int.MaxValue));
+        }
+        
+        private void RefreshPrefabStack(uint newSeed)
+        {
+            var random = new Unity.Mathematics.Random(newSeed);
+            var randomized = characterRigPrefabs.OrderBy((o => random.NextInt()));
+            prefabsToInstantiate = new Stack<GameObject>(randomized);
+        }
 
         [Button] public Soldier Instantiate(Transform positionAnchor, bool reparent = false)
         {
@@ -49,7 +79,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             if (characterRigPrefabs.Count == 0) throw new Exception("No soldier prefabs specified. Please add a prefab.");
             if (weapons.Count == 0) throw new Exception("No weapon definitions specified. Please add at least one.");
 
-            var selectedCharacter = characterRigPrefabs[Random.Range(0, characterRigPrefabs.Count)];
+            // make sure we don't run out of randomized prefabs
+            if (prefabsToInstantiate.Count == 0) ReRandomizePrefabStack();
+            
+            var selectedCharacter = prefabsToInstantiate.Pop();
 
             var numIndices = Random.Range(1, maxNumberOfWeapons);
             var indices = new HashSet<int>();
