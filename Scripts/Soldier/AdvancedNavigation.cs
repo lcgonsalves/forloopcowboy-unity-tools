@@ -158,13 +158,16 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         public bool MoveTo(Vector3 destination, float speed, float angularSpeed, out NavMeshPath path)
         {
-            bool destinationIsAccessible = _navMeshAgent.CalculatePath(destination, path = new NavMeshPath());
-
-            _navMeshAgent.speed = Mathf.Clamp(speed, 0f, maxSpeed);
-            _navMeshAgent.angularSpeed = Mathf.Clamp(angularSpeed, 0f, maxAngularSpeed);
+            path = new NavMeshPath();
             
+            bool destinationIsAccessible = _navMeshAgent != null && _navMeshAgent.CalculatePath(destination, path);
+
             if (destinationIsAccessible)
+            {
+                _navMeshAgent.speed = Mathf.Clamp(speed, 0f, maxSpeed);
+                _navMeshAgent.angularSpeed = Mathf.Clamp(angularSpeed, 0f, maxAngularSpeed);
                 _navMeshAgent.SetPath(path);
+            }
 
             return destinationIsAccessible;
         }

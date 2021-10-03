@@ -92,14 +92,14 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         // todo: check for end of chain to see if there's already someone there, if so can't spawn
 
         /// <summary>
-        /// Spawns game object for given side on first available spawn point
+        /// Spawns new game object for given side on first available spawn point
         /// of specified type. Spawned object follows starting waypoint indefinitely.
         /// </summary>
         /// <param name="side"></param>
         /// <param name="prefab"></param>
         /// <param name="spawnType"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Spawn(
+        public void SpawnCopy(
             Side side,
             GameObject prefab,
             SpawnType spawnType = SpawnType.Grounded
@@ -109,24 +109,60 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             {
                 case Side.Attacker:
                     attackerCacheOutdated = true;
-                    Spawn(side, prefab, spawnType, attackerSpawnPoints);
+                    Spawn(side, prefab, true, spawnType, attackerSpawnPoints);
                     break;
                 case Side.Defender:
                     defenderCacheOutdated = true;
-                    Spawn(side, prefab, spawnType, defenderSpawnPoints);
+                    Spawn(side, prefab, true, spawnType, defenderSpawnPoints);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(side), side, null);
+            }
+        }
+        
+        /// <summary>
+        /// Places game object on given side on first available spawn point
+        /// of specified type. Spawned object follows starting waypoint indefinitely.
+        /// </summary>
+        /// <param name="side"></param>
+        /// <param name="obj"></param>
+        /// <param name="spawnType"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public void Spawn(
+            Side side,
+            GameObject obj,
+            SpawnType spawnType = SpawnType.Grounded
+        )
+        {
+            switch (side)
+            {
+                case Side.Attacker:
+                    attackerCacheOutdated = true;
+                    Spawn(side, obj, false, spawnType, attackerSpawnPoints);
+                    break;
+                case Side.Defender:
+                    defenderCacheOutdated = true;
+                    Spawn(side, obj, false, spawnType, defenderSpawnPoints);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(side), side, null);
             }
         }
 
-        private void Spawn(Side side, GameObject prefab, SpawnType spawnType, List<SpawnPoint> spawnPoints)
+        private void Spawn(Side side, GameObject obj, bool instantiateNew, SpawnType spawnType, List<SpawnPoint> spawnPoints)
         {
             var spawnAt = spawnPoints.Find(_ => _.type == spawnType);
             if (spawnAt != null)
             {
                 var t = spawnAt.node.transform;
-                var instance = Instantiate(prefab, t.position, t.rotation);
+                var instance = instantiateNew ? Instantiate(obj) : obj;
+
+                instance.transform.position = t.position;
+                instance.transform.rotation = t.rotation;
+                
+                instance.SetActive(true);
+                instance.transform.SetParent(null);
+                
                 var navigation = instance.GetComponent<AdvancedNavigation>();
                 var managedGameObj = instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
                 instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
@@ -134,7 +170,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 if (navigation == null)
                     throw new NullReferenceException(
                         "Spawned game objects must have an AdvancedNavigation component attached.");
-                navigation.FollowWaypoint(spawnAt.node);
+
+                // run with small delay so the thing has time to think
+                navigation.RunAsyncWithDelay(1f, () => navigation.FollowWaypoint(spawnAt.node));
+                
                 SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj));
             }
             else throw new NullReferenceException("No spawn points found for type " + nameof(spawnType));

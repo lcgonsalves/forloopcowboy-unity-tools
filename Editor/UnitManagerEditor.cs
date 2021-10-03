@@ -22,9 +22,9 @@ namespace forloopcowboy_unity_tools.Editor
             toSpawn = (GameObject) EditorGUILayout.ObjectField(toSpawn, typeof(GameObject), allowSceneObjects: true);
             spawnSide = (UnitManager.Side) EditorGUILayout.EnumPopup(spawnSide);
             spawnType = (UnitManager.SpawnType) EditorGUILayout.EnumPopup(spawnType);
-            if (GUILayout.Button("Spawn"))
+            if (GUILayout.Button("SpawnCopy"))
             {
-                manager.Spawn(spawnSide, toSpawn, spawnType);
+                manager.SpawnCopy(spawnSide, toSpawn, spawnType);
             }
             
             EditorGUILayout.EndHorizontal();

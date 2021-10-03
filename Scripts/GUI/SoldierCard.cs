@@ -3,15 +3,16 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace forloopcowboy_unity_tools.Scripts.HUD
 {
-    public class SoldierCard : MonoBehaviour
+    public class SoldierCard : MonoBehaviour, IPointerClickHandler
     {
         [Tooltip("This is the soldier instance that controls the stars, trait and name in the card, and is the instance to be deployed when the card is selected. Image must be provided separately.")]
         [OnValueChanged("OnSoldierChanged")]
-        public GameLogic.Soldier soldier;
+        [SerializeField] protected GameLogic.Soldier soldier;
 
         [ValidateInput("NotNull", "Name label cannot be null.")]
         public TextMeshProUGUI soldierNameLabel;
@@ -31,6 +32,12 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         [ValidateInput("HasThreeImagesAsChildren", "Armor stars must be in container.")]
         public Transform armorStarsContainer;
 
+        public void SetSoldier(GameLogic.Soldier newSoldier)
+        {
+            soldier = newSoldier;
+            OnSoldierChanged();
+        }        
+        
         protected void OnSoldierChanged()
         {
             // sanity check
@@ -55,7 +62,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
 
         }
 
-        private bool NotNull(object obj) { return obj != null; }
+        private bool NotNull(object obj) { return obj == null; }
 
         private bool HasThreeImagesAsChildren(Transform t)
         {
@@ -67,8 +74,15 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
                 isImage &= (bool) child.GetComponent<Image>();
             }
 
-            return has3Children && isImage;
+            return !(has3Children && isImage);
         }
 
+
+        public Action onClick = () => Debug.LogWarning("No click handlers assigned.");
+        
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            onClick();
+        }
     }
 }

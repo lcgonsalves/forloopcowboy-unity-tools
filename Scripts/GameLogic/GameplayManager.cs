@@ -1,3 +1,4 @@
+using System;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.HUD;
 using Sirenix.OdinInspector;
@@ -14,15 +15,21 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     /// - clicking draft button will spawn soldiers and discard cards.
     /// - soldiers will automatically attack the closest threat and march towards the objective
     /// </summary>
+    [RequireComponent(typeof(UnitManager))]
     public class GameplayManager : MonoBehaviour
     {
+        public UnitManager.Side side = UnitManager.Side.Attacker;
+        
         public int maxAvailableCards;
         public SoldierRandomizer soldierRandomizer;
         public ScreenRecorder screenRecorder;
         public Transform photoBoothAnchor;
         public GameObject cardPrefab;
         public HorizontalLayoutGroup cardPanel;
-        
+
+        private UnitManager _unitManager;
+        public UnitManager UnitManager => _unitManager ? _unitManager : _unitManager = GetComponent<UnitManager>();
+
         /// <summary>
         /// Discards previous cards and shuffles new ones.
         /// </summary>
@@ -38,7 +45,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             
             var card = Instantiate(cardPrefab, cardContainer.transform);
             var tt = card.GetComponent<TransitionTweener>();
-            
+            var cardComponent = card.GetComponent<SoldierCard>();
+
+            cardComponent.SetSoldier(character);
+
+            cardComponent.onClick = () =>
+            {
+                UnitManager.Spawn(side, character.gameObject);
+            };
+
             // start card where the tween should start
             card.transform.localPosition = tt.useLocalPosition ? tt.@from : Vector3.zero;
             card.transform.localScale = new Vector3(1, 1, 1);
@@ -57,7 +72,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             screenRecorder.CreateTextureAndApplyToTargetImage();
             character.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Default"));
             character.gameObject.SetActive(false);
-            // tt.RunAsyncWithDelay(0.05f, () => character.gameObject.SetActive(false));
 
         }
     }
