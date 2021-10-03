@@ -47,19 +47,27 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         //
         // public AnimatorIntegrationSettings animatorSettings;
         
-        private void Start()
+        private void OnEnable()
+        {
+            Initialize();
+        }
+
+        internal void Initialize()
         {
             _animator = GetComponent<Animator>();
-            
+
+            settingsForWeapon.Clear();
+
             // cache dictionary for easier access
             foreach (var setting in supportHandIKSettings)
             {
                 // only include if both the target and the weapon are defined
                 if (setting.forWeapon != null && setting.target != null)
                     settingsForWeapon.Add(setting.forWeapon.GetInstanceID(), setting);
-                else Debug.LogWarning($"[{gameObject.name}] Setting does not have either weapon or IK target assigned, will not be considered.");
+                else
+                    Debug.LogWarning(
+                        $"[{gameObject.name}] Setting does not have either weapon or IK target assigned, will not be considered.");
             }
-            
         }
 
         private Coroutine ikLerp;

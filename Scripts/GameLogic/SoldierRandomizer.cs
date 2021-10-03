@@ -143,6 +143,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 // initialize aim component
                 var aimComponentWithIK = instance.GetOrElseAddComponent<AimComponentWithIK>();
                 var animator = instance.GetComponent<Animator>();
+                animator.applyRootMotion = false;
+                
                 aimComponentWithIK.easeToAimTransition = aimTransition;
                 aimComponentWithIK.ikLerpIn = ikLerpInTransition;
                 aimComponentWithIK.ikLerpOut = ikLerpOutTransition;
@@ -186,20 +188,31 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     }
                 }
 
-                var potentialHolsters = new List<Transform>();
+                var potentialHolsters = new List<IKHolster>(instance.transform.GetComponentsInChildren<IKHolster>());
                 
-                instance.transform.FindAllRecursively(_ => _.CompareTag("IKHolster"), potentialHolsters);
+                // for fresh objects we define a primary and secondary holsters
                 if (potentialHolsters.Count == 0)
                 {
                     var backHolster = new GameObject("BackHolster");
-                    backHolster.transform.position = new Vector3(-0.072f, 1.386f, -0.2006302f); // from editor fiddling
-                    backHolster.transform.rotation = Quaternion.Euler(75, 90, 0);
-                    backHolster.transform.SetParent(instance.transform);
-                    potentialHolsters.Add(backHolster.transform);
-                }
+                    backHolster.transform.SetParent(instance.transform.Find("Root"));
+                    backHolster.transform.localPosition = new Vector3(-0.072f, 1.386f, -0.2006302f); // from editor fiddling
+                    backHolster.transform.localRotation = Quaternion.Euler(75, 90, 0);
 
-                var potentialHolstersIterator = potentialHolsters.GetEnumerator();
-                potentialHolstersIterator.MoveNext();
+                    var bhComponent = backHolster.AddComponent<IKHolster>();
+                    bhComponent.type = WeaponUser.WeaponType.Primary;
+                    
+                    potentialHolsters.Add(bhComponent);
+                    
+                    var sideHolster = new GameObject("SideHolster");
+                    sideHolster.transform.SetParent(instance.transform.Find("Root"));
+                    sideHolster.transform.localPosition = new Vector3(0.138999999f,0.842999995f,-0.181999996f); // from editor fiddling
+                    sideHolster.transform.localRotation = Quaternion.Euler(75, 0, -43.592f);
+                    
+                    var shComponent = sideHolster.AddComponent<IKHolster>();
+                    shComponent.type = WeaponUser.WeaponType.Secondary;
+                    
+                    potentialHolsters.Add(shComponent);
+                }
 
                 // instantiate weapons
                 foreach (var weapon in weapons)
@@ -213,33 +226,42 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
                     WeaponUser.ApplyTransformationsToWeapon(item); // in case the thing has no holster
                     
-                    var potentialHolster = potentialHolstersIterator.Current;
+                    var potentialHolster = potentialHolsters.Find(_ => _.type == type);
+                    
                     if (potentialHolster != null)
                     {
-                        var holster = new WeaponUser.WeaponHolster(potentialHolster, type, item);
+                        
+                        var holster = new WeaponUser.WeaponHolster(potentialHolster.transform, type, item);
                         WeaponUser.ApplyTransformationsToWeapon(holster);
                         weaponUserComponent.holsters.Add(holster);
-                        potentialHolstersIterator.MoveNext();
+                        potentialHolsters.Remove(potentialHolster);
+                        
+                        var ikSettings = new WeaponIKSettings();
+                    
+                        ikSettings.limb = weapon.ikSettings.limb;
+
+                        ikSettings.translation.value = weapon.ikSettings?.translation?.value ?? Vector3.zero;
+                        ikSettings.translation.weight = weapon.ikSettings?.translation?.weight ?? 0f;
+
+                        ikSettings.rotation.value = weapon.ikSettings?.rotation?.value ?? Vector3.zero;
+                        ikSettings.rotation.weight = weapon.ikSettings?.rotation?.weight ?? 0f;
+
+                        ikSettings.target = weaponInstance.transform.FindRecursively(_ => _.name == weapon.ikSettings.path);
+
+                        ikSettings.forWeapon = controller;
+                        weaponUserComponent.inventory.Add(item);
+                        aimComponentWithIK.supportHandIKSettings.Add(ikSettings);
+                        
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"No potential holster found for weapon {weapon.name} of type {type}. This weapon will not be attached.");
+                        DestroyImmediate(weaponInstance);
                     }
                     
-                    var ikSettings = new WeaponIKSettings();
-                    
-                    ikSettings.limb = weapon.ikSettings.limb;
-
-                    ikSettings.translation.value = weapon.ikSettings?.translation?.value ?? Vector3.zero;
-                    ikSettings.translation.weight = weapon.ikSettings?.translation?.weight ?? 0f;
-
-                    ikSettings.rotation.value = weapon.ikSettings?.rotation?.value ?? Vector3.zero;
-                    ikSettings.rotation.weight = weapon.ikSettings?.rotation?.weight ?? 0f;
-
-                    ikSettings.target = weaponInstance.transform.FindRecursively(_ => _.name == weapon.ikSettings.path);
-
-                    ikSettings.forWeapon = controller;
-                    weaponUserComponent.inventory.Add(item);
-                    aimComponentWithIK.supportHandIKSettings.Add(ikSettings);
                 }
-                
-                potentialHolstersIterator.Dispose();
+
+                aimComponentWithIK.Initialize();
 
                 // initialize ik controller
                 var ikBehaviourTree = instance.GetOrElseAddComponent<BehaviorTree>();
