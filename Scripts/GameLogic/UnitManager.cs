@@ -27,6 +27,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Aerial
         }
 
+        public string SpawnLayer = "Default";
+
         [Serializable]
         protected class SpawnPoint
         {
@@ -123,9 +125,11 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var spawnAt = spawnPoints.Find(_ => _.type == spawnType);
             if (spawnAt != null)
             {
-                var instance = Instantiate(prefab, spawnAt.node.transform.position, Quaternion.identity);
+                var t = spawnAt.node.transform;
+                var instance = Instantiate(prefab, t.position, t.rotation);
                 var navigation = instance.GetComponent<AdvancedNavigation>();
                 var managedGameObj = instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
+                instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
 
                 if (navigation == null)
                     throw new NullReferenceException(

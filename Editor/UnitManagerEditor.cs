@@ -7,7 +7,7 @@ namespace forloopcowboy_unity_tools.Editor
     [CustomEditor(typeof(UnitManager))]
     public class UnitManagerEditor : UnityEditor.Editor
     {
-        private GameObject toSpawn;
+        private static GameObject toSpawn;
         private UnitManager.Side spawnSide;
         private UnitManager.SpawnType spawnType;
         public override void OnInspectorGUI()

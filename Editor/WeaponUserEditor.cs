@@ -314,10 +314,9 @@ namespace forloopcowboy_unity_tools.Editor
                     weaponItem.weapon.weaponSettings.inventorySettings = weaponItem;
             }
 
-            WeaponUser wpnUser = (WeaponUser) target;
             if (GUILayout.Button("Get from Asset"))
             {
-                wpnUser.GetCorrectiveTransformsFromAsset(weaponItem);
+                WeaponUser.GetCorrectiveTransformsFromAsset(weaponItem);
             }
             
             GUILayout.EndHorizontal();
@@ -342,30 +341,6 @@ namespace forloopcowboy_unity_tools.Editor
 
         }
 
-
-    }
-
-    public static class ExtendedWeaponUser
-    {
-
-        public static WeaponUser.WeaponItem GetCorrectiveTransformsFromAsset(this WeaponUser user, WeaponUser.WeaponItem weaponItem)
-        {
-            var weaponNotNull = weaponItem.weapon is { };
-            var settingsNotNUll = weaponNotNull && weaponItem.weapon.weaponSettings;
-                
-            if (!weaponNotNull) Debug.LogWarning("Weapon is null.");
-            if (!settingsNotNUll) Debug.LogWarning("Settings is null.");
-
-            if (weaponNotNull && settingsNotNUll)
-            {
-                var presetSettings = weaponItem.weapon.weaponSettings.inventorySettings;
-                    
-                weaponItem.correctiveTranslation = presetSettings.correctiveTranslation;
-                weaponItem.correctiveRotation = presetSettings.correctiveRotation;
-            }
-
-            return weaponItem;
-        }
 
     }
 }

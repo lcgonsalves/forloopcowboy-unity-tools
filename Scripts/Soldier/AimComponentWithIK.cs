@@ -57,7 +57,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 // only include if both the target and the weapon are defined
                 if (setting.forWeapon != null && setting.target != null)
                     settingsForWeapon.Add(setting.forWeapon.GetInstanceID(), setting);
-                else Debug.LogWarning("Setting does not have either weapon or IK target assigned, will not be considered.");
+                else Debug.LogWarning($"[{gameObject.name}] Setting does not have either weapon or IK target assigned, will not be considered.");
             }
             
         }

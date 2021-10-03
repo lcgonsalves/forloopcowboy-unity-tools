@@ -467,6 +467,25 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         {
             Gizmos.color = Color.cyan;
         }
+        
+        public static WeaponItem GetCorrectiveTransformsFromAsset(WeaponUser.WeaponItem weaponItem)
+        {
+            var weaponNotNull = weaponItem.weapon is { };
+            var settingsNotNUll = weaponNotNull && weaponItem.weapon.weaponSettings;
+                
+            if (!weaponNotNull) Debug.LogWarning("Weapon is null.");
+            if (!settingsNotNUll) Debug.LogWarning("Settings is null.");
+
+            if (weaponNotNull && settingsNotNUll)
+            {
+                var presetSettings = weaponItem.weapon.weaponSettings.inventorySettings;
+                    
+                weaponItem.correctiveTranslation = presetSettings.correctiveTranslation;
+                weaponItem.correctiveRotation = presetSettings.correctiveRotation;
+            }
+
+            return weaponItem;
+        }
 
         private void OnDrawGizmos()
         {

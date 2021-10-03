@@ -13,14 +13,16 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         
         public Transition untweenTransition;
         public float untweenDuration;
-        
+
         [Header("Translation")]
+        public bool enableTranslation = true;
         public Vector3 from;
         public Vector3 to;
         public bool useLocalPosition = false;
         public bool startFromCurrentPosition = true;
 
         [Header("Rotation")]
+        public bool enableRotation = false;
         public Vector3 fromRotation;
         public Vector3 toRotation;
         public bool useLocalRotation = false;
@@ -245,11 +247,17 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
             Vector3 lerpedPosition = Vector3.Lerp(startingPos, endPos, state.Snapshot());
             Quaternion lerpedRotation = Quaternion.Lerp(startingRot, endRot, state.Snapshot());
 
-            if (useLocalPosition) transform.localPosition = lerpedPosition;
-            else transform.position = lerpedPosition;
+            if (enableTranslation)
+            {
+                if (useLocalPosition) transform.localPosition = lerpedPosition;
+                else transform.position = lerpedPosition;
+            }
 
-            if (useLocalRotation) transform.localRotation = lerpedRotation;
-            else transform.rotation = lerpedRotation;
+            if (enableRotation)
+            {
+                if (useLocalRotation) transform.localRotation = lerpedRotation;
+                else transform.rotation = lerpedRotation;
+            }
         }
     }
 }

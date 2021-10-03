@@ -239,6 +239,15 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         {
             return Regex.Replace(s, @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1");
         }
+
+        public static string Capitalize(this string s)
+        {
+            if (s.Length == 0) return s;
+            var firstCap = char.ToUpper(s[0]);
+
+            if (s.Length > 1) return firstCap + s.Substring(1);
+            else return $"{firstCap}";
+        }
     }
 
     public interface IKSettings
