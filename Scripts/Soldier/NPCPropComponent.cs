@@ -21,6 +21,15 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         public List<Material> materials = new List<Material>();
 
         [Button]
+        public void SetForAll(bool value)
+        {
+            foreach (var prop in props)
+            {
+                prop.Value.randomizable = value;
+            }
+        }
+        
+        [Button]
         public void RandomizeAll()
         {
             // randomize root object's materials

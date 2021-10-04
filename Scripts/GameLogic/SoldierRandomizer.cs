@@ -30,7 +30,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public StringList lastNames;
         
         // possible models to spawn
-        public List<GameObject> characterRigPrefabs;
+        public List<NPCPropComponent> randomizableCharacters;
+        public List<GameObject> presetCharacters;
         public List<Weapon.Weapon> weapons;
         public int maxNumberOfWeapons = 2;
 
@@ -59,13 +60,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private void RefreshPrefabStack(uint newSeed)
         {
             var random = new Unity.Mathematics.Random(newSeed);
-            var randomized = characterRigPrefabs.OrderBy((o => random.NextInt()));
+            var randomized = presetCharacters.OrderBy((o => random.NextInt()));
             prefabsToInstantiate = new Stack<GameObject>(randomized);
         }
 
         [Button] public Soldier Instantiate(Transform positionAnchor, bool reparent = false)
         {
-            var soldier = this.Instantiate(positionAnchor.position);
+            bool shouldRandomize = Random.Range(0f, 1f) > 0.005f;
+            
+            var soldier = this.Instantiate(positionAnchor.position, shouldRandomize);
             if (reparent)
             {
                 soldier.transform.SetParent(positionAnchor);
@@ -74,15 +77,29 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             return soldier;
         }
         
-        public Soldier Instantiate(Vector3 position)
+        /// <summary>
+        /// Picks a random charactar and spawns it.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="randomize">When true, also randomizes character's props.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public Soldier Instantiate(Vector3 position, bool randomize = false)
         {
-            if (characterRigPrefabs.Count == 0) throw new Exception("No soldier prefabs specified. Please add a prefab.");
+            if (randomizableCharacters.Count == 0) throw new Exception("No soldier prefabs specified. Please add a prefab.");
             if (weapons.Count == 0) throw new Exception("No weapon definitions specified. Please add at least one.");
 
             // make sure we don't run out of randomized prefabs
             if (prefabsToInstantiate.Count == 0) ReRandomizePrefabStack();
             
-            var selectedCharacter = prefabsToInstantiate.Pop();
+            GameObject selectedCharacter;
+            if (randomize)
+            {
+                var propComponent = randomizableCharacters[Random.Range(0, randomizableCharacters.Count)];
+                selectedCharacter = propComponent.gameObject;
+            }
+            else
+                selectedCharacter = prefabsToInstantiate.Pop();
 
             var numIndices = Random.Range(1, maxNumberOfWeapons);
             var indices = new HashSet<int>();
@@ -157,6 +174,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 stats.possibleLastNames = lastNames;
                 
                 stats.Randomize();
+                
+                // randomize props
+                var propRandomizer = instance.GetComponent<NPCPropComponent>();
+                if (propRandomizer)
+                {
+                    // note you may have a prop randomizer on the character and don't want to randomize its props
+                    // that is allowed by setting the randomizable property to false
+                    propRandomizer.RandomizeAll();
+                }
 
                 // initialize weapon user compoonent
                 var weaponUserComponent = instance.GetOrElseAddComponent<WeaponUser>();

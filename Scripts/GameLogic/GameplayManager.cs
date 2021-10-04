@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.HUD;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
@@ -21,7 +23,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public UnitManager.Side side = UnitManager.Side.Attacker;
         
         public int maxAvailableCards;
-        public SoldierRandomizer soldierRandomizer;
+        public List<SoldierRandomizer> soldierRandomizers;
         public ScreenRecorder screenRecorder;
         public Transform photoBoothAnchor;
         public GameObject cardPrefab;
@@ -36,7 +38,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         [Button] public void ShuffleCards()
         {
             // generate character
-            var character = soldierRandomizer.Instantiate(photoBoothAnchor, reparent: true);
+            var character = soldierRandomizers[Random.Range(0, soldierRandomizers.Count)].Instantiate(photoBoothAnchor, reparent: true);
             
             // instantiate the card
             var cardContainer = new GameObject("ProfileCardLayoutItem");
@@ -52,6 +54,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             cardComponent.onClick = () =>
             {
                 UnitManager.Spawn(side, character.gameObject);
+                character.weaponUserComponent.EquipWeapon(character.weaponUserComponent.Active);
             };
 
             // start card where the tween should start

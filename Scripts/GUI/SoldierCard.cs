@@ -17,6 +17,9 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         [ValidateInput("NotNull", "Name label cannot be null.")]
         public TextMeshProUGUI soldierNameLabel;
         
+        [ValidateInput("NotNull", "Name label cannot be null.")]
+        public TextMeshProUGUI ratingLabel;
+        
         [ValidateInput("NotNull", "Trait label cannot be null.")]
         public TextMeshProUGUI traitLabel;
 
@@ -47,6 +50,23 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
 
             soldierNameLabel.text = stats.FullName;
             traitLabel.text = stats.trait.ToString().ToHumanReadable();
+
+            string equivalentRating;
+            var maximumPossibleStars = 9;
+            var totalStars = stats.accuracy + stats.armor + stats.rateOfFire;
+            var highestProficiency = Mathf.Max(stats.accuracy, stats.armor, stats.rateOfFire);
+
+            var score = totalStars + highestProficiency;
+
+            if (score < 3) equivalentRating = "F";
+            else if (score < 4) equivalentRating = "E";
+            else if (score < 5) equivalentRating = "D";
+            else if (score < 6) equivalentRating = "C";
+            else if (score < 8) equivalentRating = "B";
+            else if (score < 10) equivalentRating = "A";
+            else equivalentRating = "S++";
+
+            ratingLabel.text = equivalentRating;
 
             for (int i = 0; i < accuracyStarsContainer.childCount; i++)
             {
