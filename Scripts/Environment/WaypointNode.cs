@@ -33,12 +33,19 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
             return former;
         }
 
+        [CanBeNull]
         public WaypointNode GetEnd()
         {
             var temp = next;
-            while (temp.HasNext)
+
+            while (temp is {HasNext: true})
             {
-                temp = temp.next;
+                if (temp.GetInstanceID() == this.GetInstanceID())
+                {
+                    temp = temp.next; // idk
+                    break;
+                }
+                else temp = temp.next;
             }
 
             return temp;

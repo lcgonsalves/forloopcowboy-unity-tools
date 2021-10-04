@@ -148,6 +148,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             return (weapons, position) =>
             {
                 var instance = Instantiate(characterRigPrefab, position, Quaternion.identity);
+                
+                // initialize health
+                var health = instance.GetOrElseAddComponent<HealthComponent>();
 
                 // initialize navigation
                 var navigation = instance.GetOrElseAddComponent<AdvancedNavigation>();
@@ -303,7 +306,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     animator = animator,
                     navigation = navigation,
                     weaponUserComponent = weaponUserComponent,
-                    attributes = stats
+                    attributes = stats,
+                    health = health
                 };
             };
         }
@@ -320,6 +324,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public Animator animator;
         public WeaponUser weaponUserComponent;
         public NPCAttributeComponent attributes;
+        public HealthComponent health;
     }
 
 }
