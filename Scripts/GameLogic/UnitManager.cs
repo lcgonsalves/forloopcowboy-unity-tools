@@ -149,6 +149,31 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             }
         }
 
+        public void Spawn(GameObject obj, WaypointNode spawnAt, Side side, bool instantiateNew = false)
+        {
+            var t = spawnAt.transform;
+            var instance = instantiateNew ? Instantiate(obj) : obj;
+
+            instance.transform.position = t.position;
+            instance.transform.rotation = t.rotation;
+                
+            instance.SetActive(true);
+            instance.transform.SetParent(null);
+                
+            var navigation = instance.GetComponent<AdvancedNavigation>();
+            var managedGameObj = instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
+            instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
+
+            if (navigation == null)
+                throw new NullReferenceException(
+                    "Spawned game objects must have an AdvancedNavigation component attached.");
+
+            // run with small delay so the thing has time to think
+            navigation.RunAsyncWithDelay(1f, () => navigation.FollowWaypoint(spawnAt));
+                
+            SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj));
+        }
+
         private void Spawn(Side side, GameObject obj, bool instantiateNew, SpawnType spawnType, List<SpawnPoint> spawnPoints)
         {
             var spawnAt = spawnPoints.Find(_ => _.type == spawnType);

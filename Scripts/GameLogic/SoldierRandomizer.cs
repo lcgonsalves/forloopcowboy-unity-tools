@@ -325,6 +325,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public WeaponUser weaponUserComponent;
         public NPCAttributeComponent attributes;
         public HealthComponent health;
+        
+        // helpers
+        public void EquipActiveWeapon()
+        {
+            weaponUserComponent.EquipWeapon(weaponUserComponent.Active);
+        }
     }
 
 }

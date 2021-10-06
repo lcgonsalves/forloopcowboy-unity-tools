@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEngine;
@@ -24,11 +25,12 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
         public int MaximumOccupants => spawnPoints.Count;
         
-        public bool TryGetAvailableSpawnPoint(out WaypointNode spawnPoint)
+        public WaypointNode[] GetAvailableSpawnPoints()
         {
-            // a soldier only needs to have an aimcomponent and that's it.
+            // a soldier only needs to have a health component in it
             // a waypoint node is free if nobody is standing at the end or the beginning of the route (KISS)
             Collider[] cache = new Collider[30];
+            HashSet<WaypointNode> availableNodes = new HashSet<WaypointNode>();
 
             foreach (var node in spawnPoints)
             {
@@ -54,17 +56,10 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
                     if (foundSoldier) break;
                 }
 
-                if (foundSoldier) continue;
-
-                else
-                {
-                    spawnPoint = node;
-                    return true;
-                };
+                if (!foundSoldier) availableNodes.Add(node);
             }
 
-            spawnPoint = null;
-            return false;
+            return availableNodes.ToArray();
         }
 
         private BoxCollider trigger;
@@ -72,11 +67,13 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         private void Start()
         {
             trigger = GetComponent<BoxCollider>();
+
+            occupantsChanged += i => Debug.Log("Current occupants " + i);
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            var healthComponent = other.GetComponent<HealthComponent>();
+            var healthComponent = other.gameObject.GetComponent<HealthComponent>();
             if (healthComponent) // soldier entered
             {
                 CurrentOccupants++;
@@ -89,7 +86,7 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.GetComponent<HealthComponent>()) // soldier entered
+            if (other.gameObject.GetComponent<HealthComponent>()) // soldier entered
             {
                 CurrentOccupants--;
                 occupantsChanged?.Invoke(CurrentOccupants);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BehaviorDesigner.Runtime.Tasks.Unity.UnityGameObject;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -15,27 +16,61 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
     {
         [Tooltip("Maps settings to different prop roots. Props will be instantiated under this root.")]
         [OnValueChanged("UpdateMaterialReference", includeChildren: true)]
+        [FoldoutGroup("Prop Randomizer")]
         public Dictionary<string, PropSettings> props = new Dictionary<string, PropSettings>();
 
         [Tooltip("Materials are randomly selected and applied to each randomized prop.")]
+        [FoldoutGroup("Material Randomizer")]
         public List<Material> materials = new List<Material>();
 
+        [LabelText("Meshes are randomly selected and applied to the selected skinned mesh renderer."), FoldoutGroup("Mesh Randomizer")]
+        public List<Mesh> meshes = new List<Mesh>();
+        
+        [FoldoutGroup("Mesh Randomizer")]
+        public SkinnedMeshRenderer meshRenderer;
+
+        private void Start()
+        {
+            if (meshRenderer == null) meshRenderer = GetComponent<SkinnedMeshRenderer>(); // only get if one isn't assigned
+            if (!meshRenderer) Debug.Log("No mesh renderer provided, mesh will not be randomized.");
+        }
+
+        [Button, FoldoutGroup("Mesh Randomizer")]
+        public void RandomizeMesh()
+        {
+            if (meshRenderer && meshes.Count > 0)
+            {
+                meshRenderer.sharedMesh = meshes[Random.Range(0, meshes.Count)];
+            }
+        }        
+        
+        [Button, FoldoutGroup("Material Randomizer")]
+        public void RandomizeMaterial()
+        {
+            // todo: ugh this is not nice
+            transform.GetChild(1).GetComponent<Renderer>().material = materials[Random.Range(0, materials.Count)];
+        }
+
         [Button]
-        public void SetForAll(bool value)
+        [FoldoutGroup("Prop Randomizer")]
+        public void SetForAll(bool enableRandomize, List<Material> newMaterials)
         {
             foreach (var prop in props)
             {
-                prop.Value.randomizable = value;
+                prop.Value.randomizable = enableRandomize;
+                prop.Value.materials = newMaterials;
             }
         }
         
         [Button]
         public void RandomizeAll()
         {
-            // randomize root object's materials
-            // todo: ugh this is not nice
-            transform.GetChild(1).GetComponent<Renderer>().material = materials[Random.Range(0, materials.Count)];
+            // randomize root object's newMaterials
+            RandomizeMaterial();
             
+            // only runs if mesh is set!
+            RandomizeMesh();
+
             foreach (var prop in props)
             {
                 if (prop.Value.randomizable) prop.Value.Randomize();
@@ -60,6 +95,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="selectedProps"></param>
         /// <returns></returns>
         [Button(ButtonSizes.Large, DisplayParameters = true)]
+        [FoldoutGroup("Prop Randomizer")]
         public GameObject[] Randomize(string[] selectedProps)
         {
             var output = new GameObject[selectedProps.Length];
@@ -154,6 +190,15 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 activeProp.transform.localPosition = Vector3.zero;
                 activeProp.gameObject.SetActive(true);
             }
+        }
+
+        [Button]
+        internal void ClearCurrent()
+        {
+            if (Application.isEditor) Object.DestroyImmediate(activeProp);
+            else Object.Destroy(activeProp);
+
+            activeProp = null;
         }
 
         internal void Select(int index)

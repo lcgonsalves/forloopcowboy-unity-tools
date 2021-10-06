@@ -1,5 +1,7 @@
 using System;
+using System.Security.Cryptography;
 using forloopcowboy_unity_tools.Scripts.Core;
+using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
@@ -12,7 +14,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
     {
         [Tooltip("This is the soldier instance that controls the stars, trait and name in the card, and is the instance to be deployed when the card is selected. Image must be provided separately.")]
         [OnValueChanged("OnSoldierChanged")]
-        [SerializeField] protected GameLogic.Soldier soldier;
+        [SerializeField] public GameLogic.Soldier soldier;
 
         [ValidateInput("NotNull", "Name label cannot be null.")]
         public TextMeshProUGUI soldierNameLabel;
@@ -35,6 +37,11 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         [ValidateInput("HasThreeImagesAsChildren", "Armor stars must be in container.")]
         public Transform armorStarsContainer;
 
+        [ValidateInput("NotNull", "Drafted stamp cannot be null.")]
+        public Transform draftedStamp;
+
+        [CanBeNull] public TransitionTweener tweener => GetComponent<TransitionTweener>();
+        
         public void SetSoldier(GameLogic.Soldier newSoldier)
         {
             soldier = newSoldier;
@@ -102,7 +109,46 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         
         public void OnPointerClick(PointerEventData eventData)
         {
+            draftedStamp.gameObject.SetActive(!draftedStamp.gameObject.activeInHierarchy);
             onClick();
+        }
+
+        public bool IsDrafted => draftedStamp.gameObject.activeInHierarchy;
+
+        /// <summary>
+        /// Destroys container, layout element, and object cleanly.
+        /// </summary>
+        /// <param name="card"></param>
+        public static void SafeDestroy(SoldierCard card)
+        {
+            if (Application.isEditor)
+            {
+                if (card.transform.parent)
+                {
+                    var parent = card.transform.parent;
+                    DestroyImmediate(parent.GetComponent<LayoutElement>());
+                    DestroyImmediate(parent.gameObject);
+                }
+            }
+            else
+            {
+                if (card.transform.parent)
+                {
+                    var parent = card.transform.parent;
+                    Destroy(parent.GetComponent<LayoutElement>());
+                    Destroy(parent.gameObject);
+                }
+                Destroy(card.gameObject);
+            }
+        }
+        
+        private void OnDestroy()
+        {
+            if (soldier.gameObject != null)
+            {
+                if (Application.isEditor) DestroyImmediate(soldier.gameObject);
+                else Destroy(soldier.gameObject);
+            }
         }
     }
 }

@@ -181,6 +181,16 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         {
             Untween(true);
         }
+
+        // perhaps not the most precise naming, but i like the sound of "slerp"
+        public void SlerpTo(Vector3 destination, float duration, bool local = true, bool interrupt = true)
+        {
+            tweenDuration = duration;
+            startFromCurrentPosition = true;
+            useLocalPosition = local;
+            to = destination;
+            Tween(interrupt);
+        }
         
         public void Tween(bool interrupt)
         {

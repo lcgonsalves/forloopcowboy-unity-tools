@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.HUD;
 using Sirenix.OdinInspector;
@@ -32,10 +33,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private UnitManager _unitManager;
         public UnitManager UnitManager => _unitManager ? _unitManager : _unitManager = GetComponent<UnitManager>();
 
-        /// <summary>
-        /// Discards previous cards and shuffles new ones.
-        /// </summary>
-        [Button] public void ShuffleCards()
+        public SoldierCard RandomizeCard()
         {
             // generate character
             var character = soldierRandomizers[Random.Range(0, soldierRandomizers.Count)].Instantiate(photoBoothAnchor, reparent: true);
@@ -50,12 +48,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var cardComponent = card.GetComponent<SoldierCard>();
 
             cardComponent.SetSoldier(character);
-
-            cardComponent.onClick = () =>
-            {
-                UnitManager.Spawn(side, character.gameObject);
-                character.weaponUserComponent.EquipWeapon(character.weaponUserComponent.Active);
-            };
 
             // start card where the tween should start
             card.transform.localPosition = tt.useLocalPosition ? tt.@from : Vector3.zero;
@@ -75,6 +67,54 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             screenRecorder.CreateTextureAndApplyToTargetImage();
             character.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Default"));
             character.gameObject.SetActive(false);
+
+            return cardComponent;
+        }
+
+        private List<SoldierCard> activeCards = new List<SoldierCard>();
+
+        public SoldierCard[] draftedCards => activeCards.Where(_ => _.IsDrafted).ToArray();
+        
+        /// <summary>
+        /// Discards previous cards and shuffles new ones.
+        /// </summary>
+        [Button] public void ShuffleCards()
+        {
+            // todo: deactivate cards properly
+            foreach (var card in activeCards)
+            {
+                if (card != null)
+                {
+                    var cardTransform = card.transform.localPosition; // because i configured the prefab to slerp locally
+                    if (card.tweener is { })
+                    {
+                        card.tweener.SlerpTo(new Vector3(cardTransform.x, -300f, cardTransform.z), 0.5f);
+                        this.RunAsyncWithDelay(0.7f, () => SoldierCard.SafeDestroy(card));
+                    }
+                }
+            }
+            
+            activeCards.Clear();
+
+            // wait until cards have been yeeted
+            this.RunAsyncWithDelay(0.8f, () =>
+            {
+                float delayBetweenShuffle = 1.2f;
+
+                for (int i = 0; i < maxAvailableCards; i++)
+                {
+                    this.RunAsyncWithDelay(delayBetweenShuffle * i, () =>
+                    {
+                        // todo: tween cards in
+                        var card = RandomizeCard();
+                        if (card is { } && card.tweener is { })
+                        {
+                            card.tweener.Tween("OnCreation", true);
+                            activeCards.Add(card);
+                        }
+                    });
+                }
+            });
 
         }
     }
