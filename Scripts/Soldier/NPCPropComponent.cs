@@ -182,7 +182,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 // set nothing as object
                 activeProp = null;
             }
-            else
+            else if (randomizerStack.Peek() != null)
             {
                 activeProp = Object.Instantiate(randomizerStack.Pop(), parent, false);
                 if (materials != null)

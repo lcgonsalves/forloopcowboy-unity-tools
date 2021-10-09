@@ -29,6 +29,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public Transform photoBoothAnchor;
         public GameObject cardPrefab;
         public HorizontalLayoutGroup cardPanel;
+        public float delayBetweenShuffle = 1.2f;
 
         private UnitManager _unitManager;
         public UnitManager UnitManager => _unitManager ? _unitManager : _unitManager = GetComponent<UnitManager>();
@@ -99,7 +100,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             // wait until cards have been yeeted
             this.RunAsyncWithDelay(0.8f, () =>
             {
-                float delayBetweenShuffle = 1.2f;
 
                 for (int i = 0; i < maxAvailableCards; i++)
                 {

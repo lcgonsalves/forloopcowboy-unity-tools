@@ -9,21 +9,33 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         [Header("Tweaks")] 
         public Transform lookAt;
         public Vector3 offset;
+        [Tooltip("Hello")] public Canvas canvas;
 
         // //
 
         private Camera cam;
+        private RectTransform rt;
         
         private void Start()
         {
             cam = Camera.main;
+            rt = GetComponent<RectTransform>();
         }
 
         private void Update()
         {
-            var pos = cam.WorldToScreenPoint(lookAt.position + offset);
-            if (transform.position != pos)
-                transform.position = pos;
+            if (!lookAt) return;
+
+            // fuck you unity and your black magic to perform such a basic op using a built in system
+            Vector2 adjustedPosition = cam.WorldToScreenPoint(lookAt.position) + offset;
+
+            var canvasRT = canvas.GetComponent<RectTransform>();
+            var rect = canvasRT.rect;
+            adjustedPosition.x *= rect.width / (float)cam.pixelWidth;
+            adjustedPosition.y *= rect.height / (float)cam.pixelHeight;
+ 
+            // set it
+            rt.anchoredPosition = adjustedPosition - canvasRT.sizeDelta / 2f;
         }
     }
 }

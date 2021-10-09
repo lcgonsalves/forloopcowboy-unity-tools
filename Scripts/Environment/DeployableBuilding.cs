@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEngine;
@@ -19,7 +20,8 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         public List<WaypointNode> spawnPoints;
         public float waypointCheckRadius = 2f;
 
-        public int CurrentOccupants = 0;
+        private HashSet<int> occupantIDs = new HashSet<int>();
+        public int CurrentOccupants => occupantIDs.Count;
 
         public event Action<int> occupantsChanged;
 
@@ -73,22 +75,58 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
         private void OnTriggerEnter(Collider other)
         {
-            var healthComponent = other.gameObject.GetComponent<HealthComponent>();
+            var healthComponent = GetHealthComponent(other);
+
             if (healthComponent) // soldier entered
             {
-                CurrentOccupants++;
-                occupantsChanged?.Invoke(CurrentOccupants);
+                var id = healthComponent.GetInstanceID();
+                var valueChanged = !occupantIDs.Contains(id);
+                occupantIDs.Add(id);
+
+                // must be called after adding to reflect the number of current occupants
+                if (valueChanged) occupantsChanged?.Invoke(CurrentOccupants);
                 
                 // if soldier dies we reduce occupants
-                healthComponent.onDeath += () => CurrentOccupants--;
+                healthComponent.onDeath += () => occupantIDs.Remove(id);
             }
+        }
+
+        /// <summary>
+        /// Gets health component either in collider, or if the
+        /// collider is a Ragdoll.Limb, then we look for the health
+        /// component in the master of the puppet.
+        /// TODO: maybe cache references? this looks like it could be bad
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        private static HealthComponent GetHealthComponent(Collider other)
+        {
+            var healthComponent = other.gameObject.GetComponent<HealthComponent>();
+            if (!healthComponent)
+            {
+                // if no health component in collider itself, try to see if it's a limb
+                // and then look for the component on the root of the object
+                var limbComponent = other.gameObject.GetComponent<Ragdoll.Limb>();
+                if (limbComponent)
+                {
+                    healthComponent = limbComponent.master.GetComponent<HealthComponent>();
+                    // if still no health component, look in the parent.
+                    if (!healthComponent)
+                        healthComponent = limbComponent.master.transform.parent.GetComponent<HealthComponent>();
+                }
+            }
+
+            return healthComponent;
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.gameObject.GetComponent<HealthComponent>()) // soldier entered
+            var healthComponent = GetHealthComponent(other);
+            var id = healthComponent != null ? healthComponent.GetInstanceID() : (int?) null;
+            
+            if (healthComponent && id.HasValue && occupantIDs.Contains(id.Value)) // soldier exited
             {
-                CurrentOccupants--;
+                occupantIDs.Remove(id.Value);
                 occupantsChanged?.Invoke(CurrentOccupants);
             }
         }

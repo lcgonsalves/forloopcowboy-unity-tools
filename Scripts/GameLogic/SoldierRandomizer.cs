@@ -151,6 +151,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 
                 // initialize health
                 var health = instance.GetOrElseAddComponent<HealthComponent>();
+                
+                // initialize ragdoll component (or remove if prefab doesn't have any rigidbodies)
+                var ragdoll = instance.GetOrElseAddComponent<Ragdoll>();
 
                 // initialize navigation
                 var navigation = instance.GetOrElseAddComponent<AdvancedNavigation>();
@@ -284,7 +287,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     }
                     else
                     {
-                        Debug.LogWarning($"No potential holster found for weapon {weapon.name} of type {type}. This weapon will not be attached.");
+                        Debug.Log($"No potential holster found for weapon {weapon.name} of type {type}. This weapon will not be attached.");
                         DestroyImmediate(weaponInstance);
                     }
                     
@@ -307,7 +310,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     navigation = navigation,
                     weaponUserComponent = weaponUserComponent,
                     attributes = stats,
-                    health = health
+                    health = health,
+                    ragdoll = ragdoll
                 };
             };
         }
@@ -325,6 +329,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public WeaponUser weaponUserComponent;
         public NPCAttributeComponent attributes;
         public HealthComponent health;
+        public Ragdoll ragdoll;
         
         // helpers
         public void EquipActiveWeapon()
