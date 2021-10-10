@@ -22,14 +22,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public void Heal(int amount);
 
     }
-
-    public static class HasHealthDefaults
-    {
-        public static void Damage(this IHasHealth self, int amount) { self.Health = Mathf.Clamp(self.Health - amount, 0, self.MaxHealth); }
-
-        public static void Heal(this IHasHealth self, int amount) { self.Health = Mathf.Clamp(self.Health + amount, 0, self.MaxHealth); }
-    }
-
+    
     public class DamageSystem { public static string tag = "IDamaging"; }
 
 }

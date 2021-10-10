@@ -24,7 +24,16 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             set
             {
                 health = Mathf.Clamp(value, 0, MaxHealth);
-                if (health == 0) onDeath?.Invoke();
+                if (health == 0)
+                {
+                    // if for some reason the character wakes up already dead, this will never trigger the destruction
+                    // signal to the unit manager.
+                    // if you want the corpse to be picked up by the garbage collection system, but the default
+                    // function was never invoked, then you must run [[SetDestroyFlagWithDelay]] so the GC can properly.
+                    // if the intention was to spawn a dead character, this behavior us to prevent the system from
+                    // forcing a deletion when unintended.
+                    onDeath?.Invoke();
+                }
             }
         }
 
@@ -35,10 +44,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void AttachOnDeathListeners()
         {
-            onDeath += DelayDestroyOnDeath;
+            onDeath += SetDestroyFlagWithDelay;
         }
 
-        private void DelayDestroyOnDeath()
+        public void SetDestroyFlagWithDelay()
         {
             this.RunAsyncWithDelay(gameObjectDestroyDelay, () =>
             {
@@ -50,9 +59,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         public bool IsDead => !IsAlive;
         
+        
         public void Damage(int amount) { Health -= amount; }
 
-        public void Heal(int amount) { HasHealthDefaults.Heal(this, amount); }
+        public void Heal(int amount) { Health += amount; }
 
         private bool _shouldDestroy = false;
         public bool ShouldDestroy()
@@ -90,7 +100,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void OnDestroy()
         {
-            onDeath -= DelayDestroyOnDeath;
+            onDeath -= SetDestroyFlagWithDelay;
         }
 
         public static HealthComponent GetHealthComponent(Component other) { return GetHealthComponent(other); }
