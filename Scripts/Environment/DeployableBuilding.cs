@@ -5,6 +5,7 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEngine;
+using Object = System.Object;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment
 {
@@ -19,6 +20,7 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         
         public List<WaypointNode> spawnPoints;
         public float waypointCheckRadius = 2f;
+        public GameplayManager gameplayManager;
 
         private HashSet<int> occupantIDs = new HashSet<int>();
         public int CurrentOccupants => occupantIDs.Count;
@@ -27,41 +29,27 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
         public int MaximumOccupants => spawnPoints.Count;
         
-        public WaypointNode[] GetAvailableSpawnPoints()
+        public List<WaypointNode> GetAvailableSpawnPoints()
         {
             // a soldier only needs to have a health component in it
-            // a waypoint node is free if nobody is standing at the end or the beginning of the route (KISS)
-            Collider[] cache = new Collider[30];
-            HashSet<WaypointNode> availableNodes = new HashSet<WaypointNode>();
-
-            foreach (var node in spawnPoints)
+            // a waypoint node is free if none of the soldiers spawned at said waypoint
+            // are alive
+            List<WaypointNode> available = new List<WaypointNode>();
+            
+            foreach (var spawnPoint in spawnPoints)
             {
-                var foundInSpawnPoint = Physics.OverlapSphereNonAlloc(node.transform.position, waypointCheckRadius, cache);
-                bool foundSoldier = false;
+                var allSpawnedAt = gameplayManager.UnitManager.GetAllSpawnedAt(spawnPoint, gameplayManager.side);
                 
-                for (int i = 0; i < foundInSpawnPoint; i++)
+                // if any is alive, skip spawn point
+                if (!allSpawnedAt.Any(obj =>
                 {
-                    var c = cache[i];
-                    foundSoldier = GetHealthComponent(c);
-                    if (foundSoldier) break;
-                }
+                    var healthComponent = HealthComponent.GetHealthComponent(obj);
+                    return healthComponent.IsAlive;
+                })) available.Add(spawnPoint);
 
-                if (foundSoldier) continue; // break early to avoid another overlap sphere / end traversal
-                
-                var end = node.GetEnd();
-                var foundInDefendPoint = end ? Physics.OverlapSphereNonAlloc(end.transform.position, waypointCheckRadius, cache) : 0;
-                
-                for (int i = 0; i < foundInDefendPoint; i++)
-                {
-                    var c = cache[i];
-                    foundSoldier = GetHealthComponent(c);
-                    if (foundSoldier) break;
-                }
-
-                if (!foundSoldier) availableNodes.Add(node);
             }
 
-            return availableNodes.ToArray();
+            return available;
         }
 
         private BoxCollider trigger;
@@ -69,62 +57,42 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         private void Start()
         {
             trigger = GetComponent<BoxCollider>();
+            if (!gameplayManager) gameplayManager = FindObjectOfType<GameplayManager>();
 
             occupantsChanged += i => Debug.Log("Current occupants " + i);
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            var healthComponent = GetHealthComponent(other);
+            // we either pick the master of the ragdoll limb or the object itself if the collider is not the limb
+            var rdlimb = other.GetComponent<Ragdoll.Limb>();
+            var obj = rdlimb ? rdlimb.master.gameObject : other.gameObject;
+            var isSoldier = obj is { } && obj.CompareTag(SoldierRandomizer.soldierTag);
 
-            if (healthComponent) // soldier entered
+            if (isSoldier) // soldier entered
             {
-                var id = healthComponent.GetInstanceID();
+                var id = obj.GetInstanceID();
                 var valueChanged = !occupantIDs.Contains(id);
                 occupantIDs.Add(id);
 
                 // must be called after adding to reflect the number of current occupants
                 if (valueChanged) occupantsChanged?.Invoke(CurrentOccupants);
                 
-                // if soldier dies we reduce occupants
-                healthComponent.onDeath += () => occupantIDs.Remove(id);
+                // if soldier has health component and it dies we reduce occupants
+                var healthComponent = obj.GetComponent<HealthComponent>();
+                if (healthComponent) healthComponent.onDeath += () => occupantIDs.Remove(id);
             }
-        }
-
-        /// <summary>
-        /// Gets health component either in collider, or if the
-        /// collider is a Ragdoll.Limb, then we look for the health
-        /// component in the master of the puppet.
-        /// TODO: maybe cache references? this looks like it could be bad
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        private static HealthComponent GetHealthComponent(Collider other)
-        {
-            var healthComponent = other.gameObject.GetComponent<HealthComponent>();
-            if (!healthComponent)
-            {
-                // if no health component in collider itself, try to see if it's a limb
-                // and then look for the component on the root of the object
-                var limbComponent = other.gameObject.GetComponent<Ragdoll.Limb>();
-                if (limbComponent)
-                {
-                    healthComponent = limbComponent.master.GetComponent<HealthComponent>();
-                    // if still no health component, look in the parent.
-                    if (!healthComponent)
-                        healthComponent = limbComponent.master.transform.parent.GetComponent<HealthComponent>();
-                }
-            }
-
-            return healthComponent;
         }
 
         private void OnTriggerExit(Collider other)
         {
-            var healthComponent = GetHealthComponent(other);
-            var id = healthComponent != null ? healthComponent.GetInstanceID() : (int?) null;
+            var rdlimb = other.GetComponent<Ragdoll.Limb>();
+            var obj = rdlimb ? rdlimb.master.gameObject : other.gameObject;
+            var isSoldier = obj.CompareTag(SoldierRandomizer.soldierTag);
             
-            if (healthComponent && id.HasValue && occupantIDs.Contains(id.Value)) // soldier exited
+            int? id = obj != null ? obj.GetInstanceID() : (int?) null;
+            
+            if (isSoldier && id.HasValue && occupantIDs.Contains(id.Value)) // soldier exited
             {
                 occupantIDs.Remove(id.Value);
                 occupantsChanged?.Invoke(CurrentOccupants);

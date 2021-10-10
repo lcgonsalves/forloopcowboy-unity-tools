@@ -17,7 +17,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     /// and exposes functions for instantiating variations.
     /// </summary>
     [CreateAssetMenu(fileName = "Untitled Soldier Randomizer Settings", menuName = "NPC/New Soldier Randomizer Settings...", order = 2)]
-    public class SoldierRandomizer : ScriptableObject
+    public class SoldierRandomizer : SerializedScriptableObject
     {
         public uint prefabRandomizerSeed = 69;
         
@@ -26,8 +26,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public ExternalBehaviorTree ikControlBehaviorTree;
         public Transition ikLerpInTransition;
         public Transition ikLerpOutTransition;
+        
+        [InlineEditor(InlineEditorObjectFieldModes.Foldout)]
         public StringList firstNames;
+        
+        [InlineEditor(InlineEditorObjectFieldModes.Foldout)]
         public StringList lastNames;
+        
+        [ShowInInspector]
+        public static string soldierTag = "Soldier";
         
         // possible models to spawn
         public List<NPCPropComponent> randomizableCharacters;
@@ -110,7 +117,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
             var selectedWeapons = indices.Select(idx => weapons[idx]).ToArray();
 
-            return InstantiateCharacter(
+            var soldier = InstantiateCharacter(
                 selectedCharacter,
                 animatorController,
                 ikControlBehaviorTree,
@@ -120,6 +127,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 firstNames,
                 lastNames
             )(selectedWeapons, position);
+
+            if (!string.IsNullOrEmpty(soldierTag)) soldier.gameObject.tag = soldierTag;
+
+            return soldier;
         }
 
         /// <summary>
@@ -151,7 +162,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 
                 // initialize health
                 var health = instance.GetOrElseAddComponent<HealthComponent>();
-                
+
                 // initialize ragdoll component (or remove if prefab doesn't have any rigidbodies)
                 var ragdoll = instance.GetOrElseAddComponent<Ragdoll>();
 

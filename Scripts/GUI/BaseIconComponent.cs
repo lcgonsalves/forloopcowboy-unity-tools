@@ -30,6 +30,8 @@ public class BaseIconComponent : SerializedMonoBehaviour, IPointerClickHandler
 
     [FoldoutGroup("Grow On Hover")]
     public Transform scaleTarget;
+
+    private SpamProtection sp = new SpamProtection(0.5f);
     
     public void Start()
     {
@@ -60,26 +62,32 @@ public class BaseIconComponent : SerializedMonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData)
     {
         // todo: show hint that house is full
-
-        if (building.MaximumOccupants > building.CurrentOccupants)
+        sp.SafeExecute(() =>
         {
-            var draftedSoldiers = gameplayManager.draftedCards;
-            var availableSpawns = building.GetAvailableSpawnPoints();
-
-            var spawnedSoldiers = new SoldierCard[Mathf.Min(draftedSoldiers.Length, availableSpawns.Length)];
-
-            for (int i = 0; i < Mathf.Min(draftedSoldiers.Length, availableSpawns.Length); i++)
+            Debug.Log("function ran!");
+            if (building.MaximumOccupants > building.CurrentOccupants)
             {
-                var soldier = draftedSoldiers[i];
-                var spawn = availableSpawns[i];
+                var draftedSoldiers = gameplayManager.draftedCards;
+                if (draftedSoldiers.Length == 0) return;
                 
-                gameplayManager.UnitManager.Spawn(soldier.soldier.gameObject, spawn, gameplayManager.side);
-                spawnedSoldiers[i] = soldier;
+                var availableSpawns = building.GetAvailableSpawnPoints();
+
+                var spawnedSoldierCards = new SoldierCard[Mathf.Min(draftedSoldiers.Length, availableSpawns.Count)];
+
+                for (int i = 0; i < Mathf.Min(draftedSoldiers.Length, availableSpawns.Count); i++)
+                {
+                    var card = draftedSoldiers[i];
+                    var spawn = availableSpawns[i];
+
+                    gameplayManager.UnitManager.Spawn(card.soldier.gameObject, spawn, gameplayManager.side);
+                    
+                    spawnedSoldierCards[i] = card;
+                }
+
+                gameplayManager.DisposeCards(spawnedSoldierCards);
+
             }
-            
-            gameplayManager.DisposeCards(spawnedSoldiers);
-            
-        }
+        });
     }
 
 }

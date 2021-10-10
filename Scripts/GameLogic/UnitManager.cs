@@ -47,18 +47,24 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
             public Side side;
             public IManagedGameObject managedGameObject;
-            public GameObject gameObject => managedGameObject.gameObject;
+            public GameObject gameObject => managedGameObject?.gameObject;
+            public WaypointNode spawnedAt = null;
 
             public SpawnedGameObject(Side side, GameObject obj)
             {
                 this.side = side;
-                this.managedGameObject = obj.Managed();
+                this.managedGameObject = obj.GetManaged();
             }
 
             public SpawnedGameObject(Side side, IManagedGameObject obj)
             {
                 this.side = side;
                 this.managedGameObject = obj;
+            }
+
+            public SpawnedGameObject(Side side, IManagedGameObject obj, WaypointNode spawnedAt) : this(side, obj)
+            {
+                this.spawnedAt = spawnedAt;
             }
         }
 
@@ -89,7 +95,29 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             }
         }
 
-        // todo: check for end of chain to see if there's already someone there, if so can't spawn
+        /// <summary>
+        /// Returns all objects spawned at a given waypoint node.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public SpawnedGameObject[] GetAllSpawnedAt(WaypointNode node)
+        {
+            return SpawnedGameObjects.Where(_ => _.spawnedAt.GetInstanceID() == node.GetInstanceID()).ToArray();
+        }
+        
+        /// <summary>
+        /// Returns all objects spawned at a given waypoint node for a given side.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="side"></param>
+        /// <returns></returns>
+        public GameObject[] GetAllSpawnedAt(WaypointNode node, Side side)
+        {
+            return SpawnedGameObjects
+                .Where(_ => _.spawnedAt.GetInstanceID() == node.GetInstanceID() && _.side == side)
+                .Select(_ => _.gameObject)
+                .ToArray();
+        }
 
         /// <summary>
         /// Spawns new game object for given side on first available spawn point
@@ -161,7 +189,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             instance.transform.SetParent(null);
                 
             var navigation = instance.GetComponent<AdvancedNavigation>();
-            var managedGameObj = instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
+            IManagedGameObject managedGameObj = (IManagedGameObject) instance.GetComponent<HealthComponent>() ?? instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
             instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
 
             if (navigation == null)
@@ -171,7 +199,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             // run with small delay so the thing has time to think
             navigation.RunAsyncWithDelay(1f, () => navigation.FollowWaypoint(spawnAt));
                 
-            SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj));
+            SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj, spawnAt));
         }
 
         private void Spawn(Side side, GameObject obj, bool instantiateNew, SpawnType spawnType, List<SpawnPoint> spawnPoints)
@@ -189,7 +217,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 instance.transform.SetParent(null);
                 
                 var navigation = instance.GetComponent<AdvancedNavigation>();
-                var managedGameObj = instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
+                
+                // either get health component or get/add a generic managed mono behaviour if no health component is present.
+                // health components by default expose logic to auto-destruct on death so we can use this here if available.
+                IManagedGameObject managedGameObj = (IManagedGameObject) instance.GetComponent<HealthComponent>() ?? instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
                 instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
 
                 if (navigation == null)
@@ -221,16 +252,14 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 for (int i = 0; i < SpawnedGameObjects.Count; i++)
                 {
                     var spawnedGameObject = SpawnedGameObjects[i];
-                    if (spawnedGameObject.managedGameObject.ShouldDestroy())
-                    {
-                        indicesToRemove.Add(i);
-                        GameObject.Destroy(spawnedGameObject.gameObject);
-                    }
+                    if (spawnedGameObject.managedGameObject.ShouldDestroy()) indicesToRemove.Add(i);
                 }
 
                 foreach (var i in indicesToRemove)
                 {
+                    var spawnedGameObject = SpawnedGameObjects[i];
                     SpawnedGameObjects.RemoveAt(i);
+                    GameObject.Destroy(spawnedGameObject.gameObject);
                 }
 
                 indicesToRemove.Clear();
@@ -293,7 +322,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             return false;
         }
 
-        public static IManagedGameObject Managed(this GameObject obj)
+        public static IManagedGameObject GetManaged(this GameObject obj)
         {
             return new ManagedGameObject(obj);
         }
