@@ -113,13 +113,14 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
             onClick();
         }
 
-        public bool IsDrafted => draftedStamp.gameObject.activeInHierarchy;
+        public bool IsDrafted => draftedStamp != null && draftedStamp.gameObject.activeInHierarchy;
 
         /// <summary>
         /// Destroys container, layout element, and object cleanly.
         /// </summary>
         /// <param name="card"></param>
-        public static void SafeDestroy(SoldierCard card)
+        /// <param name="destroyAssociatedSoldier">When true also destroys the soldier instance. To be used when soldier hasn't been spawned yet.</param>
+        public static void SafeDestroy(SoldierCard card, bool destroyAssociatedSoldier = false)
         {
             if (Application.isEditor)
             {
@@ -128,6 +129,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
                     var parent = card.transform.parent;
                     DestroyImmediate(parent.GetComponent<LayoutElement>());
                     DestroyImmediate(parent.gameObject);
+                    if (destroyAssociatedSoldier && card.soldier.gameObject != null) DestroyImmediate(card.soldier.gameObject);
                 }
             }
             else
@@ -139,16 +141,9 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
                     Destroy(parent.gameObject);
                 }
                 Destroy(card.gameObject);
+                if (destroyAssociatedSoldier && card.soldier.gameObject != null) DestroyImmediate(card.soldier.gameObject);
             }
         }
         
-        private void OnDestroy()
-        {
-            if (soldier.gameObject != null)
-            {
-                if (Application.isEditor) DestroyImmediate(soldier.gameObject);
-                else Destroy(soldier.gameObject);
-            }
-        }
     }
 }

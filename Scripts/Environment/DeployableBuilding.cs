@@ -42,7 +42,7 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
                 for (int i = 0; i < foundInSpawnPoint; i++)
                 {
                     var c = cache[i];
-                    foundSoldier = c.gameObject.GetComponent<HealthComponent>();
+                    foundSoldier = GetHealthComponent(c);
                     if (foundSoldier) break;
                 }
 
@@ -54,7 +54,7 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
                 for (int i = 0; i < foundInDefendPoint; i++)
                 {
                     var c = cache[i];
-                    foundSoldier = c.gameObject.GetComponent<HealthComponent>();
+                    foundSoldier = GetHealthComponent(c);
                     if (foundSoldier) break;
                 }
 

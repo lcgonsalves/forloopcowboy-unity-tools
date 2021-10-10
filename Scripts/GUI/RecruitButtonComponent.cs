@@ -1,5 +1,6 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.GameLogic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -18,11 +19,13 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
 
         private Coroutine _timerCoroutine;
         private ScaleTweener _scaleTweener;
+        private GameplayManager _gameplayManager;
         
         private void Start()
         {
             progressBar = this.GetOrElseAddComponent<ProgressBar>();
             _scaleTweener = this.GetOrElseAddComponent<ScaleTweener>();
+            _gameplayManager = GameObject.FindObjectOfType<GameplayManager>();
 
             // disable timer text when it's done
             OnCooldownOver += () =>
@@ -35,7 +38,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
 
         private void ResetTimer()
         {
-            progressBar.current = 0;
+            progressBar.current = -1;
             progressBar.max = cooldownInSeconds;
             
             if (_timerCoroutine != null) StopCoroutine(_timerCoroutine);
@@ -81,6 +84,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
                 progressBar.current = 0;
                 OnOnRecruitment();
                 ResetTimer();
+                _gameplayManager.ShuffleCards();
             }
             
         }

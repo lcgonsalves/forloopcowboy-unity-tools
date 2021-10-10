@@ -66,13 +66,18 @@ public class BaseIconComponent : SerializedMonoBehaviour, IPointerClickHandler
             var draftedSoldiers = gameplayManager.draftedCards;
             var availableSpawns = building.GetAvailableSpawnPoints();
 
+            var spawnedSoldiers = new SoldierCard[Mathf.Min(draftedSoldiers.Length, availableSpawns.Length)];
+
             for (int i = 0; i < Mathf.Min(draftedSoldiers.Length, availableSpawns.Length); i++)
             {
                 var soldier = draftedSoldiers[i];
                 var spawn = availableSpawns[i];
                 
                 gameplayManager.UnitManager.Spawn(soldier.soldier.gameObject, spawn, gameplayManager.side);
+                spawnedSoldiers[i] = soldier;
             }
+            
+            gameplayManager.DisposeCards(spawnedSoldiers);
             
         }
     }

@@ -34,6 +34,11 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private UnitManager _unitManager;
         public UnitManager UnitManager => _unitManager ? _unitManager : _unitManager = GetComponent<UnitManager>();
 
+        private void Awake()
+        {
+            ShuffleCards();
+        }
+
         public SoldierCard RandomizeCard()
         {
             // generate character
@@ -81,24 +86,13 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// </summary>
         [Button] public void ShuffleCards()
         {
-            // todo: deactivate cards properly
-            foreach (var card in activeCards)
-            {
-                if (card != null)
-                {
-                    var cardTransform = card.transform.localPosition; // because i configured the prefab to slerp locally
-                    if (card.tweener is { })
-                    {
-                        card.tweener.SlerpTo(new Vector3(cardTransform.x, -300f, cardTransform.z), 0.5f);
-                        this.RunAsyncWithDelay(0.7f, () => SoldierCard.SafeDestroy(card));
-                    }
-                }
-            }
+            var hasActiveCards = activeCards.Count > 0;
+            if (hasActiveCards) DisposeCards(activeCards, disposeOfSoldiers: true);
             
             activeCards.Clear();
 
             // wait until cards have been yeeted
-            this.RunAsyncWithDelay(0.8f, () =>
+            this.RunAsyncWithDelay(hasActiveCards ? 0.8f : 0, () =>
             {
 
                 for (int i = 0; i < maxAvailableCards; i++)
@@ -116,6 +110,27 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 }
             });
 
+        }
+
+        /// <summary>
+        /// Lerps card and destroys card/associated soldier.
+        /// </summary>
+        /// <param name="cardsToDispose"></param>
+        /// <param name="disposeOfSoldiers"></param>
+        public void DisposeCards(IEnumerable<SoldierCard> cardsToDispose, bool disposeOfSoldiers = false)
+        {
+            foreach (var card in cardsToDispose)
+            {
+                if (card != null)
+                {
+                    var cardTransform = card.transform.localPosition; // because i configured the prefab to slerp locally
+                    if (card.tweener is { })
+                    {
+                        card.tweener.SlerpTo(new Vector3(cardTransform.x, -300f, cardTransform.z), 0.5f);
+                        this.RunAsyncWithDelay(0.7f, () => SoldierCard.SafeDestroy(card, disposeOfSoldiers));
+                    }
+                }
+            }
         }
     }
 }
