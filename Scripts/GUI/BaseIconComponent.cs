@@ -10,7 +10,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(WorldPositionFollower)), RequireComponent(typeof(ScaleTweener)), ExecuteAlways]
+[RequireComponent(typeof(ScaleTweener)), ExecuteAlways]
 public class BaseIconComponent : SerializedMonoBehaviour, IPointerClickHandler
 {
     public TextMeshProUGUI baseName, basePopulation, baseCapacity;
@@ -36,18 +36,19 @@ public class BaseIconComponent : SerializedMonoBehaviour, IPointerClickHandler
     public void Start()
     {
         gameplayManager = GameObject.FindObjectOfType<GameplayManager>();
-        
-        baseName.text = building.BuildingName;
-        basePopulation.text = building.CurrentOccupants.ToString();
-        baseCapacity.text = building.MaximumOccupants.ToString();
+
+        if (baseCapacity) baseCapacity.text = building.MaximumOccupants.ToString();
+        if (baseName) baseName.text = building.BuildingName;
+        if (basePopulation) basePopulation.text = building.CurrentOccupants.ToString();
 
         var positionFollower = GetComponent<WorldPositionFollower>();
-        positionFollower.lookAt = building.transform;
+        if (positionFollower) positionFollower.lookAt = building.transform;
 
-        building.occupantsChanged += newNumberOfOCuupants =>
+        building.occupantsChanged += _ =>
         {
-            basePopulation.text = newNumberOfOCuupants.ToString();
-            baseCapacity.text = building.MaximumOccupants.ToString();
+            // use current occupants instead of event value to preserve continuity
+            if (basePopulation) basePopulation.text = building.CurrentOccupants.ToString();
+            if (baseCapacity) baseCapacity.text = building.MaximumOccupants.ToString();
         };
 
         var scaleTweener = this.GetOrElseAddComponent<ScaleTweener>();
@@ -64,7 +65,6 @@ public class BaseIconComponent : SerializedMonoBehaviour, IPointerClickHandler
         // todo: show hint that house is full
         sp.SafeExecute(() =>
         {
-            Debug.Log("function ran!");
             if (building.MaximumOccupants > building.CurrentOccupants)
             {
                 var draftedSoldiers = gameplayManager.draftedCards;
@@ -72,14 +72,38 @@ public class BaseIconComponent : SerializedMonoBehaviour, IPointerClickHandler
                 
                 var availableSpawns = building.GetAvailableSpawnPoints();
 
-                var spawnedSoldierCards = new SoldierCard[Mathf.Min(draftedSoldiers.Length, availableSpawns.Count)];
-
-                for (int i = 0; i < Mathf.Min(draftedSoldiers.Length, availableSpawns.Count); i++)
+                // if singleton send back to the list.
+                availableSpawns.Sort((a, b) =>
                 {
-                    var card = draftedSoldiers[i];
-                    var spawn = availableSpawns[i];
+                    if (a.singleton && b.singleton) return 0;
+                    if (a.singleton) return 1;
+                    else return -1;
+                });
+                
+                bool hasANonSingleton = availableSpawns.Exists(_ => !_.singleton);
+                
+                // basically we only care about the soldiers selected if we don't have singleton limitations.
+                var numberOfSoldiersToSelect = hasANonSingleton
+                    ? draftedSoldiers.Length
+                    : Mathf.Min(draftedSoldiers.Length, availableSpawns.Count);
+                
+                var spawnedSoldierCards = new SoldierCard[numberOfSoldiersToSelect];
 
-                    gameplayManager.UnitManager.Spawn(card.soldier.gameObject, spawn, gameplayManager.side);
+                int j = 0;
+                for (
+                    int i = 0;
+                    i < numberOfSoldiersToSelect;
+                    i++
+                ) {
+                    var card = draftedSoldiers[i];
+                    var spawn = availableSpawns[j];
+
+                    // if non singleton we can spawn as many as we want. hence why they're sorted to the end. 
+                    // want two singletons and choose between them instead of the first one blocking out the second?
+                    // make two buildings. sorry
+                    if (spawn.singleton) j++;
+
+                    gameplayManager.UnitManager.Spawn(card.soldier.gameObject, spawn.node, gameplayManager.side);
                     
                     spawnedSoldierCards[i] = card;
                 }

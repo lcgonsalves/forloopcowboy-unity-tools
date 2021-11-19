@@ -4,6 +4,7 @@ using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Soldier;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = System.Object;
 
@@ -14,34 +15,49 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
     /// a given building and which spawns are available.
     /// </summary>
     [RequireComponent(typeof(BoxCollider))]
-    public class DeployableBuilding : MonoBehaviour
+    public class DeployableBuilding : SerializedMonoBehaviour
     {
         public string BuildingName = "Unknown";
         
-        public List<WaypointNode> spawnPoints;
+        public struct SpawnPoint
+        {
+            public WaypointNode node;
+            
+            /// <summary>
+            /// When set to true, as long as there is a living soldier that spawned in
+            /// this node, this node is unavailable. Set it to false if you want
+            /// to be able to spawn many objects in a single position.
+            /// </summary>
+            public bool singleton;
+        }
+        
+        public List<SpawnPoint> spawnPoints;
         public float waypointCheckRadius = 2f;
         public GameplayManager gameplayManager;
 
         private HashSet<int> occupantIDs = new HashSet<int>();
+        
+        [ShowInInspector]
         public int CurrentOccupants => occupantIDs.Count;
 
         public event Action<int> occupantsChanged;
 
         public int MaximumOccupants => spawnPoints.Count;
         
-        public List<WaypointNode> GetAvailableSpawnPoints()
+        public List<SpawnPoint> GetAvailableSpawnPoints()
         {
             // a soldier only needs to have a health component in it
             // a waypoint node is free if none of the soldiers spawned at said waypoint
             // are alive
-            List<WaypointNode> available = new List<WaypointNode>();
+            List<SpawnPoint> available = new List<SpawnPoint>();
             
             foreach (var spawnPoint in spawnPoints)
             {
-                var allSpawnedAt = gameplayManager.UnitManager.GetAllSpawnedAt(spawnPoint, gameplayManager.side);
+                var allSpawnedAt = gameplayManager.UnitManager.GetAllSpawnedAt(spawnPoint.node, gameplayManager.side);
                 
                 // if any is alive, skip spawn point
-                if (!allSpawnedAt.Any(obj =>
+                // if singleton, check for living soldiers
+                if (!spawnPoint.singleton || !allSpawnedAt.Any(obj =>
                 {
                     var healthComponent = HealthComponent.GetHealthComponent(obj);
                     return healthComponent.IsAlive;
@@ -58,8 +74,6 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         {
             trigger = GetComponent<BoxCollider>();
             if (!gameplayManager) gameplayManager = FindObjectOfType<GameplayManager>();
-
-            occupantsChanged += i => Debug.Log("Current occupants " + i);
         }
 
         private void OnTriggerEnter(Collider other)
@@ -104,10 +118,10 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
             foreach (var waypointNode in spawnPoints)
             {
                 Gizmos.color = new Color(0.15f, 0.64f, 0.23f);
-                Gizmos.DrawWireSphere(waypointNode.transform.position, waypointCheckRadius);
+                Gizmos.DrawWireSphere(waypointNode.node.transform.position, waypointCheckRadius);
                 
                 Gizmos.color = Color.red;
-                var end = waypointNode.GetEnd();
+                var end = waypointNode.node.GetEnd();
                 if (end) Gizmos.DrawWireSphere(end.transform.position, waypointCheckRadius);
             }
         }
