@@ -30,7 +30,7 @@ namespace forloopcowboy_unity_tools.Editor
             GUI.enabled = aimTarget != null;
             if (GUILayout.Button(aimTarget != null ? "Go" : "Select a target"))
             {
-                refAimComponent.Aim(aimTarget.position, aimGradually);
+                refAimComponent.Aim(aimTarget, aimGradually);
             }
 
             GUI.enabled = true;

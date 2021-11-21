@@ -1,6 +1,7 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Weapon;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Soldier
@@ -28,16 +29,13 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         {
             if (isTracking && (trackedTarget != null)) 
             { 
-                Aim(trackedTarget.position, targetIsNew);
-                targetIsNew = false;
+                Aim(trackedTarget, false);
             }
         }
 
         // Makes component execute Aim() on Update() loop, focusing on target's position.
         public void Track(Transform target)
         {
-            targetIsNew = !trackedTarget || trackedTarget.GetInstanceID() != target.GetInstanceID();
-            
             isTracking = true;
             trackedTarget = target;
         }
@@ -52,14 +50,31 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 aimTransition = null;
             }
         }
-        
+
+        /// <summary>
+        /// Gradually aims towards target, then tracks it.
+        /// If given target is the same as the tracked target, nothing happens.
+        /// </summary>
+        /// <param name="target"></param>
+        public void AimAndTrack(Transform target)
+        {
+            if (trackedTarget == null || trackedTarget.GetInstanceID() != target.GetInstanceID())
+            {
+                Aim(target, true, () =>
+                {
+                    Track(target);
+                });
+            }
+        }
+
         /// <summary>
         /// Rotates body transform and weapon transform to look at the target. If no body transform has been specified,
         /// body transform is set to this transform.
         /// </summary>
         /// <param name="target"></param>
         /// <param name="gradual">When true, plays animation. If an animation is already playing, it interrupts it.</param>
-        public void Aim(Vector3 target, bool gradual)
+        /// <param name="onAimReady">Callback that runs when aim is ready</param>
+        public void Aim(Transform target, bool gradual, [CanBeNull] Action onAimReady = null)
         {
             bodyTransform = bodyTransform != null ? bodyTransform : transform;
 
@@ -76,9 +91,12 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                     state =>
                     {
                         // body just rotates on axis, so as to not tilt character
+                        var targetPosition = target.position;
+                        var bodyPosition = bodyTransform.position;
+                        
                         bodyTransform.rotation = Quaternion.Lerp(
                             initialBodyRotation,
-                            Quaternion.LookRotation(new Vector3(target.x, bodyTransform.position.y, target.z) - bodyTransform.position),
+                            Quaternion.LookRotation(new Vector3(targetPosition.x, bodyPosition.y, targetPosition.z) - bodyPosition),
                             state.Snapshot()
                         );
 
@@ -87,26 +105,33 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                         // weapon aims directly at point
                         weaponTransform.rotation = Quaternion.Lerp(
                             initialWeaponRotation,
-                            Quaternion.LookRotation(target - weaponTransform.position),
+                            Quaternion.LookRotation(target.position - weaponTransform.position),
                             state.Snapshot()
                         );
                     },
                     finishState =>
                     {
-                        bodyTransform.rotation = Quaternion.LookRotation(new Vector3(target.x, bodyTransform.position.y, target.z) - bodyTransform.position);
-                        if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target - weaponTransform.position);
+                        var targetPosition = target.position;
+                        var bodyPosition = bodyTransform.position;
+                        
+                        onAimReady?.Invoke();
+                        bodyTransform.rotation = Quaternion.LookRotation(new Vector3(targetPosition.x, bodyPosition.y, targetPosition.z) - bodyPosition);
+                        if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target.position - weaponTransform.position);
                     }
                 );
             }
             else
             {
-                bodyTransform.rotation = Quaternion.LookRotation(new Vector3(target.x, bodyTransform.position.y, target.z) - bodyTransform.position);
-                if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target - weaponTransform.position);
+                var targetPosition = target.position;
+                var bodyPosition = bodyTransform.position;
+                
+                onAimReady?.Invoke();
+                bodyTransform.rotation = Quaternion.LookRotation(new Vector3(targetPosition.x, bodyPosition.y, targetPosition.z) - bodyPosition);
+                if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target.position - weaponTransform.position);
             }
         }
 
         private Coroutine aimTransition = null;
-        private bool targetIsNew = true;
         
 
     }
