@@ -24,6 +24,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public Transition aimTransition;
         public AnimatorController animatorController;
         public ExternalBehaviorTree ikControlBehaviorTree;
+        public ExternalBehaviorTree combatBehaviorTree;
         public Transition ikLerpInTransition;
         public Transition ikLerpOutTransition;
         
@@ -121,6 +122,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 selectedCharacter,
                 animatorController,
                 ikControlBehaviorTree,
+                combatBehaviorTree,
                 aimTransition,
                 ikLerpInTransition,
                 ikLerpOutTransition,
@@ -149,6 +151,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             GameObject characterRigPrefab,
             AnimatorController animatorController,
             ExternalBehaviorTree ikControlBehaviorTree,
+            ExternalBehaviorTree combatBehaviorTree,
             Transition aimTransition,
             Transition ikLerpInTransition,
             Transition ikLerpOutTransition,
@@ -258,7 +261,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 }
 
                 // instantiate weapons
-                foreach (var weapon in weapons)
+                foreach (Weapon.Weapon weapon in weapons)
                 {
                     var weaponInstance = Instantiate(weapon.prefab, triggerHandTransform);
                     var type = weapon.inventorySettings.type;
@@ -307,10 +310,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 aimComponentWithIK.Initialize();
 
                 // initialize ik controller
-                var ikBehaviourTree = instance.GetOrElseAddComponent<BehaviorTree>();
+                var ikBehaviourTree = instance.AddComponent<BehaviorTree>();
                 ikBehaviourTree.ExternalBehavior = ikControlBehaviorTree;
                 ikBehaviourTree.BehaviorName = "IKController";
                 ikBehaviourTree.SetVariableValue("Self", instance.gameObject);
+                    
+                var combatBehavior = instance.AddComponent<BehaviorTree>();
+                combatBehavior.ExternalBehavior = combatBehaviorTree;
+                combatBehavior.BehaviorName = "CombatController";
+                combatBehavior.SetVariableValue("Self", instance.gameObject);
                 
                 return new Soldier()
                 {

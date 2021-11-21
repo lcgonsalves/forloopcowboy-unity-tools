@@ -63,6 +63,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         {
             get => _lastWaypointPath;
         }
+
+        public bool showDebugMessages = false;
         
         // cached components
         private NavMeshAgent _navMeshAgent;
@@ -315,10 +317,10 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         }
 
         /// <returns>True if has a valid navigation state to restore.</returns>
-        public bool IsAbleToResumeNavigating(bool coroutineMustBeStopped = false)
+        public bool IsAbleToResumeNavigating(bool navigationMustBeStopped = false)
         {
             bool isCoroutineStopped = waypointChecker == null;
-            bool coroutineStateIsValid = coroutineMustBeStopped ? isCoroutineStopped : true; // either coroutine must be stopped && it is stopped or it's valid.
+            bool coroutineStateIsValid = navigationMustBeStopped ? isCoroutineStopped : true; // either coroutine must be stopped && it is stopped or it's valid.
                 
             return state != null && coroutineStateIsValid;
         }
@@ -338,7 +340,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 StopCoroutine(waypointChecker);
                 waypointChecker = null;
             }
-            else
+            else if (showDebugMessages)
             {
                 var statemsg = $"State is {(state == null ? "" : "not")} null";
                 var wayptmsg = $"Waypoint checker coroutine is {(waypointChecker == null ? "" : "not")} null";
@@ -349,17 +351,18 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         }
 
         /// <summary>
-        /// If state is defined, re-triggers a follow waypoint
-        /// routine using the state information. 
+        /// If state is defined and the object is currently stopped, re-triggers a follow waypoint
+        /// routine using the state information.
         /// </summary>
         /// <returns>Return value of <see cref="IsAbleToResumeNavigating"/>, true indicating that the navigation was able to resume.</returns>
         public bool Resume()
         {
-            bool canResume = IsAbleToResumeNavigating();
+            // if coroutine is running (i.e. we're following a waypont) canResume will return false.
+            bool canResume = IsAbleToResumeNavigating(navigationMustBeStopped: true);
             
             if (canResume)
             {
-                var (speed, terminator, nextTarget, neighborsLeftToVisit) = (NavigationState) state;
+                var (speed, terminator, nextTarget, neighborsLeftToVisit) = (NavigationState) state; // null check is in [[IsAbleToResumeNavigating]] 
                 
                 // existence of state.neighborsLeftToVisit implies usage of `FollowWaypointUntil`
                 // use recursive call here because we don't want to start a new path - we are simply continuing the last, so no need to reset other variables.
@@ -369,7 +372,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 
 
             }
-            else
+            else if (showDebugMessages)
             {
                 var statemsg = $"State is {(state == null ? "" : "not")} null";
                 Debug.LogWarning($"Cannot resume when state was not saved! {statemsg}.");

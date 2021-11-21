@@ -295,6 +295,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// </summary>
         public event Action<WeaponItem?> onWeaponChanged;
         
+        public void EquipActive() { EquipWeapon(Active); }
+        
         /// <summary>
         /// Equips first holstered weapon of the given type.
         /// </summary>

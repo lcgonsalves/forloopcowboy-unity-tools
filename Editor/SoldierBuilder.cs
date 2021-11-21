@@ -14,7 +14,8 @@ namespace forloopcowboy_unity_tools.Editor
 {
     public class SoldierBuilder : EditorWindow
     {
-        private ExternalBehaviorTree _behaviorTree;
+        private ExternalBehaviorTree _ikBehaviorTree;
+        private ExternalBehaviorTree _combatBehaviorTree;
         private GameObject _characterRigPrefab;
         private List<Weapon> _weapons = new List<Weapon>(1);
         private AnimatorController _animatorController;
@@ -37,8 +38,11 @@ namespace forloopcowboy_unity_tools.Editor
                 (GameObject) EditorGUILayout.ObjectField(_characterRigPrefab, typeof(GameObject), false);
             
             GUILayout.Label("Select the IK controller:");
-            _behaviorTree = (ExternalBehaviorTree) EditorGUILayout.ObjectField(_behaviorTree, typeof(ExternalBehaviorTree), false);
+            _ikBehaviorTree = (ExternalBehaviorTree) EditorGUILayout.ObjectField(_ikBehaviorTree, typeof(ExternalBehaviorTree), false);
             
+            GUILayout.Label("Select the Combat behavior controller:");
+            _combatBehaviorTree = (ExternalBehaviorTree) EditorGUILayout.ObjectField(_combatBehaviorTree, typeof(ExternalBehaviorTree), false);
+
             GUILayout.Label("Select the Animator Controller:");
             _animatorController = (AnimatorController) EditorGUILayout.ObjectField(_animatorController, typeof(AnimatorController), false);
 
@@ -87,13 +91,14 @@ namespace forloopcowboy_unity_tools.Editor
             
             GUILayout.Space(15);
 
-            GUI.enabled = _behaviorTree && _characterRigPrefab && _weapons.Count > 0 && _animatorController && _ikLerpInTransition && _ikLerpInTransition && _aimTransition;
+            GUI.enabled = _ikBehaviorTree && _characterRigPrefab && _weapons.Count > 0 && _animatorController && _ikLerpInTransition && _ikLerpInTransition && _aimTransition;
             if (GUILayout.Button("Instantiate"))
             {
                 var instance = SoldierRandomizer.InstantiateCharacter(
                     _characterRigPrefab,
                     _animatorController,
-                    _behaviorTree,
+                    _ikBehaviorTree,
+                    _combatBehaviorTree,
                     _aimTransition,
                     _ikLerpInTransition,
                     _ikLerpOutTransition,

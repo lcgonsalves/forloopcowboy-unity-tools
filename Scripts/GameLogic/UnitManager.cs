@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BehaviorDesigner.Runtime;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Environment;
 using forloopcowboy_unity_tools.Scripts.Soldier;
@@ -20,6 +21,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Attacker,
             Defender
         }
+
+        public static Side GetOpposing(Side s) => s == Side.Attacker ? Side.Defender : Side.Attacker;
 
         public enum SpawnType
         {
@@ -220,9 +223,18 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 
                 // either get health component or get/add a generic managed mono behaviour if no health component is present.
                 // health components by default expose logic to auto-destruct on death so we can use this here if available.
-                IManagedGameObject managedGameObj = (IManagedGameObject) instance.GetComponent<HealthComponent>() ?? instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
+                IManagedGameObject managedGameObj = instance.GetComponent<HealthComponent>() as IManagedGameObject ?? instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
                 instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
-
+                
+                // set reference to GameplayManager for any behaviours that may require it.
+                var gm = FindObjectsOfType<GameplayManager>().First(_ => _.side == side);
+                if (gm) foreach (var tree in instance.GetComponents<BehaviorTree>())
+                {
+                    var gmVariable = tree.GetVariable("GameplayManager");
+                    if (gmVariable != null) gmVariable.SetValue(gm.gameObject);
+                }
+                else Debug.LogError($"No GameplayManager for side {side} found. Behaviour trees that require this reference may encounter errors.");
+                
                 if (navigation == null)
                     throw new NullReferenceException(
                         "Spawned game objects must have an AdvancedNavigation component attached.");
@@ -230,7 +242,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 // run with small delay so the thing has time to think
                 navigation.RunAsyncWithDelay(1f, () => navigation.FollowWaypoint(spawnAt.node));
                 
-                SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj));
+                SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj, spawnAt.node));
             }
             else throw new NullReferenceException("No spawn points found for type " + nameof(spawnType));
         }

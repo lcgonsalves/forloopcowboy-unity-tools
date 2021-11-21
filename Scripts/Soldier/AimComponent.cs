@@ -10,6 +10,9 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
     {
         public Transition easeToAimTransition;
         public WeaponController weapon;
+
+        [Tooltip("Transform to be rotated horizontally. By default uses transform of attached object. For a tank, use the parent object of the cannon.")]
+        public Transform bodyTransform;
         
         [HideInInspector]
         public Transform weaponTransform => weapon.transform;
@@ -18,6 +21,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         private bool _isTracking = false;
         public bool isTracking { get => _isTracking; private set => _isTracking = value; }
 
+        [SerializeField, ReadOnly]
         private Transform trackedTarget = null;
 
         protected void Update()
@@ -32,7 +36,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         // Makes component execute Aim() on Update() loop, focusing on target's position.
         public void Track(Transform target)
         {
-            targetIsNew = trackedTarget.GetInstanceID() != target.GetInstanceID();
+            targetIsNew = !trackedTarget || trackedTarget.GetInstanceID() != target.GetInstanceID();
             
             isTracking = true;
             trackedTarget = target;
@@ -50,13 +54,14 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         }
         
         /// <summary>
-        /// Rotates transform and weapon transform to look at the target.
+        /// Rotates body transform and weapon transform to look at the target. If no body transform has been specified,
+        /// body transform is set to this transform.
         /// </summary>
         /// <param name="target"></param>
         /// <param name="gradual">When true, plays animation. If an animation is already playing, it interrupts it.</param>
         public void Aim(Vector3 target, bool gradual)
         {
-            Transform bodyTransform = transform;
+            bodyTransform = bodyTransform != null ? bodyTransform : transform;
 
             // gradually aim towards target if it wasn't already
             if (gradual)

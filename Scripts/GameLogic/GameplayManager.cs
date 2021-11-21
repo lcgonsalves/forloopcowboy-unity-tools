@@ -18,7 +18,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     /// - clicking draft button will spawn soldiers and discard cards.
     /// - soldiers will automatically attack the closest threat and march towards the objective
     /// </summary>
-    [RequireComponent(typeof(UnitManager))]
     public class GameplayManager : MonoBehaviour
     {
         public UnitManager.Side side = UnitManager.Side.Attacker;
@@ -31,9 +30,16 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public HorizontalLayoutGroup cardPanel;
         public float delayBetweenShuffle = 1.2f;
 
+        [SerializeField]
         private UnitManager _unitManager;
         public UnitManager UnitManager => _unitManager ? _unitManager : _unitManager = GetComponent<UnitManager>();
-
+        
+        /// <returns>All objects spawned on the opposing side.</returns>
+        public GameObject[] GetEnemies() => UnitManager.GetSpawned(UnitManager.GetOpposing(side));
+        
+        /// <returns>All objects spawned on the friendly side.</returns>
+        public GameObject[] GetAllies() => UnitManager.GetSpawned(side);
+        
         private void Awake()
         {
             ShuffleCards();
@@ -123,6 +129,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             {
                 if (card != null)
                 {
+                    if (activeCards.Contains(card)) activeCards.Remove(card);
+                    
                     var cardTransform = card.transform.localPosition; // because i configured the prefab to slerp locally
                     if (card.tweener is { })
                     {
@@ -132,5 +140,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 }
             }
         }
+        
+        public void DisposeCards(SoldierCard card, bool disposeOfSoldiers = false) { DisposeCards(new []{card}, disposeOfSoldiers); }
     }
 }
