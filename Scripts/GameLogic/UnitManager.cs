@@ -259,6 +259,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
             // start garbage collection:
             // coroutine that periodically checks if game objects are ready to 
+            // get fucking yeeted
             StartCoroutine(GarbageCollection());
         }
 
