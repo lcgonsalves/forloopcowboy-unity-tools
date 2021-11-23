@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BehaviorDesigner.Runtime;
+using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Soldier;
@@ -16,6 +17,7 @@ namespace forloopcowboy_unity_tools.Editor
     {
         private ExternalBehaviorTree _ikBehaviorTree;
         private ExternalBehaviorTree _combatBehaviorTree;
+        private BulletImpactSettings _bulletImpactSettings;
         private GameObject _characterRigPrefab;
         private List<Weapon> _weapons = new List<Weapon>(1);
         private AnimatorController _animatorController;
@@ -45,6 +47,9 @@ namespace forloopcowboy_unity_tools.Editor
 
             GUILayout.Label("Select the Animator Controller:");
             _animatorController = (AnimatorController) EditorGUILayout.ObjectField(_animatorController, typeof(AnimatorController), false);
+
+            GUILayout.Label("Select the bullet impact settings:");
+            _bulletImpactSettings = (BulletImpactSettings) EditorGUILayout.ObjectField(_bulletImpactSettings, typeof(BulletImpactSettings), false);
 
             GUILayout.Label("Select the following transitions:");
             
@@ -99,6 +104,7 @@ namespace forloopcowboy_unity_tools.Editor
                     _animatorController,
                     _ikBehaviorTree,
                     _combatBehaviorTree,
+                    _bulletImpactSettings,
                     _aimTransition,
                     _ikLerpInTransition,
                     _ikLerpOutTransition,

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BehaviorDesigner.Runtime;
+using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 using forloopcowboy_unity_tools.Scripts.Weapon;
@@ -27,6 +28,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public ExternalBehaviorTree combatBehaviorTree;
         public Transition ikLerpInTransition;
         public Transition ikLerpOutTransition;
+
+        [InlineEditor(InlineEditorObjectFieldModes.Foldout)]
+        public BulletImpactSettings bulletImpactSettings;
         
         [InlineEditor(InlineEditorObjectFieldModes.Foldout)]
         public StringList firstNames;
@@ -123,6 +127,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 animatorController,
                 ikControlBehaviorTree,
                 combatBehaviorTree,
+                bulletImpactSettings,
                 aimTransition,
                 ikLerpInTransition,
                 ikLerpOutTransition,
@@ -152,6 +157,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             AnimatorController animatorController,
             ExternalBehaviorTree ikControlBehaviorTree,
             ExternalBehaviorTree combatBehaviorTree,
+            BulletImpactSettings bulletImpactSettings,
             Transition aimTransition,
             Transition ikLerpInTransition,
             Transition ikLerpOutTransition,
@@ -168,6 +174,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
                 // initialize ragdoll component (or remove if prefab doesn't have any rigidbodies)
                 var ragdoll = instance.GetOrElseAddComponent<Ragdoll>();
+                ragdoll.AttachImpactParticleSpawners(bulletImpactSettings);
 
                 // initialize navigation
                 var navigation = instance.GetOrElseAddComponent<AdvancedNavigation>();

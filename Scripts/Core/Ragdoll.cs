@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using forloopcowboy_unity_tools.Scripts.Bullet;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -10,22 +11,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public Rigidbody[] limbs;
         public Animator animator;
 
-        public Transform CenterOfMass = null;
-
         public Transform neck;
-        
-        public Vector3 GetCenterOfMassPosition()
-        {
-            Vector3 result = Vector3.zero;
 
-            foreach (var limb in limbs)
-            {
-                result += limb.position;
-            }
-
-            return result / limbs.Length;
-        }
-        
         public bool IsRagdolling { get; private set; } = false;
         
         private void Start()
@@ -47,10 +34,6 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             }
 
             if (!animator) animator = GetComponent<Animator>();
-
-            CenterOfMass = new GameObject("[Managed] Center_Of_Mass").transform;
-            var asyncRunner = CenterOfMass.gameObject.AddComponent<AsyncRunner>();
-            asyncRunner.RunAsync(() => asyncRunner.transform.position = GetCenterOfMassPosition());
 
         }
 
@@ -83,7 +66,20 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         {
             // todo: implement
             public Ragdoll master;
+            
         }
-        
+
+        public void AttachImpactParticleSpawners(BulletImpactSettings settings)
+        {
+            // limbs have not been fetched yet, so we just initialize them.
+            if (limbs == null || limbs.Length == 0) limbs = GetComponentsInChildren<Rigidbody>();
+            
+            foreach (var limb in limbs)
+            {
+                var spawner = limb.gameObject.AddComponent<ImpactParticleSpawner>();
+                spawner.settings = settings;
+            }
+        }
+
     }
 }
