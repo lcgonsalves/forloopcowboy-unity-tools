@@ -1,12 +1,13 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Soldier;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Weapon
 {
     [CreateAssetMenu]
-    public class Weapon : ScriptableObject
+    public class Weapon : SerializedScriptableObject
     {
         public float bulletsPerMinute = 10f;
 
@@ -20,6 +21,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
         public GameObject prefab;
 
+        [InlineEditor(InlineEditorModes.FullEditor)]
         public Bullet.Bullet ammo;
 
         [Obsolete]

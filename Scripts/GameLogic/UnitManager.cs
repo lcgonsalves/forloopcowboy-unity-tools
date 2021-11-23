@@ -225,6 +225,14 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 // health components by default expose logic to auto-destruct on death so we can use this here if available.
                 IManagedGameObject managedGameObj = instance.GetComponent<HealthComponent>() as IManagedGameObject ?? instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
                 instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
+
+                if (managedGameObj is HealthComponent healthComponent)
+                    healthComponent.onDeath += () =>
+                    {
+                        if (side == Side.Attacker)
+                            attackerCacheOutdated = true;
+                        else defenderCacheOutdated = true;
+                    };
                 
                 // set reference to GameplayManager for any behaviours that may require it.
                 var gm = FindObjectsOfType<GameplayManager>().First(_ => _.side == side);
@@ -272,6 +280,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     var spawnedGameObject = SpawnedGameObjects[i];
                     SpawnedGameObjects.RemoveAt(i);
                     GameObject.Destroy(spawnedGameObject.gameObject);
+                }
+
+                // if we're removing anything, cache is outdated
+                if (indicesToRemove.Count != 0)
+                {
+                    attackerCacheOutdated = defenderCacheOutdated = true;
                 }
 
                 indicesToRemove.Clear();

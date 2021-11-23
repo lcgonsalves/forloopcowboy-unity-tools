@@ -389,6 +389,12 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             Pause();
             state = null;
         }
+
+        public void StopAndDisable()
+        {
+            Stop();
+            _navMeshAgent.enabled = false;
+        }
         
         // Feature: Navigation updates animator
 

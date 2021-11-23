@@ -21,12 +21,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             limbs = GetComponentsInChildren<Rigidbody>();
             
             // make them kinematic
-            foreach (var limb in limbs)
-            {
-                limb.isKinematic = true;
-                var l = limb.gameObject.GetOrElseAddComponent<Limb>();
-                l.master = this;
-            }
+            InitializeLimbs();
 
             if (neck == null)
             {
@@ -37,11 +32,22 @@ namespace forloopcowboy_unity_tools.Scripts.Core
 
         }
 
+        [Button]
+        private void InitializeLimbs()
+        {
+            foreach (var limb in limbs)
+            {
+                limb.isKinematic = true;
+                var l = limb.gameObject.GetOrElseAddComponent<Limb>();
+                l.master = this;
+            }
+        }
+
         /// <summary>
         /// Sets the rigid body is kinematic to the given value.
         /// </summary>
-        /// <param name="enabled"></param>
-        /// <returns></returns>
+        /// <param name="enabled">Sets it to be enabled.</param>
+        /// <returns>The value that was set.</returns>
         public bool ToggleRagdoll(bool? enabled = null)
         {
             var shouldEnableRagdoll = enabled.HasValue ? enabled.Value : !IsRagdolling;
@@ -64,9 +70,11 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         // limb tracks velocity to improve the ragdoll transition from an animation
         public class Limb : MonoBehaviour
         {
-            // todo: implement
             public Ragdoll master;
-            
+         
+            // todo: find a nicer way to control the multiplier
+            public float damageMultiplier = 1f;
+
         }
 
         public void AttachImpactParticleSpawners(BulletImpactSettings settings)

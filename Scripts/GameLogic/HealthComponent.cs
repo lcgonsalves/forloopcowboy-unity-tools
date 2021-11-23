@@ -1,6 +1,10 @@
 using System;
+using BehaviorDesigner.Runtime;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.Soldier;
+using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
@@ -16,7 +20,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public int MaxHealth => _maxHealth;
 
         [Tooltip("Game Objects with the health component and that are spawned using the UnitManager will be destroyed this many seconds after their health reaches zero.")]
-        public float gameObjectDestroyDelay = 5f;
+        public float gameObjectDestroyDelay = 30f;
         
         public int Health
         {
@@ -44,9 +48,30 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void AttachOnDeathListeners()
         {
+            onDeath += OnDeathCleanup;
             onDeath += SetDestroyFlagWithDelay;
         }
 
+        public void OnDeathCleanup()
+        {
+            // currently supports 3 death animations
+            int animidx = Random.Range(1, 4);
+            
+            GetComponent<Animator>()?.SetInteger(DeathAnimationIndex, animidx);
+            GetComponent<AimComponent>()?.StopTracking();
+            GetComponent<AdvancedNavigation>()?.StopAndDisable();
+            GetComponent<WeaponUser>()?.CeaseFire();
+
+            foreach (var behavior in GetComponents<BehaviorTree>())
+            {
+                behavior.enabled = false;
+            }
+
+            var ragdollComponent = GetComponent<Ragdoll>();
+            ragdollComponent.RunAsyncWithDelay(2.5f, () => ragdollComponent.EnableRagdoll());
+
+        }
+        
         public void SetDestroyFlagWithDelay()
         {
             this.RunAsyncWithDelay(gameObjectDestroyDelay, () =>
@@ -65,6 +90,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public void Heal(int amount) { Health += amount; }
 
         private bool _shouldDestroy = false;
+        private static readonly int DeathAnimationIndex = Animator.StringToHash("DeathAnimationIndex");
+
         public bool ShouldDestroy()
         {
             // see AttachOnDeathListeners()
@@ -101,6 +128,11 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private void OnDestroy()
         {
             onDeath -= SetDestroyFlagWithDelay;
+        }
+
+        private void OnDrawGizmos()
+        {
+            Handles.Label(transform.position + Vector3.up, $"Health [{Health}]");
         }
 
         public static HealthComponent GetHealthComponent(Component other) { return GetHealthComponent(other); }
