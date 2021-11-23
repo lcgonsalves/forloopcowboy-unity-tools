@@ -38,6 +38,21 @@ namespace forloopcowboy_unity_tools.Editor
             
             DrawIKGUI();
 
+            EditorGUILayout.BeginHorizontal();
+            
+            if (GUILayout.Button("Open Fire"))
+            {
+                refAimComponent.weapon.OpenFire(true);
+            }
+            
+            if (GUILayout.Button("Cease Fire"))
+            {
+                refAimComponent.weapon.CeaseFire();
+            }
+            
+            EditorGUILayout.EndHorizontal();
+
+
             if (GUI.changed)
             {
                 EditorUtility.SetDirty(target);

@@ -20,7 +20,7 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
         public SharedGameObject self;
         public SharedGameObject gameplayManager;
         public SharedTransform nearestLivingTarget;
-        public float maximumRange = 10f;
+        public SharedFloat maximumRange = 10f;
         private GameplayManager gm;
 
         public override void OnAwake()
@@ -48,7 +48,7 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
                 if (
                     hp &&
                     hp.IsAlive &&
-                    distance <= maximumRange && distance < shortestDistance
+                    distance <= maximumRange.Value && distance < shortestDistance
                 )
                 {
                     shortestDistance = distance;
@@ -56,9 +56,16 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
                 }
                 // iterate entire list of soldiers to make sure we have the closest one.
             }
+            
+            var ragdoll = closestTarget != null ? closestTarget.GetComponent<Ragdoll>() : null;
+            
+            Transform target = null;
 
+            if (ragdoll) target = ragdoll.neck;
+            else if (closestTarget != null) target = closestTarget.transform;
+            
             // always set it, because we want to nullify the shared value if no targets are found.
-            nearestLivingTarget.SetValue(closestTarget != null ? closestTarget.transform : null);
+            nearestLivingTarget.SetValue(target);
             
             if (closestTarget != null) return TaskStatus.Success;
             else return TaskStatus.Failure;

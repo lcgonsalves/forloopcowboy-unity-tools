@@ -13,7 +13,32 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         [SerializeField, ReadOnly]
         private int currentActive = 0;
 
-        public int NumberOfActiveBullets { get => currentActive; }
+        /// <summary>
+        /// Accessing this gets you all the active bullet game objects.
+        /// Setting this object updates the serialized count.
+        /// </summary>
+        public int NumberOfActiveBullets
+        {
+            get
+            {
+                int newActiveCount = 0;
+                
+                foreach (var bulletQueue in queueDictionary)
+                {
+                    foreach (var bulletController in bulletQueue.Value)
+                    {
+                        if (bulletController.gameObject.activeSelf) newActiveCount++;
+                    }
+                }
+
+                return newActiveCount;
+            }
+            
+            set
+            {
+                currentActive = NumberOfActiveBullets;
+            }
+        }
 
         public List<Bullet> bullets = new List<Bullet>();
 
@@ -34,11 +59,11 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         /// </summary>
         public BulletController Spawn(Bullet bulletAsset, Vector3 position, Vector3 direction)
         {
-        
-            if (!queueDictionary.ContainsKey(bulletAsset.GetHashCode())) queueDictionary.Add(bulletAsset.GetHashCode(), new Queue<BulletController>());
+            var hashCode = bulletAsset.GetHashCode();
+            if (!queueDictionary.ContainsKey(hashCode)) queueDictionary.Add(hashCode, new Queue<BulletController>());
         
             Queue<BulletController> queue;
-            if (queueDictionary.TryGetValue(bulletAsset.GetHashCode(), out queue))
+            if (queueDictionary.TryGetValue(hashCode, out queue))
             {
                 // get or else create instance
                 GameObject instance;

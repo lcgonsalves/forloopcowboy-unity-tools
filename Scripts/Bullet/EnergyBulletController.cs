@@ -23,22 +23,14 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
                 c.gameObject.SetActive(c.name != "dead-spell");
             }
         }
-
-        // Spawn an explosion and kill spell. Initiate kill sequence.
         protected override void OnFirstImpact(Collision other)
         {
-            if (!dieOnImpact) return;
+            
         }
 
         protected override void OnImpact(Collision other)
         {
             if (!dieOnImpact) return;
-
-            if (Settings.onImpact)
-            {
-                var impactExplosion = Instantiate(Settings.onImpact, other.contacts[0].point, Quaternion.identity);
-                Destroy(impactExplosion, 3f);
-            }
 
             // Disable main particle system emission (it glows)
             var ps = GetComponent<ParticleSystem>();

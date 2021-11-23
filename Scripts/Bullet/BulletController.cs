@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
+    
+    [RequireComponent(typeof(Rigidbody))]
     public class BulletController : MonoBehaviour
     {
         public Bullet Settings;
@@ -38,7 +40,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             if (bouncesSoFar == 0) OnFirstImpact(other);
 
             // enough bounces, disable object
-            if (bouncesSoFar >= Settings?.maxBounces) OnFinalImpact(other);
+            if (bouncesSoFar >= (Settings?.maxBounces ?? 0)) OnFinalImpact(other);
             else OnImpact(other); // on impact is called only while bounces is < max 
         }
 
@@ -70,8 +72,20 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         }
 
         protected virtual void OnFirstImpact(Collision other){}
-        protected virtual void OnImpact(Collision other){}
-        protected virtual void OnFinalImpact(Collision other){}
+
+        protected virtual void OnImpact(Collision other)
+        {
+            if (Settings.onImpact)
+            {
+                var impactExplosion = Instantiate(Settings.onImpact, other.contacts[0].point, Quaternion.identity);
+                Destroy(impactExplosion, 3f);
+            }
+        }
+
+        protected virtual void OnFinalImpact(Collision other)
+        {
+            gameObject.SetActive(false);
+        }
 
     }
 }

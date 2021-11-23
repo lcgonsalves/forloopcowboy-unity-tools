@@ -553,4 +553,12 @@ namespace forloopcowboy_unity_tools.Scripts.Core
 
     }
 
+    /// <summary>
+    /// Just exposes a MonoBehaviour to run coroutines from.
+    /// </summary>
+    public class AsyncRunner : MonoBehaviour
+    {
+        
+    }
+    
 }

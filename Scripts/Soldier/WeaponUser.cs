@@ -295,6 +295,10 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// </summary>
         public event Action<WeaponItem?> onWeaponChanged;
         
+        public void OpenFire() { _active?.weapon?.OpenFire(true); }
+        
+        public void CeaseFire() { _active?.weapon?.CeaseFire(); }
+        
         public void EquipActive() { EquipWeapon(Active); }
         
         /// <summary>

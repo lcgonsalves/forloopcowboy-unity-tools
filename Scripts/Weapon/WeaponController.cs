@@ -72,6 +72,10 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
         }
 
+        /// <summary>
+        /// This coroutine spawns and fires bullets at a regular interval defined by
+        /// the rate of fire of the weapon.
+        /// </summary>
         private IEnumerator FiringCoroutine()
         {
             // do while alive
@@ -100,6 +104,9 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         }
     
     
+        /// <summary>
+        /// This coroutine enables and disables firing at random but bounded intervals, simulating a burst.
+        /// </summary>
         private IEnumerator BurstCoroutine()
         {
             while (true)
