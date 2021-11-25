@@ -355,8 +355,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             return null;
         }
 
-        public void Set(Side<T1> s) => this.leftValue = s.content;
-        public void Set(Side<T2> s) => this.rightValue = s.content;
+        public void Set(Left<T1> s) => this.leftValue = s.content;
+        public void Set(Right<T2> s) => this.rightValue = s.content;
         public Tuple() {}
 
     }    

@@ -13,6 +13,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core
 
         public Transform neck;
 
+        public Tuple<Transform, Transform> hands = new Tuple<Transform, Transform>(null, null);
+
         public bool IsRagdolling { get; private set; } = false;
         
         private void Start()
@@ -27,6 +29,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             {
                 neck = transform.FindRecursively(_ => _.name == "Neck");
             }
+            
+            if (hands.Left == null) hands.Set(new Left<Transform>(transform.FindRecursively(_ => _.name == "Hand_L")));
 
             if (!animator) animator = GetComponent<Animator>();
 

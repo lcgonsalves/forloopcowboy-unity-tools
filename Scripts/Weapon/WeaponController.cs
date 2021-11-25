@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Weapon
 {
-    [RequireComponent(typeof(BulletSystem)), SelectionBase]
+    [RequireComponent(typeof(BulletSystem), typeof(ReloadSystem)), SelectionBase]
     public class WeaponController : MonoBehaviour
     {
         public Weapon weaponSettings;
@@ -17,9 +17,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         // Exposed state
 
         [SerializeField, ReadOnly]
-        private int bulletsInClip = 0;
-
-        public int BulletsInClip { get => bulletsInClip; }
+        public int bulletsInClip = 0;
 
         [SerializeField, ReadOnly]
         private bool currentlyFiring = false;
@@ -137,6 +135,9 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         }
 
         public void Reload() { bulletsInClip = weaponSettings.clipSize; }
+
+        private ReloadSystem _rs; 
+        public ReloadSystem ReloadSystem => _rs ? _rs : _rs = GetComponent<ReloadSystem>();
 
     }
 }

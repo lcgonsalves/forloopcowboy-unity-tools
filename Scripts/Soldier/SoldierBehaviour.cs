@@ -466,7 +466,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(debugPosition, 0.15f);
 
-            if (weaponController) Handles.Label(transform.TransformPoint(new Vector3(0, 2.2f, 0)), "Ammo " + weaponController.BulletsInClip.ToString());
+            if (weaponController) Handles.Label(transform.TransformPoint(new Vector3(0, 2.2f, 0)), "Ammo " + weaponController.bulletsInClip.ToString());
             if (stateManager != null) Handles.Label(transform.TransformPoint(new Vector3(0, 2.4f, 0)), "State " + stateManager.currentState.ToString());
         }
 
