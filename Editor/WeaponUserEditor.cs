@@ -65,6 +65,20 @@ namespace forloopcowboy_unity_tools.Editor
             
             // hand transform
             EditorGUILayout.PropertyField(serializedObject.FindProperty("triggerHandTransform"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("reloadHandTransform"));
+
+            EditorGUILayout.BeginHorizontal();
+
+            // enabled only if active weapon exists and it is not firing
+            GUI.enabled = user.TryGetActiveWeapon(out var wpn) && !(wpn.weapon?.isFiring ?? true);
+            if (GUILayout.Button("Open Fire")) user.OpenFire();
+            
+            GUI.enabled = wpn != null && (wpn.weapon?.isFiring ?? false);
+            if (GUILayout.Button("Cease Fire")) user.CeaseFire();
+
+            GUI.enabled = true;
+            
+            EditorGUILayout.EndHorizontal();
             
             // Inventory
             showInventory = EditorGUILayout.Foldout(showInventory, "Weapon Inventory");

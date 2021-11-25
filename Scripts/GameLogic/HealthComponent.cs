@@ -62,10 +62,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             GetComponent<AdvancedNavigation>()?.StopAndDisable();
             GetComponent<WeaponUser>()?.CeaseFire();
 
-            foreach (var behavior in GetComponents<BehaviorTree>())
-            {
-                behavior.enabled = false;
-            }
+            foreach (var behavior in GetComponents<BehaviorTree>()) behavior.enabled = false;
 
             var ragdollComponent = GetComponent<Ragdoll>();
             ragdollComponent.RunAsyncWithDelay(2.5f, () => ragdollComponent.EnableRagdoll());

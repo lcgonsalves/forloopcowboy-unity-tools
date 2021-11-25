@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Weapon;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -14,8 +15,11 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         [Tooltip("Where weapon is to be placed when in hand.")]
         public Transform triggerHandTransform;
 
+        [Tooltip("Which hand will hold the magazine.")]
+        public Transform reloadHandTransform;
+
         public AimComponent aimComponent;
-        
+
         public enum WeaponType
         {
             Primary,
@@ -32,7 +36,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         [Serializable]
         public struct AnimatorIntegrationSettings
         {
-            [Serializable] public struct WeaponTypeAnimParams
+            [Serializable]
+            public struct WeaponTypeAnimParams
             {
                 public WeaponType weaponType;
                 public string animParamName;
@@ -42,20 +47,28 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                     this.weaponType = weaponType;
                     animParamName = weaponType.ToString();
                 }
-                
+
                 public WeaponTypeAnimParams(WeaponType weaponType, string animParamName) : this()
                 {
                     this.weaponType = weaponType;
                     this.animParamName = animParamName;
                 }
             }
-            
-            public void Enable() { enabled = true; }
-            public void Disable() { enabled = false; }
-            
+
+            public void Enable()
+            {
+                enabled = true;
+            }
+
+            public void Disable()
+            {
+                enabled = false;
+            }
+
             public bool enabled;
-            
-            [Tooltip("Whenever a weapon of said type is selected, the component will set a bool of the defined string.")]
+
+            [Tooltip(
+                "Whenever a weapon of said type is selected, the component will set a bool of the defined string.")]
             public List<WeaponTypeAnimParams> animatorParameters;
 
             public AnimatorIntegrationSettings(bool enabled)
@@ -80,7 +93,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                         animator.SetBool(animatorParameter.animParamName, false);
                     }
                 }
-                
+
                 // if weapon is selected, set everything to false except those of type, which are true
                 else
                 {
@@ -91,12 +104,12 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                     }
                 }
             }
-            
+
         }
 
         [SerializeField] public AnimatorIntegrationSettings animatorSettings;
         private Animator _animator;
-        
+
         /// <summary>
         /// Saves local rotation and position
         /// of weapon transforms in container.
@@ -201,7 +214,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 {
                     // if there's no weapon, then there's no weapon item.
                     if (_content.weapon == null) return null;
-                    
+
                     return _content;
                 }
                 set
@@ -214,7 +227,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             }
 
             [SerializeField] private WeaponItem _content;
-            
+
             [Tooltip("Where weapon is placed when NOT in hand.")]
             public Transform holsterTransform;
 
@@ -239,9 +252,12 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             {
                 return content?.Equals(item) ?? false;
             }
-            
+
             // intellij did this, i trust it
-            [CanBeNull] public Transform weaponTransform => content?.weaponTransform != null ? content.weaponTransform != null ? content.weaponTransform.transform : null : null;
+            [CanBeNull]
+            public Transform weaponTransform => content?.weaponTransform != null
+                ? content.weaponTransform != null ? content.weaponTransform.transform : null
+                : null;
 
             public Vector3 correctiveRotation
             {
@@ -272,6 +288,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         public List<WeaponItem> inventory = new List<WeaponItem>();
 
         private WeaponItem? _active = null;
+        private static readonly int Reload = Animator.StringToHash("Reload");
 
         /// <summary>
         /// Setting the active weapon type to a different type
@@ -294,13 +311,22 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// Fires every time a new weapon is equipped, an old weapon is unequipped.
         /// </summary>
         public event Action<WeaponItem?> onWeaponChanged;
-        
-        public void OpenFire() { _active?.weapon?.OpenFire(true); }
-        
-        public void CeaseFire() { _active?.weapon?.CeaseFire(); }
-        
-        public void EquipActive() { EquipWeapon(Active); }
-        
+
+        public void OpenFire()
+        {
+            _active?.weapon?.OpenFire(true);
+        }
+
+        public void CeaseFire()
+        {
+            _active?.weapon?.CeaseFire();
+        }
+
+        public void EquipActive()
+        {
+            EquipWeapon(Active);
+        }
+
         /// <summary>
         /// Equips first holstered weapon of the given type.
         /// </summary>
@@ -311,13 +337,13 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             WeaponContainer firstNonEmptyContainer = null;
 
             firstNonEmptyContainer = holsters.Find(_ => _.type == ofType && _.content != null);
-            
+
             if (firstNonEmptyContainer == null)
                 firstNonEmptyContainer = inventory.Find(_ => _.type == ofType && _.weapon != null);
-            
+
             if (firstNonEmptyContainer == null)
                 throw new NullReferenceException("No weapons in holster or in inventory of a given type.");
-            
+
             EquipWeapon(firstNonEmptyContainer);
         }
 
@@ -329,15 +355,23 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="holsterOrWeapon"></param>
         public void EquipWeapon(WeaponContainer holsterOrWeapon)
         {
+            if (_active != null && _active.weapon != null)
+                // unsubscribe from updates to the magazine of the old weapon
+                _active.weapon.onMagazineEmpty -= OnWeaponMagazineEmpty;
+
             if (holsterOrWeapon is WeaponItem item)
                 _active = item;
-            
+
             else if (holsterOrWeapon is WeaponHolster holster)
                 _active = holster.content;
 
             else _active = null;
 
             Equip(_active, triggerHandTransform);
+
+            if (_active != null && _active.weapon != null)
+                // subscribe from updates to the magazine of the new weapon
+                _active.weapon.onMagazineEmpty += OnWeaponMagazineEmpty;
 
             // attempt to refresh it
             if (aimComponent is null) aimComponent = GetComponent<AimComponent>();
@@ -346,9 +380,9 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             {
                 aimComponent.weapon = _active != null && _active.weapon != null ? _active.weapon : null;
             }
-            
+
             onWeaponChanged?.Invoke(_active);
-                
+
         }
 
         /// <summary>
@@ -360,7 +394,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             if (_active != null)
             {
                 var active = _active;
-                
+
                 foreach (var holster in holsters)
                 {
                     if (holster.Contains(active) || holster.content == null)
@@ -372,7 +406,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
                 _active = null;
             }
-            
+
             if (aimComponent != null) aimComponent.weapon = null;
             onWeaponChanged?.Invoke(null);
         }
@@ -420,8 +454,9 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 weapon = _active;
                 return nonNull;
             }
+
             weapon = (WeaponItem) null;
-            
+
             return false;
         }
 
@@ -432,10 +467,10 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             {
                 HolsterWeapon(weaponHolster);
             }
-            
+
             // if there is an active weapon already assigned, equip it
             if (_active != null) EquipWeapon(_active);
-            
+
             // set initial animator params
             if (animatorSettings.enabled)
             {
@@ -444,7 +479,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                     animatorSettings.ApplyParameters(_animator, _active);
                 }
             }
-            
+
             // update at every weapon change
             onWeaponChanged += item =>
             {
@@ -473,24 +508,90 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         {
             Gizmos.color = Color.cyan;
         }
-        
+
         public static WeaponItem GetCorrectiveTransformsFromAsset(WeaponUser.WeaponItem weaponItem)
         {
             var weaponNotNull = weaponItem.weapon is { };
             var settingsNotNUll = weaponNotNull && weaponItem.weapon.weaponSettings;
-                
+
             if (!weaponNotNull) Debug.LogWarning("Weapon is null.");
             if (!settingsNotNUll) Debug.LogWarning("Settings is null.");
 
             if (weaponNotNull && settingsNotNUll)
             {
                 var presetSettings = weaponItem.weapon.weaponSettings.inventorySettings;
-                    
+
                 weaponItem.correctiveTranslation = presetSettings.correctiveTranslation;
                 weaponItem.correctiveRotation = presetSettings.correctiveRotation;
             }
 
             return weaponItem;
+        }
+
+        /// <summary>
+        /// Begin reload animation.
+        /// </summary>
+        private void OnWeaponMagazineEmpty()
+        {
+            _animator.SetTrigger(Reload);
+            if (aimComponent is AimComponentWithIK aim && TryGetActiveWeapon(out var active) && active.weapon != null)
+                aim.LerpIKFor(active.weapon, 0f, () => { }, 0.1f);
+        }
+
+        /// <summary>
+        /// Animator function. Drops magazine & disables IK.
+        /// </summary>
+        public void DropMagazine()
+        {
+            _active?.weapon?.ReloadSystem?.DetachMagazine();
+        }
+
+        public void DropWeapon()
+        {
+            if (TryGetActiveWeapon(out var weapon) && weapon.weapon != null)
+            {
+                var wpnTransform = weapon.weapon.transform;
+                
+                wpnTransform.SetParent(null);
+                var rb = wpnTransform.gameObject.GetOrElseAddComponent<Rigidbody>();
+                rb.useGravity = true;
+                
+                // remove this if adding weapon pick ups
+                Destroy(wpnTransform, 35f);
+            }
+        }
+
+        /// <summary>
+        /// Animator function. Picks up magazine.
+        /// </summary>
+        public void PickUpNewMagazine()
+        {
+            if (TryGetActiveWeapon(out var weapon) && weapon.weapon != null)
+            {
+                var mag = weapon.weapon.ReloadSystem.magazine;
+                if (mag != null)
+                {
+                    mag.transform.SetParent(reloadHandTransform);
+                    // from editor testing
+                    mag.transform.localPosition = new Vector3(-0.064000003f,0.0270000007f,0.0209999997f);
+                    mag.transform.localRotation = new Quaternion(-0.354237527f, 0.451902986f, 0.607355833f, -0.54901588f);
+                    mag.SetActive(true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Animator function. Attaches mag & reenables IK.
+        /// </summary>
+        public void AttachMagazineToWeapon()
+        {
+            if (TryGetActiveWeapon(out var weapon) && weapon.weapon != null)
+            {
+                weapon.weapon.ReloadSystem.AttachMagazine();
+                
+                if (aimComponent is AimComponentWithIK aim)
+                    aim.LerpIKFor(weapon.weapon, 1f, () => { });
+            }
         }
 
         private void OnDrawGizmos()

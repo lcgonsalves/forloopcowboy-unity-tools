@@ -217,6 +217,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     instance.transform.Find(
                         "Root/Hips/Spine_01/Spine_02/Spine_03/Clavicle_R/Shoulder_R/Elbow_R/Hand_R");
                 weaponUserComponent.triggerHandTransform = triggerHandTransform;
+                weaponUserComponent.reloadHandTransform = ragdoll.hands.Left;
                 weaponUserComponent.animatorSettings = new WeaponUser.AnimatorIntegrationSettings(true);
 
                 // initialize animation parameters

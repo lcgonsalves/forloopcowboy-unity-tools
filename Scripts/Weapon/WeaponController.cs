@@ -16,7 +16,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
         // Exposed state
 
-        [SerializeField, ReadOnly]
+        [SerializeField]
         public int bulletsInClip = 0;
 
         [SerializeField, ReadOnly]
@@ -48,6 +48,8 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         private Coroutine burstCoroutine;
 
         public List<ParticleSystem> peripheralEmitters = new List<ParticleSystem>();
+
+        public event Action onMagazineEmpty;
 
         private BulletSystem _bulletSystem;
 
@@ -89,6 +91,8 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
                     }
 
                     bulletsInClip--;
+
+                    if (bulletsInClip == 0) onMagazineEmpty?.Invoke();
 
                     yield return new WaitForSeconds(60f / weaponSettings.bulletsPerMinute);
                 }

@@ -151,7 +151,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="targetWeapon"></param>
         /// <param name="weight"></param>
         /// <param name="onEnd"></param>
-        public Coroutine LerpIKFor(WeaponController targetWeapon, float weight, Action onEnd)
+        public Coroutine LerpIKFor(WeaponController targetWeapon, float weight, Action onEnd, float? overrideDuration = null)
         {
             void update(WeaponIKSettings weaponIKSettings,  Transition.TransitionState state, float initialTWeight, float initialRWeight)
             {
@@ -184,7 +184,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                         // callback
                         onEnd();
                     },
-                    ikLerpOut.duration *
+                    (overrideDuration.HasValue ? overrideDuration.Value : ikLerpOut.duration) *
                     Mathf.Max(Mathf.Abs(initialTWeight - weight), Mathf.Abs(initialRWeight - weight)) // scale duration to match initial weight
                 );
             }

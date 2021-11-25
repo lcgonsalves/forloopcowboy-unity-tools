@@ -31,6 +31,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             }
             
             if (hands.Left == null) hands.Set(new Left<Transform>(transform.FindRecursively(_ => _.name == "Hand_L")));
+            if (hands.Right == null) hands.Set(new Right<Transform>(transform.FindRecursively(_ => _.name == "Hand_R")));
 
             if (!animator) animator = GetComponent<Animator>();
 

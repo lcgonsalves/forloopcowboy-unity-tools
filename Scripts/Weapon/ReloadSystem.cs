@@ -8,13 +8,27 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
     {
         public GameObject magazine;
 
+        [SerializeField, ReadOnly]
         private Vector3 _initialLocalPosition;
+        
+        [SerializeField, ReadOnly]
+        private Quaternion _initialLocalRotation;
+        
+        [SerializeField, ReadOnly]
         private Transform _initialParent;
+
+        private WeaponController _weaponController;
 
         private void Start()
         {
-            _initialLocalPosition = magazine.transform.localPosition;
-            _initialParent = magazine.transform.parent;
+            if (magazine)
+            {
+                _initialLocalPosition = magazine.transform.localPosition;
+                _initialLocalRotation = magazine.transform.localRotation;
+                _initialParent = magazine.transform.parent;
+            }
+
+            _weaponController = GetComponent<WeaponController>();
         }
         
         /// <returns>Dropped magazine, or null if no magazine is used.</returns>
@@ -24,7 +38,9 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             
             var droppedMagazine = magazine;
 
-            magazine = Instantiate(magazine, _initialParent, true);
+            if (_weaponController) _weaponController.bulletsInClip = 0;
+
+                magazine = Instantiate(magazine, _initialParent, true);
             magazine.SetActive(false);
             
             droppedMagazine.transform.SetParent(null, true);
@@ -47,8 +63,11 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
             magazine.transform.SetParent(_initialParent);
             magazine.transform.localPosition = _initialLocalPosition;
+            magazine.transform.localRotation = _initialLocalRotation;
             
             magazine.SetActive(true);
+
+            if (_weaponController) _weaponController.bulletsInClip = _weaponController.weaponSettings.clipSize;
         }
     }
 }
