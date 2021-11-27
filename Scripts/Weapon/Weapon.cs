@@ -20,6 +20,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         public WeaponUser.WeaponItem inventorySettings;
 
         public GameObject prefab;
+        public GameObject muzzleEffect;
 
         [InlineEditor(InlineEditorModes.FullEditor)]
         public Bullet.Bullet ammo;

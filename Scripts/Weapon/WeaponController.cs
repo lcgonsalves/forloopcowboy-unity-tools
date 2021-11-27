@@ -87,6 +87,13 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
                 {
                     _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzle.position, muzzle.forward);
 
+                    if (weaponSettings.muzzleEffect != null)
+                    {
+                        var muzzleFlash = Instantiate(weaponSettings.muzzleEffect, muzzle);
+                        muzzleFlash.transform.rotation = muzzle.rotation;
+                        Destroy(muzzleFlash, 1f);
+                    }
+
                     foreach (var emitter in peripheralEmitters)
                     {
                         emitter.Emit(1);
