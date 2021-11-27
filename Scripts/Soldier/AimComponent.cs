@@ -75,6 +75,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="onAimReady">Callback that runs when aim is ready</param>
         public void Aim(Transform target, bool gradual, [CanBeNull] Action onAimReady = null)
         {
+            if (!weaponTransform) return;
+            
             bodyTransform = bodyTransform != null ? bodyTransform : transform;
 
             // gradually aim towards target if it wasn't already

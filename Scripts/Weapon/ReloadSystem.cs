@@ -68,7 +68,8 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             
             magazine.SetActive(true);
 
-            if (_weaponController) _weaponController.Reload();
+            // little reload so the dude doens't begin firing SUPER QUICK
+            if (_weaponController) this.RunAsyncWithDelay(1.5f, () => _weaponController.Reload());
         }
     }
 }
