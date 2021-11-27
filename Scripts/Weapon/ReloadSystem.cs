@@ -56,6 +56,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
         /// <summary>
         /// Reparents and activates magazine object back to initial position, if one exists.
+        /// Calls reload on weapon controler, consuming a magazine.
         /// </summary>
         public void AttachMagazine()
         {
@@ -67,7 +68,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             
             magazine.SetActive(true);
 
-            if (_weaponController) _weaponController.bulletsInClip = _weaponController.weaponSettings.clipSize;
+            if (_weaponController) _weaponController.Reload();
         }
     }
 }

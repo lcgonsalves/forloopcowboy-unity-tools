@@ -36,7 +36,7 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
         public override TaskStatus OnUpdate()
         {
             if (gm == null) return TaskStatus.Failure;
-            var enemies = gm.GetEnemies();
+            var enemies = gm.GetUntargetedEnemies();
 
             float shortestDistance = float.PositiveInfinity;
             GameObject closestTarget = null;
@@ -62,11 +62,16 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
             Transform target = null;
 
             if (ragdoll) target = ragdoll.neck;
-            else if (closestTarget != null) target = closestTarget.transform;
+            else if (closestTarget != null) target = closestTarget.transform; 
+
+            if (nearestLivingTarget.Value != null && (target == null || nearestLivingTarget.Value.GetInstanceID() != target.GetInstanceID()))
+                gm.StopTargeting(nearestLivingTarget.Value.gameObject);
+
+            if (target != null) 
+                gm.Target(target.gameObject);
             
-            // always set it, because we want to nullify the shared value if no targets are found.
             nearestLivingTarget.SetValue(target);
-            
+
             if (closestTarget != null) return TaskStatus.Success;
             else return TaskStatus.Failure;
         }

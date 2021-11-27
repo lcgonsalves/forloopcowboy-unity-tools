@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
@@ -103,6 +104,20 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 
         }
 
-
+        private void OnDestroy()
+        {
+            float delayIncrement = 0.2f;
+            float delay = 0f;
+            
+            // Destroy all cached bullets
+            foreach (var keyValuePair in queueDictionary)
+            {
+                foreach (var bulletController in keyValuePair.Value)
+                {
+                    if (Application.isEditor) DestroyImmediate(bulletController.gameObject);
+                    else Destroy(bulletController.gameObject, delay += delayIncrement);
+                }
+            }
+        }
     }
 }

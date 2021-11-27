@@ -289,6 +289,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         private WeaponItem? _active = null;
         private static readonly int Reload = Animator.StringToHash("Reload");
+        private static readonly int SwitchWeapon = Animator.StringToHash("SwitchWeapon");
 
         /// <summary>
         /// Setting the active weapon type to a different type
@@ -302,6 +303,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             {
                 if (_active?.type != value)
                 {
+                    HolsterActive();
                     EquipWeapon(value);
                 }
             }
@@ -325,6 +327,31 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         public void EquipActive()
         {
             EquipWeapon(Active);
+        }
+
+        public void EquipNext()
+        {
+            var types = EnumUtil.GetValues<WeaponType>().ToArray();
+            int indexOfCurrent = -1;
+
+            int i = 0;
+            foreach (var weaponType in types)
+            {
+                if (weaponType == previousWeaponTypeActive)
+                {
+                    indexOfCurrent = i;
+                    break;
+                }
+
+                i++;
+            }
+
+            if (indexOfCurrent < 0) throw new Exception("Active weapon type not part of weapon type? WTF");
+
+            // warning here: not redundant because we're initializing at -1, but we want to get whatever value is set in the iteration before. read the code idiot (aka ME)
+            var nextIndex = (indexOfCurrent + 1) % types.Length;
+            Active = types[nextIndex];
+
         }
 
         /// <summary>
@@ -385,6 +412,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         }
 
+        private WeaponType previousWeaponTypeActive = WeaponType.Primary;
+        
         /// <summary>
         /// Unequips active weapon to first available holsterOrWeapon of the active type,
         /// or holsterOrWeapon that contains weapon.
@@ -394,6 +423,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             if (_active != null)
             {
                 var active = _active;
+                previousWeaponTypeActive = Active;
 
                 foreach (var holster in holsters)
                 {
@@ -529,13 +559,25 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         }
 
         /// <summary>
-        /// Begin reload animation.
+        /// Begin reload animation if enough magazines are available.
+        /// Otherwise switches weapon to secondary.
         /// </summary>
         private void OnWeaponMagazineEmpty()
         {
-            _animator.SetTrigger(Reload);
-            if (aimComponent is AimComponentWithIK aim && TryGetActiveWeapon(out var active) && active.weapon != null)
-                aim.LerpIKFor(active.weapon, 0f, () => { }, 0.1f);
+            if (
+                TryGetActiveWeapon(out var active) && 
+                active.weapon != null
+            ) {
+                if (active.weapon.magazinesInInventory > 0)
+                {
+                    if (aimComponent is AimComponentWithIK aim) aim.LerpIKFor(active.weapon, 0f, () => { }, 0.1f);
+                    _animator.SetTrigger(Reload);
+                }
+                else if (Active == WeaponType.Primary) // if using primary and no mags in inventory, switch to secondary.
+                {
+                    _animator.SetTrigger(SwitchWeapon);
+                }
+            }
         }
 
         /// <summary>
@@ -548,16 +590,18 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         public void DropWeapon()
         {
-            if (TryGetActiveWeapon(out var weapon) && weapon.weapon != null)
+            
+            if (TryGetActiveWeapon(out var item) && item.weapon != null)
             {
-                var wpnTransform = weapon.weapon.transform;
+                var weaponController = item.weapon;
+                var wpnTransform = weaponController.transform;
                 
                 wpnTransform.SetParent(null);
                 var rb = wpnTransform.gameObject.GetOrElseAddComponent<Rigidbody>();
                 rb.useGravity = true;
                 
                 // remove this if adding weapon pick ups
-                Destroy(wpnTransform, 35f);
+                Destroy(weaponController.gameObject, 35f);
             }
         }
 

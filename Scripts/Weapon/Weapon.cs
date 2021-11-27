@@ -10,7 +10,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
     public class Weapon : SerializedScriptableObject
     {
         public float bulletsPerMinute = 10f;
-
+        
         public int clipSize = 30;
 
         public int minimumDamage = 10;

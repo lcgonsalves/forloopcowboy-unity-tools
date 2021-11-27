@@ -15,8 +15,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         [Tooltip("Transform to be rotated horizontally. By default uses transform of attached object. For a tank, use the parent object of the cannon.")]
         public Transform bodyTransform;
         
-        [HideInInspector]
-        public Transform weaponTransform => weapon.transform;
+        [HideInInspector] [CanBeNull] public Transform weaponTransform => weapon ? weapon.transform : null;
 
         [SerializeField, ReadOnly]
         private bool _isTracking = false;
@@ -127,7 +126,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 
                 onAimReady?.Invoke();
                 bodyTransform.rotation = Quaternion.LookRotation(new Vector3(targetPosition.x, bodyPosition.y, targetPosition.z) - bodyPosition);
-                if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target.position - weaponTransform.position);
+                if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(targetPosition - weaponTransform.position);
             }
         }
 

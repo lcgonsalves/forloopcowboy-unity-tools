@@ -61,6 +61,11 @@ namespace forloopcowboy_unity_tools.Editor
                 user.HolsterActive();
             }
             
+            if (GUILayout.Button("Next"))
+            {
+                user.gameObject.GetComponent<Animator>().SetTrigger("SwitchWeapon");
+            }
+            
             EditorGUILayout.EndHorizontal();
             
             // hand transform

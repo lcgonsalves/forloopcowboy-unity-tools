@@ -39,7 +39,20 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         
         /// <returns>All objects spawned on the friendly side.</returns>
         public GameObject[] GetAllies() => UnitManager.GetSpawned(side);
-        
+
+        /// <summary>
+        /// Tracks game objects that are being targeted.
+        /// </summary>
+        private HashSet<int> _targetedGameObjectIDs = new HashSet<int>();
+
+        public GameObject[] GetUntargetedEnemies()
+        {
+            return GetEnemies().Where(_ => !_targetedGameObjectIDs.Contains(_.GetInstanceID())).ToArray();
+        }
+
+        public void Target(GameObject enemy) => _targetedGameObjectIDs.Add(enemy.GetInstanceID());
+        public void StopTargeting(GameObject enemy) => _targetedGameObjectIDs.Remove(enemy.GetInstanceID());
+
         private void Awake()
         {
             ShuffleCards();

@@ -19,6 +19,8 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         [SerializeField]
         public int bulletsInClip = 0;
 
+        public int magazinesInInventory = 2;
+
         [SerializeField, ReadOnly]
         private bool currentlyFiring = false;
 
@@ -137,8 +139,19 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         {
             shouldFire = false;
         }
+        
+        /// <returns>True if there were enough magazines to reload.</returns>
+        public bool Reload()
+        {
+            bool hasMag = magazinesInInventory > 0;
+            if (hasMag)
+            {
+                bulletsInClip = weaponSettings.clipSize;
+                magazinesInInventory--;
+            }
 
-        public void Reload() { bulletsInClip = weaponSettings.clipSize; }
+            return hasMag;
+        }
 
         private ReloadSystem _rs; 
         public ReloadSystem ReloadSystem => _rs ? _rs : _rs = GetComponent<ReloadSystem>();
