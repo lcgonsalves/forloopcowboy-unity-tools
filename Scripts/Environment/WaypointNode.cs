@@ -1,13 +1,14 @@
 using forloopcowboy_unity_tools.Scripts.Core;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment
 {
     public class WaypointNode : MonoBehaviour
     {
         [SerializeField] private WaypointNode next;
-        [SerializeField] private WaypointConfiguration configuration;
+        [FormerlySerializedAs("configuration")] [SerializeField] private WaypointSettings settings;
 
         public bool TryGetNext(out WaypointNode nextWaypoint)
         {
@@ -56,8 +57,8 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
         private void OnEnable()
         {
-            if (configuration)
-                gameObject.layer = configuration.Layer;
+            if (settings)
+                gameObject.layer = settings.Layer;
         }
 
         private void OnDrawGizmos()

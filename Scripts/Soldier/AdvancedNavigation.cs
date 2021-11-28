@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Soldier
 {
@@ -21,7 +22,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         
         [Tooltip("Distance to the waypoint that should be used to consider the waypoint reached.")]
         public float waypointReachedRadius = 1f;
-        public WaypointConfiguration waypointConfiguration;
+        [FormerlySerializedAs("waypointConfiguration")] public WaypointSettings waypointSettings;
 
         [SerializeField, ReadOnly] private WaypointNode _lastVisited = null;
         [SerializeField, ReadOnly] private WaypointNode _lastWaypointPathStart = null;
@@ -135,7 +136,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         public WaypointNode[] GetNearbyWaypointNodes(float maxDistance, float maxHeight, int maxNumNodes)
         {
             var colliders = new Collider[maxNumNodes];
-            var layerMask = waypointConfiguration.LayerMask;
+            var layerMask = waypointSettings.LayerMask;
             var totalCollidersFound = Physics.OverlapSphereNonAlloc(transform.position, maxDistance, colliders, layerMask);
             var output = new WaypointNode[totalCollidersFound];
 

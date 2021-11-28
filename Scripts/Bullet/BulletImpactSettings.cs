@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
-    [CreateAssetMenu(fileName = "Untitled Bullet Impact Settings", menuName = "Settings/New Bullet Impact Settings", order = 0)]
+    [CreateAssetMenu(fileName = "Untitled Bullet Impact Settings", menuName = "Settings/New Bullet Impact Settings...", order = 0)]
     public class BulletImpactSettings : SerializedScriptableObject
     {
         [Tooltip("Whenever a bullet of the given kind collides with this collider, the gameobject is spawned and set to destroy after X seconds.")]
