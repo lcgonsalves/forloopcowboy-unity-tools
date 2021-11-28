@@ -420,6 +420,12 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         }
 
+        public void ResetActiveWeaponPositionToHand()
+        {
+            if (TryGetActiveWeapon(out var active))
+                ApplyTransformationsToWeapon(active);
+        }
+        
         private WeaponType previousWeaponTypeActive = WeaponType.Primary;
         
         /// <summary>

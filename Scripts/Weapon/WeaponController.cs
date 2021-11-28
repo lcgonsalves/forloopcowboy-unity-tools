@@ -95,11 +95,12 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             {
                 while (shouldFire && isFiring && bulletsInClip > 0)
                 {
-                    // if a scramble target is defined, we use the direction from the muzzle to the target
-                    // otherwise just fire straight.
+                    
                     var muzzleDirection = muzzle.forward;
                     var muzzlePosition = muzzle.position;
                     
+                    // if a scramble target is defined, we use the direction from the muzzle to the target
+                    // otherwise just fire straight.
                     if (_target != null)
                     {
                         var distance = Vector3.Distance(muzzlePosition, _target.transform.position);
