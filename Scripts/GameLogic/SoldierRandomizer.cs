@@ -17,7 +17,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     /// Picks from a set of character prefabs, a set of weapons
     /// and exposes functions for instantiating variations.
     /// </summary>
-    [CreateAssetMenu(fileName = "Untitled Soldier Randomizer Settings", menuName = "NPC/New Soldier Randomizer Settings...", order = 2)]
+    [CreateAssetMenu(fileName = "Untitled Soldier Randomizer Settings", menuName = "Settings/NPC/New NPC Randomizer Settings...", order = 2)]
     public class SoldierRandomizer : SerializedScriptableObject
     {
         public uint prefabRandomizerSeed = 69;
@@ -37,7 +37,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         
         [InlineEditor(InlineEditorObjectFieldModes.Foldout)]
         public StringList lastNames;
-        
+
+        public NPCSettings npcSettings;
+
         [ShowInInspector]
         public static string soldierTag = "Soldier";
         
@@ -56,6 +58,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void OnEnable()
         {
+            Random.InitState((int) prefabRandomizerSeed);
+            
             RefreshPrefabStack();
         }
 
@@ -98,6 +102,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <exception cref="Exception"></exception>
         public Soldier Instantiate(Vector3 position, bool randomize = false)
         {
+
             if (randomizableCharacters.Count == 0) throw new Exception("No soldier prefabs specified. Please add a prefab.");
             if (weapons.Count == 0) throw new Exception("No weapon definitions specified. Please add at least one.");
 
@@ -132,7 +137,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 ikLerpInTransition,
                 ikLerpOutTransition,
                 firstNames,
-                lastNames
+                lastNames,
+                npcSettings
             )(selectedWeapons, position);
 
             if (!string.IsNullOrEmpty(soldierTag)) soldier.gameObject.tag = soldierTag;
@@ -162,7 +168,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Transition ikLerpInTransition,
             Transition ikLerpOutTransition,
             StringList firstNames,
-            StringList lastNames
+            StringList lastNames,
+            NPCSettings npcSettings
         )
         {
             return (weapons, position) =>
@@ -199,9 +206,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 var stats = instance.GetOrElseAddComponent<NPCAttributeComponent>();
                 stats.possibleFirstNames = firstNames;
                 stats.possibleLastNames = lastNames;
-                
+
                 stats.Randomize();
-                
+
                 // randomize props
                 var propRandomizer = instance.GetComponent<NPCPropComponent>();
                 if (propRandomizer)
@@ -220,6 +227,11 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 weaponUserComponent.reloadHandTransform = ragdoll.hands.Left;
                 weaponUserComponent.animatorSettings = new WeaponUser.AnimatorIntegrationSettings(true);
 
+                // Set accuracy processor to processor defined for the given number of stars
+                if (npcSettings.accuracySettingsPerNumberOfStars.ContainsKey(stats.accuracy))
+                    weaponUserComponent.accuracyProcessor =
+                        npcSettings.accuracySettingsPerNumberOfStars[stats.accuracy];
+                
                 // initialize animation parameters
                 foreach (var weaponType in EnumUtil.GetValues<WeaponUser.WeaponType>())
                 {
@@ -327,6 +339,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 combatBehavior.ExternalBehavior = combatBehaviorTree;
                 combatBehavior.BehaviorName = "CombatController";
                 combatBehavior.SetVariableValue("Self", instance.gameObject);
+                
+                // Change name
+                instance.name = stats.FullName;
                 
                 return new Soldier()
                 {

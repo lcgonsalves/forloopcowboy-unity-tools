@@ -1,5 +1,6 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Weapon;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         [Tooltip("Transform to be rotated horizontally. By default uses transform of attached object. For a tank, use the parent object of the cannon.")]
         public Transform bodyTransform;
-        
+
         [HideInInspector] [CanBeNull] public Transform weaponTransform => weapon ? weapon.transform : null;
 
         [SerializeField, ReadOnly]
@@ -23,6 +24,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         [SerializeField, ReadOnly]
         private Transform trackedTarget = null;
+
+        [CanBeNull] public Transform TrackedTarget => trackedTarget;
 
         protected void Update()
         {
@@ -78,6 +81,15 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             if (weaponTransform == null) return;
             
             bodyTransform = bodyTransform != null ? bodyTransform : transform;
+            
+            void AimTowardsTarget(Vector3 targetPosition, Vector3 bodyPosition)
+            {
+                onAimReady?.Invoke();
+                
+                bodyTransform.rotation =
+                    Quaternion.LookRotation(new Vector3(targetPosition.x, bodyPosition.y, targetPosition.z) - bodyPosition);
+                if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(targetPosition - weaponTransform.position);
+            }
 
             // gradually aim towards target if it wasn't already
             if (gradual)
@@ -106,30 +118,14 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                         // weapon aims directly at point
                         weaponTransform.rotation = Quaternion.Lerp(
                             initialWeaponRotation,
-                            Quaternion.LookRotation(target.position - weaponTransform.position),
+                            Quaternion.LookRotation(targetPosition - weaponTransform.position),
                             state.Snapshot()
                         );
                     },
-                    finishState =>
-                    {
-                        var targetPosition = target.position;
-                        var bodyPosition = bodyTransform.position;
-                        
-                        onAimReady?.Invoke();
-                        bodyTransform.rotation = Quaternion.LookRotation(new Vector3(targetPosition.x, bodyPosition.y, targetPosition.z) - bodyPosition);
-                        if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(target.position - weaponTransform.position);
-                    }
+                    finishState => AimTowardsTarget(target.position, bodyTransform.position)
                 );
             }
-            else
-            {
-                var targetPosition = target.position;
-                var bodyPosition = bodyTransform.position;
-                
-                onAimReady?.Invoke();
-                bodyTransform.rotation = Quaternion.LookRotation(new Vector3(targetPosition.x, bodyPosition.y, targetPosition.z) - bodyPosition);
-                if (weaponTransform) weaponTransform.rotation = Quaternion.LookRotation(targetPosition - weaponTransform.position);
-            }
+            else AimTowardsTarget(target.position, bodyTransform.position);
         }
 
         private Coroutine aimTransition = null;

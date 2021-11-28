@@ -19,6 +19,8 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         public WeaponSavedIKSettings ikSettings;
         public WeaponUser.WeaponItem inventorySettings;
 
+        public WeaponController.BurstSettings defaultBurstSettings;
+
         public GameObject prefab;
         public GameObject muzzleEffect;
 

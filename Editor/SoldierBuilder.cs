@@ -23,6 +23,7 @@ namespace forloopcowboy_unity_tools.Editor
         private AnimatorController _animatorController;
         private Transition _aimTransition, _ikLerpInTransition, _ikLerpOutTransition;
         private StringList _firstNames, _lastNames;
+        private NPCSettings _npcSettings;
 
         [MenuItem("NPC/Soldier Builder")]
         private static void ShowWindow()
@@ -51,6 +52,9 @@ namespace forloopcowboy_unity_tools.Editor
             GUILayout.Label("Select the bullet impact settings:");
             _bulletImpactSettings = (BulletImpactSettings) EditorGUILayout.ObjectField(_bulletImpactSettings, typeof(BulletImpactSettings), false);
 
+            GUILayout.Label("Select the NPC settings:");
+            _npcSettings = (NPCSettings) EditorGUILayout.ObjectField(_npcSettings, typeof(NPCSettings), false);
+            
             GUILayout.Label("Select the following transitions:");
             
             EditorGUILayout.BeginHorizontal();
@@ -96,7 +100,20 @@ namespace forloopcowboy_unity_tools.Editor
             
             GUILayout.Space(15);
 
-            GUI.enabled = _ikBehaviorTree && _characterRigPrefab && _weapons.Count > 0 && _animatorController && _ikLerpInTransition && _ikLerpInTransition && _aimTransition;
+            GUI.enabled =
+                _weapons.Count > 0 &&
+                _characterRigPrefab &&
+                _animatorController &&
+                _ikBehaviorTree &&
+                _combatBehaviorTree &&
+                _bulletImpactSettings &&
+                _aimTransition &&
+                _ikLerpInTransition &&
+                _ikLerpOutTransition &&
+                _firstNames &&
+                _lastNames &&
+                _npcSettings;
+            
             if (GUILayout.Button("Instantiate"))
             {
                 var instance = SoldierRandomizer.InstantiateCharacter(
@@ -109,7 +126,8 @@ namespace forloopcowboy_unity_tools.Editor
                     _ikLerpInTransition,
                     _ikLerpOutTransition,
                     _firstNames,
-                    _lastNames
+                    _lastNames,
+                    _npcSettings
                 )(_weapons, Vector3.zero);
 
                 Selection.activeGameObject = instance.gameObject;

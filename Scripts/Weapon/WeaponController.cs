@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
+using JetBrains.Annotations;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -27,6 +28,9 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         public bool isFiring { get => currentlyFiring; private set { currentlyFiring = value; } }
 
         public bool shouldFire = false;
+
+        /// <summary> When one is defined, the direction of the bullet will be calculated from the muzzle to the target position. </summary>
+        [CanBeNull] private AccuracyProcessor.ScrambledTransform _target;
     
         [Serializable]
         public struct BurstSettings
@@ -59,6 +63,9 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         {
             // begin loaded
             bulletsInClip = weaponSettings.clipSize;
+            
+            // initialize settings if available
+            burstSettings = weaponSettings ? weaponSettings.defaultBurstSettings : burstSettings;
 
             // cache gameobject
             muzzle = Weapon.MuzzlePosition(gameObject);
@@ -85,7 +92,16 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             {
                 while (shouldFire && isFiring && bulletsInClip > 0)
                 {
-                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzle.position, muzzle.forward);
+                    // if a scramble target is defined, we use the direction from the muzzle to the target
+                    // otherwise just fire straight.
+                    var direction = _target != null ? _target.position - muzzle.position : muzzle.forward;
+
+                    if (_target != null)
+                    {
+                        Debug.DrawRay(muzzle.position, direction);
+                    }
+                    
+                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzle.position, direction);
 
                     if (weaponSettings.muzzleEffect != null)
                     {
@@ -136,15 +152,23 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             }
         }
 
-        public void OpenFire(bool burst = false)
+        /// <summary>
+        /// Begins firing bullets.
+        /// </summary>
+        /// <param name="burst">When true, uses burst logic. When false, fires on full-auto.</param>
+        /// <param name="scrambledTarget">When set, the gun will shoot towards the target's scrambled position.</param>
+        public void OpenFire(bool burst = false, [CanBeNull] AccuracyProcessor.ScrambledTransform scrambledTarget = null)
         {
             burstSettings.enabled = burst;
             shouldFire = true;
+            if (!burst) isFiring = true;
+            _target = scrambledTarget;
         }
 
         public void CeaseFire()
         {
             shouldFire = false;
+            _target = null;
         }
         
         /// <returns>True if there were enough magazines to reload.</returns>

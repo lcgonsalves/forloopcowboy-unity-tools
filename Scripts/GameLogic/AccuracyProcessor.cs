@@ -64,6 +64,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         ) {
             Assert.IsTrue(minimumDeviance >= 0, "minimumDeviance >= 0");
             Assert.IsTrue(maximumDeviance >= 0 && maximumDeviance > minimumDeviance, "maximumDeviance >= 0 && maximumDeviance > minimumDeviance");
+
+            if (dimensionsToScramble.Length == 0)
+                dimensionsToScramble = new[] {VectorDimensions.X, VectorDimensions.Y, VectorDimensions.Z};
             
             Vector3 result = new Vector3(position.x, position.y, position.z);
 
@@ -95,7 +98,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// Returns a wrapper that allows for easier scrambling.
         /// </summary>
         /// <param name="transform"></param>
-        /// <param name="dimensionsToScramble"></param>
+        /// <param name="dimensionsToScramble">If none is specified, scrambles on all dimensions.</param>
         /// <returns></returns>
         public ScrambledTransform Scramble(Transform transform, params VectorDimensions[] dimensionsToScramble)
         {
@@ -136,24 +139,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
     public static class TransformAccuracyExtension
     {
-        /// <summary>
-        /// Returns scrambled transform that scrambles on all dimensions.
-        /// </summary>
-        public static AccuracyProcessor.ScrambledTransform GetScrambled(
-            this Transform t,
-            float minimumDeviance,
-            float maximumDeviance
-        )
-        {
-            return t.GetScrambled(
-                minimumDeviance, 
-                maximumDeviance, 
-                AccuracyProcessor.VectorDimensions.X,
-                AccuracyProcessor.VectorDimensions.Y, 
-                AccuracyProcessor.VectorDimensions.Z
-            );
-        }
-        
         public static AccuracyProcessor.ScrambledTransform GetScrambled(
             this Transform t,
             float minimumDeviance,
@@ -163,5 +148,5 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
             return new AccuracyProcessor.ScrambledTransform(t, minimumDeviance, maximumDeviance, dimensionsToScramble);
         }
-        }
+    }
 }

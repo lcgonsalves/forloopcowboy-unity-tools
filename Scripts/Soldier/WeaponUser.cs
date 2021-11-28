@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Weapon;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -17,6 +18,9 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         [Tooltip("Which hand will hold the magazine.")]
         public Transform reloadHandTransform;
+        
+        [Tooltip("Defines the settings for scrambling the position of the aimed target. If none is defined, will aim directly at the tracked target.")]
+        public AccuracyProcessor? accuracyProcessor;
 
         public AimComponent aimComponent;
 
@@ -316,7 +320,11 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         public void OpenFire()
         {
-            _active?.weapon?.OpenFire(true);
+            bool enableBurst = _active?.weapon?.burstSettings.enabled ?? false;
+            var target = aimComponent.TrackedTarget;
+            var scrambledTarget = target ? accuracyProcessor?.Scramble(target) : null;
+            
+            _active?.weapon?.OpenFire(enableBurst, scrambledTarget);
         }
 
         public void CeaseFire()

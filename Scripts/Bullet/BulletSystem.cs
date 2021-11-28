@@ -114,6 +114,8 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             {
                 foreach (var bulletController in keyValuePair.Value)
                 {
+                    if (bulletController == null) continue;
+                    
                     if (Application.isEditor) DestroyImmediate(bulletController.gameObject);
                     else Destroy(bulletController.gameObject, delay += delayIncrement);
                 }
