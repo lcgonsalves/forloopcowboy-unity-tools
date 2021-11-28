@@ -46,6 +46,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             AttachOnDeathListeners();
         }
 
+        public void SetMaxHealth(int newValue){ _maxHealth = newValue; health = _maxHealth; }
+        
         private void AttachOnDeathListeners()
         {
             onDeath += OnDeathCleanup;

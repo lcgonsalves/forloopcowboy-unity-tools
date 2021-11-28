@@ -13,9 +13,6 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         
         public int clipSize = 30;
 
-        public int minimumDamage = 10;
-        public int maximumDamage = 50;
-
         public WeaponSavedIKSettings ikSettings;
         public WeaponUser.WeaponItem inventorySettings;
 

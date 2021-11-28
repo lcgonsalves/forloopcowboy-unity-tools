@@ -208,6 +208,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 stats.possibleLastNames = lastNames;
 
                 stats.Randomize();
+                
+                // set health according to armor rating
+                var armorRating = npcSettings.armorSettingsPerNumberOfStars.GetRatingFor(stats.armor);
+                health.SetMaxHealth(health.MaxHealth + armorRating);
 
                 // randomize props
                 var propRandomizer = instance.GetComponent<NPCPropComponent>();

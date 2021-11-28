@@ -153,7 +153,7 @@ namespace forloopcowboy_unity_tools.Editor
             
             EditorGUILayout.BeginVertical();
             GUILayout.Label("Settings", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("waypointConfiguration"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("waypointSettings"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("waypointReachedRadius"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("maxSpeed"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("maxAngularSpeed"));

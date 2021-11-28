@@ -9,5 +9,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
     public class NPCSettings : SerializedScriptableObject
     {
         public Dictionary<int, AccuracyProcessor> accuracySettingsPerNumberOfStars;
+        
+        [InlineEditor(InlineEditorModes.FullEditor)]
+        public ArmorSettings armorSettingsPerNumberOfStars;
     }
 }
