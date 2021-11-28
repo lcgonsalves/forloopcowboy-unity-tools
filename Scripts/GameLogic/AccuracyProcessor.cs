@@ -27,11 +27,33 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             public GameObject gameObject => transform.gameObject;
 
             public Vector3 position =>
-                ScramblePosition(transform.position, minimumDeviance, maximumDeviance, dimensionsToScramble);
+                lastScrambledPosition = ScramblePosition(transform.position, minimumDeviance, maximumDeviance, dimensionsToScramble);
 
-            /// <summary> Scrambles position only for the selected dimensions </summary>
-            public Vector3 GetScrambledPosition(params VectorDimensions[] newDimensionsToScramble) =>
-                ScramblePosition(transform.position, minimumDeviance, maximumDeviance, newDimensionsToScramble);
+            public Vector3 localPosition =>
+                lastScrambledPosition = ScramblePosition(transform.localPosition, minimumDeviance, maximumDeviance, dimensionsToScramble);
+
+            /// <summary>
+            /// Calculates scrambled position based on the range.
+            /// If the character's weapon has range of 10 and it is 9 units away from target,
+            /// the range value should be '0.9', which in this case will mean that the
+            /// deviances will be cut by 10% (as character is closer to target so deviation shouldn't be so extreme).
+            /// </summary>
+            /// <param name="range">As a factor of the accessible range of the weapon. Will be clamped between 0 and 1.</param>
+            /// <param name="newDimensionsToScramble">Which dimensions should be used for scrambling.</param>
+            /// <returns></returns>
+            public Vector3 GetScrambledPositionAtRange(float range, params VectorDimensions[] newDimensionsToScramble)
+            {
+                range = Mathf.Clamp01(range);
+                return 
+                    lastScrambledPosition = ScramblePosition(
+                        transform.position, 
+                        range * minimumDeviance, 
+                        range * maximumDeviance, 
+                        newDimensionsToScramble
+                    );
+            }
+
+            public Vector3 lastScrambledPosition { get; private set;  } = Vector3.zero;
 
             public float minimumDeviance, maximumDeviance;
             public VectorDimensions[] dimensionsToScramble;

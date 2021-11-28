@@ -87,6 +87,9 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         /// </summary>
         private IEnumerator FiringCoroutine()
         {
+            // TODO: move to weapon settings.
+            var range = 10f;
+            
             // do while alive
             while (true)
             {
@@ -94,14 +97,21 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
                 {
                     // if a scramble target is defined, we use the direction from the muzzle to the target
                     // otherwise just fire straight.
-                    var direction = _target != null ? _target.position - muzzle.position : muzzle.forward;
+                    var muzzleDirection = muzzle.forward;
+                    var muzzlePosition = muzzle.position;
+                    
+                    if (_target != null)
+                    {
+                        var distance = Vector3.Distance(muzzlePosition, _target.transform.position);
+                        muzzleDirection = _target.GetScrambledPositionAtRange(distance / range) - muzzlePosition;
+                    }
 
                     if (_target != null)
                     {
-                        Debug.DrawRay(muzzle.position, direction);
+                        Debug.DrawRay(muzzlePosition, muzzleDirection);
                     }
                     
-                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzle.position, direction);
+                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzlePosition, muzzleDirection);
 
                     if (weaponSettings.muzzleEffect != null)
                     {
@@ -187,5 +197,13 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         private ReloadSystem _rs; 
         public ReloadSystem ReloadSystem => _rs ? _rs : _rs = GetComponent<ReloadSystem>();
 
+        private void OnDrawGizmosSelected()
+        {
+            if (_target != null)
+            {
+                Gizmos.color = new Color(1f, 0.58f, 0f);
+                Gizmos.DrawSphere(_target.lastScrambledPosition, 0.12f);
+            }
+        }
     }
 }

@@ -8,19 +8,20 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
     public class AccuracyProcessorComponent : SerializedMonoBehaviour
     {
+        [InlineEditor(InlineEditorModes.FullEditor)]
         [CanBeNull] public AccuracyProcessor accuracyProcessor;
         
         public Vector3 lastRandomizedPosition = Vector3.zero;
 
         [Button]
-        public void Randomize(List<AccuracyProcessor.VectorDimensions> dimensionsList)
+        public void Randomize()
         {
             if (!accuracyProcessor)
             {
                 Debug.LogWarning("No accuracy processor present in component.");
                 return;
             }
-            lastRandomizedPosition = accuracyProcessor.GetScrambledPosition(transform, dimensionsList.ToArray());
+            lastRandomizedPosition = accuracyProcessor.GetScrambledPosition(transform);
         }
 
         private void OnDrawGizmosSelected()
