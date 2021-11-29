@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Weapon;
@@ -129,7 +131,46 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         }
 
         private Coroutine aimTransition = null;
-        
 
+        /// <summary>
+        /// Returns true if a raycast from the weapon's muzzle
+        /// to the target global position hits one of the colliders
+        /// from any of the spawned NPCs of the given side in the given
+        /// unit manager.
+        /// </summary>
+        /// <param name="targetPosition"></param>
+        /// <param name="side"></param>
+        /// <param name="unitManager"></param>
+        /// <returns></returns>
+        public bool HasNPCInCrossfire(
+            Vector3 targetPosition,
+            UnitManager.Side side,
+            UnitManager unitManager
+        )
+        {
+            var possibleNPCs = unitManager.GetSpawned(side);
+            List<Collider> possibleTargets = new List<Collider>(possibleNPCs.Length);
+
+            foreach (var npc in possibleNPCs)
+            {
+                possibleTargets.AddRange(npc.GetComponents<Collider>());
+                possibleTargets.AddRange(npc.GetComponentsInChildren<Collider>());
+            }
+
+            Transform muzzleSource = weapon ? weapon.muzzle : transform;
+
+            var muzzleSourcePosition = muzzleSource.position;
+            var hits = Physics.SphereCastAll(muzzleSourcePosition, 0.15f, targetPosition - muzzleSourcePosition);
+
+            Debug.DrawRay(muzzleSourcePosition, targetPosition - muzzleSourcePosition);
+            
+            foreach (var raycastHit in hits)
+            {
+                if (possibleTargets.Contains(raycastHit.collider)) return true;
+            }
+
+            return false;
+        }
+        
     }
 }

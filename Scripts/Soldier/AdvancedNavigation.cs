@@ -28,6 +28,8 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         [SerializeField, ReadOnly] private WaypointNode _lastWaypointPathStart = null;
         [SerializeField, ReadOnly] private List<WaypointNode> _lastWaypointPath = new List<WaypointNode>(15);
 
+        public NavMeshAgent NavMeshAgent => _navMeshAgent;
+        
         /// <summary>
         /// Points to the last visited <c>WaypointNode</c>, or null if no
         /// nodes have been visited yet.

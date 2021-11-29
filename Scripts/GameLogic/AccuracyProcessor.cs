@@ -17,6 +17,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public enum VectorDimensions { X, Y, Z }
 
         public float minimumDeviance, maximumDeviance;
+        
+        [Tooltip("0 means raw random value between min and max. 1 means always hitting minimumDeviance. 0.5 lerps between the random point and the minimum.")]
+        public float biasTowardCentre = 0f;
 
         /// <summary>
         /// Wrapper that allows for modifying the deviance values without affecting asset.
@@ -24,14 +27,11 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public class ScrambledTransform
         {
             public Transform transform;
+            
+            public float biasTowardCentre = 0f;
             public GameObject gameObject => transform.gameObject;
-
-            public Vector3 position =>
-                lastScrambledPosition = ScramblePosition(transform.position, minimumDeviance, maximumDeviance, dimensionsToScramble);
-
-            public Vector3 localPosition =>
-                lastScrambledPosition = ScramblePosition(transform.localPosition, minimumDeviance, maximumDeviance, dimensionsToScramble);
-
+            
+            
             /// <summary>
             /// Calculates scrambled position based on the range.
             /// If the character's weapon has range of 10 and it is 9 units away from target,
@@ -49,6 +49,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                         transform.position, 
                         range * minimumDeviance, 
                         range * maximumDeviance, 
+                            biasTowardCentre,
                         newDimensionsToScramble
                     );
             }
@@ -57,15 +58,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
             public float minimumDeviance, maximumDeviance;
             public VectorDimensions[] dimensionsToScramble;
-            
-            internal ScrambledTransform(Transform transform, float minimumDeviance, float maximumDeviance, VectorDimensions[] dimensionsToScramble)
+
+            internal ScrambledTransform(Transform transform, float biasTowardCentre, float minimumDeviance, float maximumDeviance, VectorDimensions[] dimensionsToScramble)
             {
                 this.transform = transform;
+                this.biasTowardCentre = biasTowardCentre;
                 this.minimumDeviance = minimumDeviance;
                 this.maximumDeviance = maximumDeviance;
                 this.dimensionsToScramble = dimensionsToScramble;
             }
-            
         }
 
         /// <summary>
@@ -76,12 +77,14 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="position">Position to scramble.</param>
         /// <param name="minimumDeviance">Least amount of deviation possible.</param>
         /// <param name="maximumDeviance">Highest amount of deviation possible.</param>
+        /// <param name="biasTowardsMinimum">0 means raw random value between min and max. 1 means always hitting minimumDeviance. 0.5 lerps between the random point and the minimum.</param>
         /// <param name="dimensionsToScramble">Whether to translate the vector vertically, horizontally, or depthwise.</param>
         /// <returns>The scrambled vector.</returns>
         public static Vector3 ScramblePosition(
             Vector3 position,
             float minimumDeviance,
             float maximumDeviance,
+            float biasTowardsMinimum,
             params VectorDimensions[] dimensionsToScramble
         ) {
             Assert.IsTrue(minimumDeviance >= 0, "minimumDeviance >= 0");
@@ -95,7 +98,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             foreach (var dimension in dimensionsToScramble)
             {
                 int sign = RandomExtended.Boolean() ? -1 : 1;
-                float value = sign * Random.Range(minimumDeviance, maximumDeviance);
+                float value = Random.Range(minimumDeviance, maximumDeviance);
+                value = Mathf.Lerp(value, minimumDeviance, biasTowardsMinimum);
+                value *= sign;
                 
                 switch (dimension)
                 {
@@ -124,7 +129,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <returns></returns>
         public ScrambledTransform Scramble(Transform transform, params VectorDimensions[] dimensionsToScramble)
         {
-            return transform.GetScrambled(minimumDeviance, maximumDeviance, dimensionsToScramble);
+            return new ScrambledTransform(transform, biasTowardCentre, minimumDeviance, maximumDeviance, dimensionsToScramble);
         }
 
         /// <summary>
@@ -154,21 +159,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 position,
                 minimumDeviance,
                 maximumDeviance,
+                biasTowardCentre,
                 dimensionsToScramble
             );
         }
     }
-
-    public static class TransformAccuracyExtension
-    {
-        public static AccuracyProcessor.ScrambledTransform GetScrambled(
-            this Transform t,
-            float minimumDeviance,
-            float maximumDeviance,
-            params AccuracyProcessor.VectorDimensions[] dimensionsToScramble
-        )
-        {
-            return new AccuracyProcessor.ScrambledTransform(t, minimumDeviance, maximumDeviance, dimensionsToScramble);
-        }
-    }
+    
 }

@@ -21,6 +21,7 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
         public SharedGameObject gameplayManager;
         public SharedTransform nearestLivingTarget;
         public SharedFloat maximumRange = 10f;
+        public SharedFloat distanceToTarget;
         private GameplayManager gm;
 
         public override void OnAwake()
@@ -71,6 +72,7 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
                 gm.Target(target.gameObject);
             
             nearestLivingTarget.SetValue(target);
+            distanceToTarget.SetValue(shortestDistance);
 
             if (closestTarget != null) return TaskStatus.Success;
             else return TaskStatus.Failure;

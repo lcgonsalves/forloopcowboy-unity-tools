@@ -87,15 +87,11 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         /// </summary>
         private IEnumerator FiringCoroutine()
         {
-            // TODO: move to weapon settings.
-            var range = 10f;
-            
             // do while alive
             while (true)
             {
                 while (shouldFire && isFiring && bulletsInClip > 0)
                 {
-                    
                     var muzzleDirection = muzzle.forward;
                     var muzzlePosition = muzzle.position;
                     
@@ -104,7 +100,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
                     if (_target != null)
                     {
                         var distance = Vector3.Distance(muzzlePosition, _target.transform.position);
-                        muzzleDirection = _target.GetScrambledPositionAtRange(distance / range) - muzzlePosition;
+                        muzzleDirection = _target.GetScrambledPositionAtRange(distance / weaponSettings.effectiveRange) - muzzlePosition;
                     }
 
                     if (_target != null)
