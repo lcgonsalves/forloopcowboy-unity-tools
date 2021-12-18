@@ -3,6 +3,7 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells
 {
@@ -17,7 +18,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         public InputActionReference actionSelect;
 
-        public InputActionReference holdToSelectOtherAction;
+        [FormerlySerializedAs("holdToSelectOtherAction")] public InputActionReference holdToSelectLeftAction;
 
         public Chronos.Chronos chronos { get; private set; }
 
@@ -47,6 +48,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
 
         // fixme: fuck
+        // update: still not fixing this
         private Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>> spellParticles = 
             new Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>>(
                 new Dictionary<Spell, Spell.InstanceConfiguration>(), new Dictionary<Spell, Spell.InstanceConfiguration>()
@@ -137,13 +139,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             leftHandInput.action.Enable();
             rightHandInput.action.Enable();
             actionSelect.action.Enable();
-            holdToSelectOtherAction.action.Enable();
+            holdToSelectLeftAction.action.Enable();
             // set up updater
             actionSelect.action.performed += ctx =>
             {
                 Side<ArmComponent> selectedArm;
 
-                if (holdToSelectOtherAction.action.ReadValueAsObject() != null)
+                if (holdToSelectLeftAction.action.ReadValueAsObject() != null)
                 {
                     selectedArm = arms.l;
                 }
@@ -191,7 +193,9 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 if (s.CanHold(this, arms.l)) arms.Left.SetHolder(s.chargeStyle, true);
             };
             rightHandInput.action.started += ctx => { 
-                arms.Right.SetHolder(activeSpell.Get(arms.r).chargeStyle, true); 
+                Spell s = activeSpell.Get(arms.r);
+
+                if (s.CanHold(this, arms.r)) arms.Right.SetHolder(s.chargeStyle, true);
             };
 
             // lift up - begin cast animation that will trigger spell
@@ -307,7 +311,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             leftHandInput.action.Disable();
             rightHandInput.action.Disable();
             actionSelect.action.Disable();
-            holdToSelectOtherAction.action.Disable();
+            holdToSelectLeftAction.action.Disable();
 
             void DestroyInstances(Spell spell, Side<ArmComponent> side)
             {

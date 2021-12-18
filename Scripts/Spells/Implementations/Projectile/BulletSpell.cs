@@ -2,16 +2,18 @@ using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {
-    public class BallOfEnergy : Spell
+    public class BulletSpell : Spell
     {
-        [Header("Replaces Main Effect if none is specified")]
+        [Header("Replaces Main Effect if none is specified"), InlineEditor(InlineEditorModes.FullEditor)]
         public Bullet.Bullet bullet;
 
+        [InlineEditor(InlineEditorModes.FullEditor)]
         public Transition handBackTransition;
 
         public float throwAngle = 0f;
@@ -29,8 +31,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             // spin and hover bullets if no preview particle instance is defined
             if (hasParticleInstances && instances.preview != null)
             {
-                instances.preview.gameObject.SetActive(true);
-                instances.preview.transform.position = source.content.GetCastPoint(chargeStyle);
+                base.Preview(caster, source, direction);
             }
             else if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
             {
@@ -38,6 +39,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
                 sphere.rb.MovePosition(source.content.GetCastPoint(chargeStyle));
                 sphere.rb.useGravity = false;
                 sphere.rb.AddTorque(0.001f, 0.02f, 0f);
+                sphere.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
+                var t = sphere.rb.transform;
+
+                if (t.childCount > 0)
+                {
+                    t.GetChild(0).localScale = previewScale * Vector3.one;
+                }
             }
 
         }
@@ -49,10 +57,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             {
                 var l = GameObject.Instantiate(bullet.prefab).gameObject.GetOrElseAddComponent<BulletController>();
                 var r = GameObject.Instantiate(bullet.prefab).gameObject.GetOrElseAddComponent<BulletController>();
-            
-                l.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FPS"));
-                r.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FPS"));
-            
+
                 l.Settings = bullet;
                 r.Settings = bullet;
 
@@ -110,6 +115,10 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 
             var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection);
             b.rb.AddTorque(5f, 3f, 0f);
+            b.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Player"));
+
+            if (b.transform.childCount > 0)
+                b.transform.GetChild(0).localScale = castScale * Vector3.one;
 
             if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
             {
@@ -117,8 +126,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             } else PrepareBulletCache(caster);
         }
 
-        [MenuItem("Spells/New.../Projectile")]
-        static void CreateBulletSpell(){ Spell.CreateSpell<BallOfEnergy>("Projectile"); }
+        [MenuItem("Spells/New.../Bullet")]
+        static void CreateBulletSpell(){ Spell.CreateSpell<BulletSpell>("Projectile"); }
 
     }
 }

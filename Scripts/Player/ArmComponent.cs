@@ -1,26 +1,27 @@
 using System;
 using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Player
 {
     [RequireComponent(typeof(Animator))]
-    public class ArmComponent : MonoBehaviour
+    public class ArmComponent : SerializedMonoBehaviour
     {
-        [Header("Animator Parameters"), ReadOnly]
+        [Header("Animator Parameters"), Core.ReadOnly]
         public string TwoFingerHoldBool = "TwoFingerHold";
 
-        [ReadOnly]
+        [Core.ReadOnly]
         public string OpenPalmHoldBool = "OpenPalmHold";
     
-        [ReadOnly]
+        [Core.ReadOnly]
         public string ClosedPalmHoldBool = "ClosedPalmHold";
 
-        [ReadOnly]
+        [Core.ReadOnly]
         public string CastThrowTrigger = "CastThrow";
 
-        [ReadOnly]
+        [Core.ReadOnly]
         public string CastForwardBool = "CastForward";
 
         [Header("Configuration")]
@@ -65,10 +66,12 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             Palm
         }
 
+        public IEnumerable<ArmPosition> ArmPositions = EnumUtil.GetValues<ArmPosition>();
+        
         // Set to true when current hold animation reaches critical point, sets to false when cast event fires or idle animation starts
         public bool holdReady = false;
 
-        private Dictionary<ArmPosition, Transform> armTransforms = new Dictionary<ArmPosition, Transform> {
+        public Dictionary<ArmPosition, Transform> armTransforms = new Dictionary<ArmPosition, Transform> {
             { ArmPosition.Thumb, null },
             { ArmPosition.IndexFinger, null },
             { ArmPosition.MiddleFinger, null },
@@ -89,28 +92,24 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 
         void InitializeFingers()
         {
-            string basePath = "Armature/Bone/Bone.002/";
-            Func<int, string> bone = i => (i < 10 ? "Bone.00" + i : "Bone.0" + i) + "/"; // no bones over 100
 
-            armTransforms[ArmPosition.Thumb] = 
-                transform.Find(basePath + bone(3) + bone(8) + bone(9) + ArmPosition.Thumb.ToString());
+            if (armTransforms[ArmPosition.Thumb] == null) armTransforms[ArmPosition.Thumb] = 
+                transform.FindRecursively(_ => _.name == ArmPosition.Thumb.ToString());
 
-            Debug.Log(basePath + bone(3) + bone(8) + bone(9) + ArmPosition.Thumb.ToString());
+            if (armTransforms[ArmPosition.IndexFinger] == null) armTransforms[ArmPosition.IndexFinger] =
+                transform.FindRecursively(_ => _.name == ArmPosition.IndexFinger.ToString());
 
-            armTransforms[ArmPosition.IndexFinger] =
-                transform.Find(basePath + bone(4) + bone(10) + bone(11) + bone(12) + ArmPosition.IndexFinger.ToString());
+            if (armTransforms[ArmPosition.MiddleFinger] == null) armTransforms[ArmPosition.MiddleFinger] =
+                transform.FindRecursively(_ => _.name == ArmPosition.MiddleFinger.ToString());
 
-            armTransforms[ArmPosition.MiddleFinger] =
-                transform.Find(basePath + bone(5) + bone(13) + bone(14) + bone(15) + ArmPosition.MiddleFinger.ToString());
+            if (armTransforms[ArmPosition.RingFinger] == null) armTransforms[ArmPosition.RingFinger] =
+                transform.FindRecursively(_ => _.name == ArmPosition.RingFinger.ToString());
 
-            armTransforms[ArmPosition.RingFinger] =
-                transform.Find(basePath + bone(6) + bone(16) + bone(17) + bone(18) + ArmPosition.RingFinger.ToString());
+            if (armTransforms[ArmPosition.PinkyFinger] == null) armTransforms[ArmPosition.PinkyFinger] =
+                transform.FindRecursively(_ => _.name == ArmPosition.PinkyFinger.ToString());
 
-            armTransforms[ArmPosition.PinkyFinger] =
-                transform.Find(basePath + bone(7) + bone(19) + bone(20) + bone(21) + ArmPosition.PinkyFinger.ToString());
-
-            armTransforms[ArmPosition.Palm] =
-                transform.Find(basePath + ArmPosition.Palm.ToString());
+            if (armTransforms[ArmPosition.Palm] == null) armTransforms[ArmPosition.Palm] =
+                transform.FindRecursively(_ => _.name == ArmPosition.Palm.ToString());
         }
 
         // Returns the transform of the given finger, or the root transform if the finger is not found.
@@ -302,9 +301,9 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         private void OnDrawGizmosSelected() {
             Gizmos.color = Color.green;
         
-            foreach (var finger in armTransforms) {
-                if (finger.Value) {
-                    Gizmos.DrawSphere(finger.Value.position, 0.01f);
+            foreach (var armPosition in ArmPositions) {
+                if (armTransforms.TryGetValue(armPosition, out var armPositionTransform) && armPositionTransform) {
+                    Gizmos.DrawSphere(armPositionTransform.position, 0.01f);
                 }
                 else InitializeFingers();
             }

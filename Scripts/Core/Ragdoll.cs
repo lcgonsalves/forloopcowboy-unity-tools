@@ -45,6 +45,12 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 limb.isKinematic = true;
                 var l = limb.gameObject.GetOrElseAddComponent<Limb>();
                 l.master = this;
+                
+                // Start with collider disabled to avoid any weird physics behavior while not in ragdoll
+                if (limb.TryGetComponent(out Collider c))
+                {
+                    c.enabled = false;
+                }
             }
         }
 
@@ -64,6 +70,11 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             {
                 // is not kinematic when ragdoll is enabled
                 limb.isKinematic = !shouldEnableRagdoll;
+
+                if (limb.TryGetComponent(out Collider c))
+                {
+                    c.enabled = shouldEnableRagdoll;
+                }
             }
 
             return IsRagdolling = shouldEnableRagdoll;

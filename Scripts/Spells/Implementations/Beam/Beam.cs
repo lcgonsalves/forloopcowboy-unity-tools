@@ -24,6 +24,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
                 if (instances.main == null) throw new System.NullReferenceException("Beam requires main effect.");
 
                 instances.main.transform.position = start.position;
+                instances.main.layer = LayerMask.NameToLayer("Soldiers");
             
                 float originalAimSpeed = -1;
                 Transition.TransitionState transitionInstance = sensitivityTransition.GetPlayableInstance();

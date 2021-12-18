@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 
 namespace forloopcowboy_unity_tools.Scripts.Player
 {
+    [RequireComponent(typeof(CharacterController), typeof(Chronos.Chronos))]
+    [SelectionBase]
     public class PlayerMovementBehavior : MonoBehaviour
     {
         // debug information

@@ -1,12 +1,15 @@
+using System;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells
 {
     /// Defines a skill that can be consumed by the SpellUserBehavior
-    public abstract class Spell : ScriptableObject
+    public abstract class Spell : SerializedScriptableObject
     {
 
         [Tooltip("Unique spell identifier.")]
@@ -35,6 +38,9 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         [Tooltip("The time scale that should be used when the characters enter preview mode. If 0 < x < 1 then time is slowed down.")]
         public float slowMoEfect = 1f;
 
+        public float previewScale = 0.23f;
+        public float castScale = 0.5f;
+        
         public bool debugMode;
 
         /// Logic that should run when spell is previewed by spell user
@@ -44,7 +50,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             if (caster.ParticleInstancesFor(this, source, out var particles))
             {
                 particles.preview.gameObject.SetActive(true);
-                particles.preview.transform.position = GetCastPointFor(source);
+                var previewTransform = particles.preview.transform;
+                previewTransform.position = GetCastPointFor(source);
+                particles.preview.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
+                if (previewTransform.childCount > 0)
+                    previewTransform.GetChild(0).localScale = previewScale * Vector3.one;
 
             } else NoParticleInstantiatedWarning(caster); 
         }
@@ -91,7 +101,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         // true if a spell has never been casted before or if the cooldown is over
         public bool CanHold(SpellCaster caster, Side<ArmComponent> arm, out System.DateTime time)
         {
-            bool spellNeverCastedBefore = !caster.LatestSpellCastTimeFor(this, arm, out time);
+            bool spellNeverCastedBefore = caster.LatestSpellCastTimeFor(this, arm, out time) && time == DateTime.MinValue;
             bool spellHasBeenCastedBefore = !spellNeverCastedBefore;
 
             // here we define: if a spell has never been casted before (for whatever reason we couldn't get the latest cast time) we just let the user cast it

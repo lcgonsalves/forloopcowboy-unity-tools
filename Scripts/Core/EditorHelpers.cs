@@ -376,6 +376,19 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             return LayerMask.NameToLayer(layerName);
         }
 
+        public static int LayerFromMask(LayerMask mask)
+        {
+            // todo: cache this, potential bottleneck
+            int layerNumber = 0;
+            int layer = mask.value;
+            while(layer > 0)
+            {
+                layer = layer >> 1;
+                layerNumber++;
+            }
+            return layerNumber;
+        }
+        
         public LayerMask LayerMaskFor(string layerName) { return 1 << Layer(layerName); }
         public LayerMask LayerMaskFor(int layer) { return 1 << layer; }
         
