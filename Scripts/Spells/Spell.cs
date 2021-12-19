@@ -4,6 +4,7 @@ using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using VoxelArsenal;
 using Object = UnityEngine.Object;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells
@@ -49,10 +50,17 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         {
             if (caster.ParticleInstancesFor(this, source, out var particles))
             {
-                particles.preview.gameObject.SetActive(true);
-                var previewTransform = particles.preview.transform;
+                var particlesPreview = particles.preview;
+                
+                if (!particlesPreview.gameObject.activeInHierarchy)
+                {
+                    particlesPreview.GetComponentInChildren<VoxelSoundSpawn>()?.Start();
+                    particlesPreview.gameObject.SetActive(true);
+                }
+                
+                var previewTransform = particlesPreview.transform;
                 previewTransform.position = GetCastPointFor(source);
-                particles.preview.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
+                particlesPreview.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
                 if (previewTransform.childCount > 0)
                     previewTransform.GetChild(0).localScale = previewScale * Vector3.one;
 

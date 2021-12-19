@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BehaviorDesigner.Runtime.Tasks.Unity.Timeline;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
@@ -33,7 +34,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 
             if (caster.target != null && caster.ParticleInstancesFor(this, source, out var particles))
             {
-                // particles.preview.transform.position = caster.target.position;
+                particles.preview.transform.localScale = Vector3.one;
+                particles.preview.transform.position = caster.target.position;
             }
             
         }
@@ -53,7 +55,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             force.m_StopRadius = StopRadius;
             force.m_Layers = LayerHelper.LayerMaskFor(controller.gameObject.layer);
             force.m_Type = GameLogic.Force.ForceType.Attraction;
-
+            
+            var collider = controller.GetComponentInChildren<Collider>();
+            if (force.m_AffectedObjectIDs == null)
+                force.m_AffectedObjectIDs = new HashSet<int> {collider.GetInstanceID()};
+            else force.m_AffectedObjectIDs.Add(collider.GetInstanceID());
         }
         
         [MenuItem("Spells/New.../GuidedBullet")]

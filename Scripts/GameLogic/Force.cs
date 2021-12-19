@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
@@ -34,6 +36,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public float m_Force;
         public LayerMask m_Layers;
 
+        [CanBeNull] public HashSet<int> m_AffectedObjectIDs;
+
         private void FixedUpdate()
         {
             Collider[] colliders = Physics.OverlapSphere(m_Pivot.position, m_Radius, m_Layers);
@@ -42,6 +46,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
             foreach (var collider in colliders)
             {
+                // only pull objects that are listed in the set of affected objects
+                if (m_AffectedObjectIDs != null && !m_AffectedObjectIDs.Contains(collider.GetInstanceID())) continue;
+
                 Rigidbody body = collider.GetComponent<Rigidbody>();
                 if (body == null) 
                     continue;

@@ -7,6 +7,7 @@ using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using VoxelArsenal;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {
@@ -18,6 +19,10 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
         [InlineEditor(InlineEditorModes.FullEditor)]
         public Transition handBackTransition;
 
+        public bool enableHoverBulletPreview = true;
+
+        public bool bulletUsesGravity = true;
+        
         public float throwAngle = 0f;
 
         protected Dictionary<int, BulletController> hoveringBullets = new Dictionary<int, BulletController>();
@@ -36,14 +41,17 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
                 base.Preview(caster, source, direction);
             }
             
-            if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
+            if (enableHoverBulletPreview && hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
             {
-                sphere.gameObject.SetActive(true);
+                if (!sphere.gameObject.activeInHierarchy)
+                {
+                    sphere.gameObject.GetComponentInChildren<VoxelSoundSpawn>()?.Start();
+                    sphere.gameObject.SetActive(true);
+                }
                 
                 var castPoint = source.content.GetCastPoint(chargeStyle);
 
                 sphere.rb.MovePosition(castPoint);
-                
                 sphere.rb.useGravity = false;
                 sphere.rb.AddTorque(0.001f, 0.02f, 0f);
                 sphere.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
@@ -65,8 +73,14 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
                 var l = GameObject.Instantiate(bullet.prefab).gameObject.GetOrElseAddComponent<BulletController>();
                 var r = GameObject.Instantiate(bullet.prefab).gameObject.GetOrElseAddComponent<BulletController>();
 
+                l.name = $"Left Hovering Bullet ({bullet.prefab.name})";
+                r.name = $"Right Hovering Bullet ({bullet.prefab.name})";
+                
                 l.Settings = bullet;
                 r.Settings = bullet;
+                
+                l.gameObject.SetActive(false);
+                r.gameObject.SetActive(false);
 
                 if (l is EnergyBulletController)
                 {
@@ -123,7 +137,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection);
             b.rb.AddTorque(5f, 3f, 0f);
             b.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Player"));
-
+            b.rb.useGravity = bulletUsesGravity;
+            
             if (b.transform.childCount > 0)
                 b.transform.GetChild(0).localScale = castScale * Vector3.one;
             
