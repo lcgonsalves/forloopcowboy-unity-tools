@@ -127,10 +127,10 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         private void FixedUpdate()
         {
             if (previewingLeftHandSpell) PreviewSpell(arms.l);
-            else activeSpell?.Left?.Reset(this, arms.l);
+            else activeSpell?.Left?.ResetPreview(this, arms.l);
 
             if (previewingRightHandSpell) PreviewSpell(arms.r);
-            else activeSpell?.Right?.Reset(this, arms.r);
+            else activeSpell?.Right?.ResetPreview(this, arms.r);
         }
 
         private void OnEnable()
@@ -157,7 +157,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 Spell aspell = activeSpell.Get(selectedArm);
                 ArmComponent.ChargeStyles cs = aspell.chargeStyle;
                 bool wasHolding = selectedArm.content.IsHolding(cs);
-                aspell.Reset(this, selectedArm);
+                aspell.ResetPreview(this, selectedArm);
 
                 // If selecting with given arm, reset hold position.
                 if (wasHolding) {
@@ -259,7 +259,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 if (!previewParticle) Debug.LogError("No preview ParticleSystem component found! The prefab must contain a particle system.");
                 else spellParticleInstanceContainer.preview = previewInstance;
 
-                previewInstance.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FPS"));
+                previewInstance.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
+                previewInstance.gameObject.SetActive(false);
 
             }
             else Debug.LogWarning("No preview particle assigned in spell definition. Please update the asset.");

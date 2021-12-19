@@ -39,7 +39,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
             {
                 sphere.gameObject.SetActive(true);
-                sphere.rb.MovePosition(source.content.GetCastPoint(chargeStyle));
+                
+                var castPoint = source.content.GetCastPoint(chargeStyle);
+
+                sphere.rb.MovePosition(castPoint);
+                
                 sphere.rb.useGravity = false;
                 sphere.rb.AddTorque(0.001f, 0.02f, 0f);
                 sphere.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
@@ -81,7 +85,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             }
         }
 
-        public override void Reset(SpellUserBehaviour caster, Side<ArmComponent> arm)
+        public override void ResetPreview(SpellUserBehaviour caster, Side<ArmComponent> arm)
         {
             PrepareBulletCache(caster);
 
@@ -93,8 +97,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             // spin and hover bullets if no preview particle instance is defined
             if (hasParticleInstances)
             {
-                instancesL.preview?.gameObject.SetActive(false);
-                instancesR.preview?.gameObject.SetActive(false);
+                if (arm is Left<ArmComponent>) instancesL.preview?.gameObject.SetActive(false);
+                if (arm is Right<ArmComponent>) instancesR.preview?.gameObject.SetActive(false);
             }
 
             if (hoveringBullets.TryGetValue(arm.content.GetInstanceID(), out BulletController sphere))
@@ -114,7 +118,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             if (Physics.Raycast(new Ray(caster.mainCamera.transform.position, direction), out var hit, range))
                 projectedPoint = hit.point;
             
-            var correctedDirection = Quaternion.AngleAxis(throwAngle, Vector3.left) * (projectedPoint - castPoint).normalized;
+            var correctedDirection = Quaternion.AngleAxis(throwAngle, caster.transform.TransformDirection(Vector3.left)) * (projectedPoint - castPoint).normalized;
 
             var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection);
             b.rb.AddTorque(5f, 3f, 0f);

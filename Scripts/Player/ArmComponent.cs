@@ -71,16 +71,19 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         // Set to true when current hold animation reaches critical point, sets to false when cast event fires or idle animation starts
         public bool holdReady = false;
 
-        public Dictionary<ArmPosition, Transform> armTransforms = new Dictionary<ArmPosition, Transform> {
-            { ArmPosition.Thumb, null },
-            { ArmPosition.IndexFinger, null },
-            { ArmPosition.MiddleFinger, null },
-            { ArmPosition.RingFinger, null },
-            { ArmPosition.PinkyFinger, null },
-            { ArmPosition.Palm, null }
-        };
+        public Dictionary<ArmPosition, Transform> armTransforms = new Dictionary<ArmPosition, Transform>();
 
         private void OnEnable() {
+            if (armTransforms.Count == 0)
+            {
+                armTransforms.Add(ArmPosition.Thumb, null);
+                armTransforms.Add(ArmPosition.IndexFinger, null);
+                armTransforms.Add(ArmPosition.MiddleFinger, null);
+                armTransforms.Add(ArmPosition.RingFinger, null);
+                armTransforms.Add(ArmPosition.PinkyFinger, null);
+                armTransforms.Add(ArmPosition.Palm, null);
+            }
+            
             InitializeFingers();
         }
 

@@ -61,7 +61,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         /// Stops any ongoing preview
         /// By default, it disables the preview object.
-        public virtual void Reset(SpellUserBehaviour caster, Side<ArmComponent> source)
+        public virtual void ResetPreview(SpellUserBehaviour caster, Side<ArmComponent> source)
         {
             if (caster.ParticleInstancesFor(this, source, out var particles))
                 particles.preview.gameObject.SetActive(false);

@@ -33,7 +33,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 
             if (caster.target != null && caster.ParticleInstancesFor(this, source, out var particles))
             {
-                particles.preview.transform.position = caster.target.position;
+                // particles.preview.transform.position = caster.target.position;
             }
             
         }
