@@ -371,7 +371,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         
         public LayerHelper() { }
 
-        public int Layer(string layerName)
+        public static int Layer(string layerName)
         {
             return LayerMask.NameToLayer(layerName);
         }
@@ -389,8 +389,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             return layerNumber;
         }
         
-        public LayerMask LayerMaskFor(string layerName) { return 1 << Layer(layerName); }
-        public LayerMask LayerMaskFor(int layer) { return 1 << layer; }
+        public static LayerMask LayerMaskFor(string layerName) { return 1 << Layer(layerName); }
+        public static LayerMask LayerMaskFor(int layer) { return 1 << layer; }
         
     }
 

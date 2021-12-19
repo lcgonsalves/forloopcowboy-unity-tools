@@ -9,12 +9,10 @@ namespace forloopcowboy_unity_tools.Scripts.SquadUnit
         public string key = "Untitled Army";
 
         [SerializeField] private string layerName = "Default";
-
-        private LayerHelper layerConfiguration = new LayerHelper();
-
+        
         public string LayerName => layerName;
 
-        public int Layer => layerConfiguration.Layer(LayerName);
-        public LayerMask LayerMask => layerConfiguration.LayerMaskFor(Layer);
+        public int Layer => LayerHelper.Layer(LayerName);
+        public LayerMask LayerMask => LayerHelper.LayerMaskFor(Layer);
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.GameLogic;
+using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Bullet
@@ -71,7 +73,14 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             gameObject.SetActive(false);
         }
 
-        protected virtual void OnFirstImpact(Collision other){}
+        protected virtual void OnFirstImpact(Collision other)
+        {
+            // if we collide with anything, and we are a guided bullet, then stop being guided.
+            if (TryGetComponent(out Force force))
+            {
+                force.m_Type = Force.ForceType.None;
+            }
+        }
 
         protected virtual void OnImpact(Collision other)
         {
@@ -84,6 +93,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 
         protected virtual void OnFinalImpact(Collision other)
         {
+            OnImpact(other);
             gameObject.SetActive(false);
         }
 

@@ -10,11 +10,9 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         private static readonly string lm = "Waypoint";
         
         [FormerlySerializedAs("layerMask")] [SerializeField] private string layerName = lm;
-        
-        private LayerHelper lh = new LayerHelper();
 
         public string LayerName => layerName;
-        public int Layer => lh.Layer(LayerName);
-        public LayerMask LayerMask => lh.LayerMaskFor(Layer);
+        public int Layer => LayerHelper.Layer(LayerName);
+        public LayerMask LayerMask => LayerHelper.LayerMaskFor(Layer);
     }
 }

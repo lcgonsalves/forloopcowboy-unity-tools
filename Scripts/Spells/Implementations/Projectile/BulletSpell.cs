@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using BehaviorDesigner.Runtime.Tasks;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
@@ -33,7 +35,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             {
                 base.Preview(caster, source, direction);
             }
-            else if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
+            
+            if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
             {
                 sphere.gameObject.SetActive(true);
                 sphere.rb.MovePosition(source.content.GetCastPoint(chargeStyle));
@@ -119,12 +122,16 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 
             if (b.transform.childCount > 0)
                 b.transform.GetChild(0).localScale = castScale * Vector3.one;
+            
+            OnBulletFired?.Invoke(caster, b);
 
             if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
             {
                 sphere.rb.angularVelocity = Vector3.zero; // reset spin
             } else PrepareBulletCache(caster);
         }
+
+        public event Action<SpellUserBehaviour, BulletController> OnBulletFired;
 
         [MenuItem("Spells/New.../Bullet")]
         static void CreateBulletSpell(){ Spell.CreateSpell<BulletSpell>("Projectile"); }

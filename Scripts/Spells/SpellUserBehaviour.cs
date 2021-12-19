@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
+using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -13,6 +14,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         [Tooltip("Allowed Spells")]
         public List<Spell> spells;
 
+        public Transform target;
+        
         public InputActionReference leftHandInput;
         public InputActionReference rightHandInput;
 
@@ -280,8 +283,9 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
             if (previewingCorrectHand)
             {
+                Spell active = activeSpell.Get(arm);
 
-                var justCasted = activeSpell.Get(arm).Cast(this, arm, mainCamera.transform.TransformDirection(Vector3.forward));
+                var justCasted = active.Cast(this, arm, mainCamera.transform.TransformDirection(Vector3.forward));
                 if (justCasted) latestSpellCastTime.Get(arm)[activeSpell.Get(arm)] = System.DateTime.Now;
 
                 // if just casted, stop previewing. if didn't cast (and by the previous 'if', also previewing), continue to preview
