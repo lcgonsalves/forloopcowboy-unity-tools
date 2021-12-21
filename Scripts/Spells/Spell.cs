@@ -1,9 +1,11 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
+using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using VoxelArsenal;
 using Object = UnityEngine.Object;
 
@@ -21,11 +23,20 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         [Tooltip("How far the spell can reach")]
         public float range = 10f;
 
-        [Tooltip("When true, spell raycast doesn't need to hit anything and can be used mid-air.")]
-        public bool targetless = false;
+        public enum TargetingStyle { Grounded, Ranged }
 
-        [Tooltip("The effect that plays in the location where the raycast hits, before the spell is executed.")]
-        public GameObject previewEffect;
+        public TargetingStyle targetingStyle = TargetingStyle.Ranged;
+
+        public LayerMask raycastLayer;
+        
+        [Tooltip("When true, spell will preview directly on whatever target transform is set in the spell user behaviour. If false, falls back to whatever targeting style is used.")]
+        public bool showPreviewOnCastTarget = false;
+
+        [FormerlySerializedAs("previewEffect")] [Tooltip("The effect that plays in the hand.")]
+        public GameObject handPreviewEffect;
+        
+        [Tooltip("The effect that plays either on the ground, middle of the screen, or on the spell caster's target")]
+        public GameObject targetPreviewEffect;
 
         [Tooltip("The effect that plays in the location where the raycast hits, before the spell is executed.")]
         public GameObject mainEffect;
@@ -44,27 +55,70 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         
         public bool debugMode;
 
+        public Vector3 GetTargetPosition([CanBeNull] SpellUserBehaviour caster = null, [CanBeNull] Camera mainCamera = null)
+        {
+            if (showPreviewOnCastTarget && caster && caster.target) return caster.target.position;
+
+            mainCamera = mainCamera ? mainCamera : Camera.main;
+            
+            // cast a ray forward and if it hits anything, that's the target regardless of the style
+            var centerOfScreen = new Vector3(Screen.width / 2f, Screen.height / 2f, mainCamera.nearClipPlane);
+            Ray forward = mainCamera.ScreenPointToRay(centerOfScreen);
+
+            if (Physics.Raycast(forward, out var hit, range, raycastLayer) && targetingStyle == TargetingStyle.Ranged)
+            {
+                return hit.point;
+            }
+            
+            else if (targetingStyle == TargetingStyle.Ranged)
+            {
+                // project a point range meters away in the direction of the camera
+                // to be tested
+                return mainCamera.ScreenToWorldPoint(centerOfScreen) + (forward.direction.normalized * range);
+            }
+
+            return Vector3.zero;
+        }
+        
         /// Logic that should run when spell is previewed by spell user
         /// By default, it enables the preview object and sets its position to the source's cast point.
         public virtual void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
             if (caster.ParticleInstancesFor(this, source, out var particles))
             {
-                var particlesPreview = particles.preview;
+                var handPreview = particles.handPreview;
+                var handPreviewPosition = GetCastPointFor(source);
+                var targetPreviewPosition = GetTargetPosition(caster);
                 
-                if (!particlesPreview.gameObject.activeInHierarchy)
-                {
-                    particlesPreview.GetComponentInChildren<VoxelSoundSpawn>()?.Start();
-                    particlesPreview.gameObject.SetActive(true);
-                }
+                UpdateEffectPosition(handPreview, handPreviewPosition, "FirstPersonObjects");
+                UpdateEffectPosition(particles.targetPreview, targetPreviewPosition, "Player", false);
                 
-                var previewTransform = particlesPreview.transform;
-                previewTransform.position = GetCastPointFor(source);
-                particlesPreview.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
-                if (previewTransform.childCount > 0)
-                    previewTransform.GetChild(0).localScale = previewScale * Vector3.one;
-
             } else NoParticleInstantiatedWarning(caster); 
+        }
+
+        private void UpdateEffectPosition(GameObject fx, Vector3 previewPosition, string layerName, bool applyScale = true)
+        {
+            var a = fx?.activeInHierarchy;
+            var b = fx?.activeSelf;
+
+            if (fx == null) return;
+            
+            if (!fx.gameObject.activeInHierarchy)
+            {
+                fx.GetComponentInChildren<VoxelSoundSpawn>()?.Start();
+                fx.gameObject.SetActive(true);
+            }
+
+            var fxTr = fx.transform;
+            
+            fxTr.position = previewPosition;
+            
+            var fxLayer = LayerMask.NameToLayer(layerName);
+            if (fx.layer != fxLayer)
+                fx.SetLayerRecursively(fxLayer);
+            
+            if (applyScale && fxTr.childCount > 0)
+                fxTr.GetChild(0).localScale = previewScale * Vector3.one;
         }
 
         /// Stops any ongoing preview
@@ -72,7 +126,10 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         public virtual void ResetPreview(SpellUserBehaviour caster, Side<ArmComponent> source)
         {
             if (caster.ParticleInstancesFor(this, source, out var particles))
-                particles.preview.gameObject.SetActive(false);
+            {
+                if (particles.handPreview) particles.handPreview.gameObject.SetActive(false);
+                if (particles.targetPreview) particles.targetPreview.gameObject.SetActive(false);
+            }
 
             else NoParticleInstantiatedWarning(caster); 
         }
@@ -119,7 +176,10 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         public interface InstanceConfiguration
         {
-            GameObject preview { get; }
+            GameObject handPreview { get; }
+            
+            GameObject targetPreview { get; }
+            
             GameObject main { get; }
         }
 

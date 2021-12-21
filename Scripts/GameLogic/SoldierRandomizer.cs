@@ -325,7 +325,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     }
                     else
                     {
-                        Debug.Log($"No potential holster found for weapon {weapon.name} of type {type}. This weapon will not be attached.");
+                        // Debug.Log($"No potential holster found for weapon {weapon.name} of type {type}. This weapon will not be attached.");
                         DestroyImmediate(weaponInstance);
                     }
                     

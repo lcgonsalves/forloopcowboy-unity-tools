@@ -129,8 +129,38 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public TransitionState GetPlayableInstance(float overrideDuration) { return new TransitionState(overrideDuration, transition, instant); }
 
         /// Simple linear tweenTransition from [0, 0] => [1, 1]
-        public static Transition Linear { get => new Transition(1, 1); }
+        public static Transition Linear { get => ScriptableObject.CreateInstance<Transition>(); }
 
+        public Coroutine LerpTransform(
+            MonoBehaviour executionContext,
+            Transform targetTransform,
+            Transform @fromTransform,
+            Transform @toTransform,
+            float? overrideLerpDuration = null
+        )
+        {
+
+            var fromPos = fromTransform.position;
+            var fromRot = fromTransform.rotation;
+
+            var toPos = toTransform.position;
+            var toRot = toTransform.rotation;
+            
+            return PlayOnceWithDuration(
+                executionContext,
+                state =>
+                {
+                    Vector3 interm = Vector3.Lerp(fromPos, toPos, state.Snapshot());
+                    Quaternion intermRot = Quaternion.Lerp(fromRot, toRot, state.Snapshot());
+                    
+                    targetTransform.transform.position = interm;
+                    targetTransform.transform.rotation = intermRot;
+                },
+                endState => { targetTransform.position = toPos; targetTransform.rotation = toRot; },
+                overrideLerpDuration.HasValue ? overrideLerpDuration.Value : duration
+            );
+        }
+        
         /// Plays animation once, calling the updating function at each pass.
         /// Updating function receives as a parameter the current state of the animation, between 0 and 1.
         /// TransitionState passed is reusable - it is the same instance each time, after being reevaluated.

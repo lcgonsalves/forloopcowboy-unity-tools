@@ -34,9 +34,9 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             PrepareBulletCache(caster);
 
             bool hasParticleInstances = caster.ParticleInstancesFor(this, source, out var instances);
-
-            // spin and hover bullets if no preview particle instance is defined
-            if (hasParticleInstances && instances.preview != null)
+            
+            // default behaviour is tracking hand preview and/or target previews depending on what is set.
+            if (hasParticleInstances)
             {
                 base.Preview(caster, source, direction);
             }
@@ -101,19 +101,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 
         public override void ResetPreview(SpellUserBehaviour caster, Side<ArmComponent> arm)
         {
+            base.ResetPreview(caster, arm);
             PrepareBulletCache(caster);
-
-            bool l = caster.ParticleInstancesFor(this, caster.arms.l, out var instancesL);
-            bool r = caster.ParticleInstancesFor(this, caster.arms.r, out var instancesR);
-
-            bool hasParticleInstances = l || r;
-
-            // spin and hover bullets if no preview particle instance is defined
-            if (hasParticleInstances)
-            {
-                if (arm is Left<ArmComponent>) instancesL.preview?.gameObject.SetActive(false);
-                if (arm is Right<ArmComponent>) instancesR.preview?.gameObject.SetActive(false);
-            }
 
             if (hoveringBullets.TryGetValue(arm.content.GetInstanceID(), out BulletController sphere))
             {

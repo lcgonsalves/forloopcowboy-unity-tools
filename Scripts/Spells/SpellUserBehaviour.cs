@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using BehaviorDesigner.Runtime.Tasks;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
 using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using UnityEngine;
@@ -11,7 +14,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
     public class SpellUserBehaviour : MonoBehaviour, Spell.SpellCaster
     {
 
-        [Tooltip("Allowed Spells")]
+        [UnityEngine.Tooltip("Allowed Spells")]
         public List<Spell> spells;
 
         public Transform target;
@@ -29,7 +32,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         /// State management
 
         [SerializeField, ReadOnly]
-        private Tuple<Spell, Spell> activeSpell;
+        private Core.Tuple<Spell, Spell> activeSpell;
 
         [SerializeField, ReadOnly]
         private bool previewingLeftHandSpell = false;
@@ -42,23 +45,26 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             // cannot be instantiated from outside of this context
             internal Config() { }
 
-            public GameObject preview = null;
+            public GameObject handPreview = null;
             public GameObject main = null;
+            public GameObject targetPreview = null;
 
-            GameObject Spell.InstanceConfiguration.preview => preview;
+            GameObject Spell.InstanceConfiguration.handPreview => handPreview;
             GameObject Spell.InstanceConfiguration.main => main;
+
+            GameObject Spell.InstanceConfiguration.targetPreview => targetPreview;
         }
 
 
         // fixme: fuck
         // update: still not fixing this
-        private Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>> spellParticles = 
-            new Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>>(
+        private Core.Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>> spellParticles = 
+            new Core.Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>>(
                 new Dictionary<Spell, Spell.InstanceConfiguration>(), new Dictionary<Spell, Spell.InstanceConfiguration>()
             );
 
-        private Tuple<Dictionary<Spell, System.DateTime>, Dictionary<Spell, System.DateTime>> latestSpellCastTime =
-            new Tuple<Dictionary<Spell, System.DateTime>, Dictionary<Spell, System.DateTime>>(
+        private Core.Tuple<Dictionary<Spell, System.DateTime>, Dictionary<Spell, System.DateTime>> latestSpellCastTime =
+            new Core.Tuple<Dictionary<Spell, System.DateTime>, Dictionary<Spell, System.DateTime>>(
                 new Dictionary<Spell, System.DateTime>(), new Dictionary<Spell, System.DateTime>()
             );
 
@@ -88,7 +94,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         private bool targetWithinRange = false;
 
-        public Tuple<ArmComponent, ArmComponent> arms = new Tuple<ArmComponent, ArmComponent>();
+        public Core.Tuple<ArmComponent, ArmComponent> arms = new Core.Tuple<ArmComponent, ArmComponent>();
 
         public ArmComponent leftArm { get { return arms.Left; } }
         public ArmComponent rightArm { get { return arms.Right; } }
@@ -248,31 +254,30 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         private Config InstantiateParticles(Spell spell)
         {
             var spellParticleInstanceContainer = new Config();
-
-            if (spell.previewEffect)
+            
+            GameObject InitializeEffect(string key, GameObject fx)
             {
-                GameObject previewInstance = GameObject.Instantiate(spell.previewEffect, transform.position, transform.rotation);
-                ParticleSystem previewParticle = previewInstance.GetComponent<ParticleSystem>();
+                GameObject previewInstance = GameObject.Instantiate(fx, transform.position, transform.rotation);
 
-                if (!previewParticle) previewParticle = previewInstance.GetComponentInChildren<ParticleSystem>();
-
-                if (!previewParticle) Debug.LogError("No preview ParticleSystem component found! The prefab must contain a particle system.");
-                else spellParticleInstanceContainer.preview = previewInstance;
-
+                previewInstance.name = $"{key} {fx.name}";
                 previewInstance.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
                 previewInstance.gameObject.SetActive(false);
 
+                return previewInstance;
             }
-            else Debug.LogWarning("No preview particle assigned in spell definition. Please update the asset.");
+
+            if (spell.handPreviewEffect)
+                spellParticleInstanceContainer.handPreview = InitializeEffect("Hand Preview", spell.handPreviewEffect);
+            else Debug.LogWarning("No HAND preview particle assigned in spell definition. Please update the asset.");
+            
+            if (spell.targetPreviewEffect)
+                spellParticleInstanceContainer.targetPreview = InitializeEffect("Target Preview", spell.targetPreviewEffect);
+            else Debug.LogWarning("No TARGET preview particle assigned in spell definition. Please update the asset.");
 
             if (spell.mainEffect)
-            {
-                GameObject mainInstance = GameObject.Instantiate(spell.mainEffect, transform.position, transform.rotation);
-                mainInstance.gameObject.SetActive(false);
-                spellParticleInstanceContainer.main = mainInstance;
-
-            }
-            else Debug.LogWarning("No main particle assigned in spell definition. Please update the asset.");
+                spellParticleInstanceContainer.main = InitializeEffect("Main", spell.mainEffect);
+            else Debug.LogWarning("No MAIN particle assigned in spell definition. Please update the asset.");
+            
             return spellParticleInstanceContainer;
         }
 
@@ -326,11 +331,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 {
 #if UNITY_EDITOR
                     if (instances.main != null) GameObject.DestroyImmediate(instances.main);
-                    if (instances.preview != null) GameObject.DestroyImmediate(instances.preview);
+                    if (instances.handPreview != null) GameObject.DestroyImmediate(instances.handPreview);
 #endif
 
                     if (instances.main != null) GameObject.Destroy(instances.main);
-                    if (instances.preview != null) GameObject.Destroy(instances.preview);
+                    if (instances.handPreview != null) GameObject.Destroy(instances.handPreview);
 
                 }
             }

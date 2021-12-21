@@ -28,18 +28,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             OnBulletFired -= OnBulletFiredHandler;
         }
 
-        public override void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
-        {
-            base.Preview(caster, source, direction);
-
-            if (caster.target != null && caster.ParticleInstancesFor(this, source, out var particles))
-            {
-                particles.preview.transform.localScale = Vector3.one;
-                particles.preview.transform.position = caster.target.position;
-            }
-            
-        }
-
         private void OnBulletFiredHandler(SpellUserBehaviour caster, BulletController controller)
         {
             // no target, no guide
