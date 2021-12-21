@@ -133,10 +133,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var to = pair.Get(destination).transform;
             var from = pair.Get(destination.Opposite()).transform;
             
-            // disable colliders to avoid collisions
-            if (trgt.TryGetComponent(out Collider c))
-                c.enabled = false;
-            
             // make rigidbody kinematic to avoid weirdness
             if (trgt.TryGetComponent(out Rigidbody rb))
                 rb.isKinematic = true;
