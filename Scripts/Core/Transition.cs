@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using JetBrains.Annotations;
 using UnityEngine;
+using Action = BehaviorDesigner.Runtime.Tasks.Action;
 
 namespace forloopcowboy_unity_tools.Scripts.Core
 {
@@ -136,7 +138,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             Transform targetTransform,
             Transform @fromTransform,
             Transform @toTransform,
-            float? overrideLerpDuration = null
+            float? overrideLerpDuration = null,
+            [CanBeNull] System.Action onFinish = null
         )
         {
 
@@ -156,7 +159,12 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                     targetTransform.transform.position = interm;
                     targetTransform.transform.rotation = intermRot;
                 },
-                endState => { targetTransform.position = toPos; targetTransform.rotation = toRot; },
+                endState =>
+                {
+                    targetTransform.position = toPos; targetTransform.rotation = toRot;
+
+                    if (onFinish != null) onFinish();
+                },
                 overrideLerpDuration.HasValue ? overrideLerpDuration.Value : duration
             );
         }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BehaviorDesigner.Runtime.Tasks.Unity.Timeline;
 using forloopcowboy_unity_tools.Scripts.Core;
+using RayFire;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -14,6 +16,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     ///
     /// Think of it as the lego building algorithm from the lego games.
     /// </summary>
+    [SelectionBase]
     public class SimpleReconstructLerp : SerializedMonoBehaviour
     {
         public GameObject initial;
@@ -36,25 +39,58 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Initial,
             Final
         }
+        
+        public struct LocationRotation
+        {
+            public Vector3 position;
+            public Quaternion rotation;
+            public Transform transform;
+
+            public LocationRotation(Transform t)
+            {
+                this.position = t.position;
+                this.rotation = t.rotation;
+                this.transform = t;
+            }
+        }
 
         // for performance, since the match is made by name.
-        public (GameObject, GameObject)[] cachedPairs { get; private set; }
+        public GameObject[] cachedParticles { get; private set; }
 
-        public void Start()
+        public (LocationRotation, LocationRotation)[] startAndEndPosition;
+        
+        public int totalParticles => cachedParticles.Length;
+        public int particlesInPlace = 0;
+        public float percentInPlace => (float) particlesInPlace / (float) totalParticles;
+
+        public void Initialize()
         {
-            cachedPairs = new (GameObject, GameObject)[initial.transform.childCount];
+            var copy = Instantiate(initial, initial.transform.parent, true);
+            copy.name = "TransientParticleRoot";
             
-            for (int i = 0; i < initial.transform.childCount; i++)
+            var childCount = copy.transform.childCount;
+            
+            cachedParticles = new GameObject[childCount];
+            startAndEndPosition = new (LocationRotation, LocationRotation)[childCount];
+            
+            for (int i = 0; i < copy.transform.childCount; i++)
             {
-                var initChild = initial.transform.GetChild(i);
+                var initChild = copy.transform.GetChild(i);
                 var correspondingFinalChild = final.transform.FindRecursively(t => t.name == initChild.name);
 
                 if (initChild && correspondingFinalChild)
                 {
+                    var correspondingOriginal = initial.transform.GetChild(i);
+                    
                     initChild.gameObject.SetActive(false);
                     correspondingFinalChild.gameObject.SetActive(false);
-                    
-                    cachedPairs[i] = (initChild.gameObject, correspondingFinalChild.gameObject);
+                    correspondingOriginal.gameObject.SetActive(false);
+
+                    cachedParticles[i] = initChild.gameObject;
+                    startAndEndPosition[i] = (
+                        new LocationRotation(correspondingOriginal),
+                        new LocationRotation(correspondingFinalChild)
+                    );
                 }
                 else Debug.LogError($"Initial child {initChild.name} did not have a corresponding final child. It will be ignored.");
             }
@@ -63,60 +99,123 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         [Button]
         public void ResetObjects()
         {
-            foreach (var pair in cachedPairs)
+            foreach (var o in cachedParticles)
             {
-                pair.Item1.SetActive(false);
-                pair.Item2.SetActive(false);
+                o.SetActive(false);
             }
         }
         
         [Button(ButtonStyle.CompactBox)]
-        public void SpawnGradually(SimpleReconstructLerp.Position objectToSpawn) { SpawnGradually(objectToSpawn, _ => {}); }
+        public void SpawnGradually(SimpleReconstructLerp.Position startinPosition) { SpawnGradually(startinPosition, (_, __) => {}); }
 
         /// <summary>
         /// Using spawn transition, gradually activates each object of the selected position, calling onSpawn
         /// for each object that gets activated.
         /// </summary>
-        /// <param name="objectToSpawn">Either initial or final objects.</param>
+        /// <param name="startinPosition">Either initial or final objects.</param>
         /// <param name="onSpawn">Called after an object is set active.</param>
-        public Coroutine SpawnGradually(SimpleReconstructLerp.Position objectToSpawn, Action<(GameObject, GameObject)> onSpawn)
+        public Coroutine SpawnGradually(SimpleReconstructLerp.Position startinPosition, Action<GameObject, int> onSpawn)
         {
             // yikes this is not super efficient
             void SpawnUpTo(int idxUpperBound)
             {
                 for (int i = 0; i < idxUpperBound; i++)
                 {
-                    var pair = cachedPairs[i];
-                    var obj = pair.Get(objectToSpawn);
-                    if (obj.activeInHierarchy) continue;
+                    var spawned = cachedParticles[i];
+                    if (spawned.activeInHierarchy) continue;
 
-                    obj.SetActive(true);
-                    onSpawn(pair);
+                    var settings = startAndEndPosition[i].Get(startinPosition);
+
+                    spawned.transform.position = settings.position;
+                    spawned.transform.rotation = settings.rotation;
+                    
+                    spawned.SetActive(true);
+                    onSpawn(spawned, i);
                 }
             }
             
-            return spawnTransition.PlayOnceWithDuration(
+            return spawnCoroutine = spawnTransition.PlayOnceWithDuration(
                 this,
                 state =>
                 {
                     // convert the percentage progress to the max index to activate
                     float percent = state.Snapshot() / spawnTransition.amplitude;
-                    int idxUpperBound = Mathf.Clamp(Mathf.CeilToInt((cachedPairs.Length - 1) * percent), 0, cachedPairs.Length - 1);
+                    int idxUpperBound = Mathf.Clamp(Mathf.CeilToInt((cachedParticles.Length - 1) * percent), 0, cachedParticles.Length - 1);
 
                     SpawnUpTo(idxUpperBound);
                 },
                 endState =>
                 {
-                    SpawnUpTo(cachedPairs.Length);
+                    SpawnUpTo(cachedParticles.Length);
                 },
                 overrideSpawnDuration <= 0.001 ? spawnTransition.duration : overrideSpawnDuration
             );
         }
-        
+
+        public Dictionary<GameObject, Coroutine> lerpsHappening { get; private set;  } =
+            new Dictionary<GameObject, Coroutine>();
+
+        public Coroutine spawnCoroutine;
+
         [Button]
-        public void SpawnGraduallyAndLerpToDestination(Position from, Position to)
+        public void SpawnGraduallyAndLerpToDestination(Position to)
         {
-            SpawnGradually(from, spawnedAndTarget => Lerp(from, to, spawnedAndTarget));
+            particlesInPlace = 0;
+            
+            SpawnGradually(
+                to.Opposite(),
+                (spawned, idx) =>
+                {
+                    InterruptLerp(spawned); // spawned 
+
+                    lerpsHappening.Add(
+                        spawned,
+                        Lerp(
+                            spawned,
+                            to,
+                            startAndEndPosition[idx],
+                     () =>
+                            {
+                                lerpsHappening.Remove(spawned);
+                                particlesInPlace++;
+                            })
+                    );
+                });
+        }
+
+        [Button]
+        public void InterruptAll()
+        {
+            if (spawnCoroutine != null) StopCoroutine(spawnCoroutine);
+            
+            foreach (var coroutine in lerpsHappening)
+            {
+                StopAndEnablePhysics(coroutine.Key, coroutine.Value);
+            }
+        }
+
+        public void InterruptLerp(GameObject objectThatIsMoving)
+        {
+            if (lerpsHappening.TryGetValue(objectThatIsMoving, out var coroutine) && coroutine != null)
+            {
+                StopAndEnablePhysics(objectThatIsMoving, coroutine);
+            }
+        }
+
+        public void StopAndEnablePhysics(GameObject objectThatIsMoving, Coroutine coroutine = null)
+        {
+            if (coroutine != null) StopCoroutine(coroutine);
+
+            if (objectThatIsMoving.TryGetComponent(out RayfireRigid r))
+            {
+                r.Initialize();
+                r.Activate();
+            }
+                
+            if (objectThatIsMoving.TryGetComponent(out Rigidbody rb))
+            {
+                rb.isKinematic = false;
+            }
         }
 
         /// <summary>
@@ -126,18 +225,16 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="destination"></param>
         /// <param name="pair"></param>
         /// <returns></returns>
-        public Coroutine Lerp(Position target, Position destination, (GameObject, GameObject) pair)
+        public Coroutine Lerp(GameObject target, Position destination, (LocationRotation, LocationRotation) pair, Action onFinish)
         {
-            GameObject trgt = pair.Get(target);
-                    
             var to = pair.Get(destination).transform;
-            var from = pair.Get(destination.Opposite()).transform;
+            var from = target.transform;
             
             // make rigidbody kinematic to avoid weirdness
-            if (trgt.TryGetComponent(out Rigidbody rb))
+            if (target.TryGetComponent(out Rigidbody rb))
                 rb.isKinematic = true;
                 
-            return lerpTransition.LerpTransform(this, trgt.transform, from, to, overrideLerpDuration);
+            return lerpTransition.LerpTransform(this, target.transform, from, to, overrideLerpDuration, onFinish);
         }
         
     }
@@ -152,7 +249,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="position"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static GameObject Get(this (GameObject, GameObject) pair, SimpleReconstructLerp.Position position)
+        public static T Get<T>(this (T, T) pair, SimpleReconstructLerp.Position position)
         {
             switch (position)
             {

@@ -84,6 +84,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         /// By default, it enables the preview object and sets its position to the source's cast point.
         public virtual void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
+            Debug.DrawLine(GetTargetPosition(caster), caster.transform.position);
+            
             if (caster.ParticleInstancesFor(this, source, out var particles))
             {
                 var handPreview = particles.handPreview;
