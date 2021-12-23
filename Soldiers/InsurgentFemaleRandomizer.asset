@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef4c90ea925a46ccbee696e214f985cf, type: 3}
+  m_Name: InsurgentFemaleRandomizer
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  prefabRandomizerSeed: 69
+  aimTransition: {fileID: 11400000, guid: c56099edc73b9124bbbeefe41f7ba5a1, type: 2}
+  animatorController: {fileID: 9100000, guid: 4155e834203204c448a6dba8201ed634, type: 2}
+  ikControlBehaviorTree: {fileID: 11400000, guid: 1b9437f630bffdb459e0b2d873fd8dff, type: 2}
+  combatBehaviorTree: {fileID: 11400000, guid: 293b758e6e950bd4692d0c5e5b177a5f, type: 2}
+  ikLerpInTransition: {fileID: 11400000, guid: 71525c84e0959364c935153d88c67b83, type: 2}
+  ikLerpOutTransition: {fileID: 11400000, guid: 71525c84e0959364c935153d88c67b83, type: 2}
+  bulletImpactSettings: {fileID: 11400000, guid: 253605d1af7f93442b44d23400c15778, type: 2}
+  firstNames: {fileID: 11400000, guid: e45d386f41b70af499019e0bbfd03a73, type: 2}
+  lastNames: {fileID: 11400000, guid: 13011bcad6c43d84e8570a58be071631, type: 2}
+  npcSettings: {fileID: 11400000, guid: 6e7cc26e2892ee74ca83fd6114f2c195, type: 2}
+  randomizableCharacters:
+  - {fileID: 3482729556469204144, guid: 896d76a6555ea1740acdc7b971145194, type: 3}
+  presetCharacters: []
+  weapons:
+  - {fileID: 11400000, guid: 207a008a44eca10428a85ff8f960e490, type: 2}
+  - {fileID: 11400000, guid: 25971b18d36b2e9439b43273286f14bd, type: 2}
+  - {fileID: 11400000, guid: b5af2b4eed61160428ffb57a7f681823, type: 2}
+  - {fileID: 11400000, guid: 9fc25e1e655d65748946f8c0c79e0af7, type: 2}
+  - {fileID: 11400000, guid: f681aaa8f9ba6354688ec8a78c8f09da, type: 2}
+  maxNumberOfWeapons: 2

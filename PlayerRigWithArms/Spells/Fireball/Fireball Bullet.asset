@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8906a5188a8e4f34fa3462f7f3474dd5, type: 3}
+  m_Name: Fireball Bullet
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 1138883815503004, guid: e234b26dfc16f7847af8753f79ee9910, type: 3}
+  onImpact: {fileID: 1144577030218068, guid: 6f2ae18630881b8409370a3359cbd339, type: 3}
+  muzzleVelocity: 35
+  maxBounces: 1
+  lifetime: 10
+  minDamage: 1
+  maxDamage: 10
+  defaultDamage: 5
+  bias: 0
+  damageMode: 0

@@ -1,0 +1,195 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AdvancedPlayerMovementBehaviour
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: 16bcec14cc29de6498df5ac11e16538d, type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: debugInfo.enabled
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: debugInfo.enableGravity
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: debugInfo.debugGravity
+    value: -9.8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: debugInfo.isGrounded
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: movementSpeed
+    value: 2.5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: StrafeMovementSpeed
+    value: 2.2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: JumpHeight
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sprintMultiplier
+    value: 2.45
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: GoIdleInSeconds
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: inputSettings.look
+    value: 
+    objectReference: {fileID: 523161132205564069, guid: 2dd053f2fe558d24f81a5d739757a738, type: 3}
+  - target: {fileID: 0}
+    propertyPath: inputSettings.move
+    value: 
+    objectReference: {fileID: -210314858679537888, guid: 2dd053f2fe558d24f81a5d739757a738, type: 3}
+  - target: {fileID: 0}
+    propertyPath: inputSettings.jump
+    value: 
+    objectReference: {fileID: -1352652759623376341, guid: 2dd053f2fe558d24f81a5d739757a738, type: 3}
+  - target: {fileID: 0}
+    propertyPath: inputSettings.sprint
+    value: 
+    objectReference: {fileID: 65672795639004775, guid: 2dd053f2fe558d24f81a5d739757a738, type: 3}
+  - target: {fileID: 0}
+    propertyPath: inputSettings.reset
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: aimSettings.AimSpeed
+    value: 2.8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: aimSettings.LookSensitivityX
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: aimSettings.LookSensitivityY
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: aimSettings.InvertY
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: aimSettings.MaxLookAngle
+    value: 80
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: aimSettings.MinLookAngle
+    value: -60
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: aimSettings.allowOverload
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: momentumSettings.enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: momentumSettings.grounded.enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: momentumSettings.grounded.momentumBuildup
+    value: 
+    objectReference: {fileID: 11400000, guid: ba223b85a5d0a8142b711a82b035ec57, type: 2}
+  - target: {fileID: 0}
+    propertyPath: momentumSettings.grounded.momentumDropoff
+    value: 
+    objectReference: {fileID: 11400000, guid: ba223b85a5d0a8142b711a82b035ec57, type: 2}
+  - target: {fileID: 0}
+    propertyPath: momentumSettings.airborneEnabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: momentumSettings.airbornePushForce
+    value: 0.078
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: advancedSettings.Head
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.LedgeLayerMask.m_Bits
+    value: 4096
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.transition
+    value: 
+    objectReference: {fileID: 11400000, guid: e60027978974cfb4fa70816c1233e708, type: 2}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.horizontalInterpolation
+    value: 
+    objectReference: {fileID: 11400000, guid: f48bb17151a95a14eb89538e36a790e5, type: 2}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.scaleWithDistance
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.maxTimeScale
+    value: 0.6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.armLength
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.detectorCenter.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.detectorCenter.y
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.detectorCenter.z
+    value: -0.1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.detectorSize.x
+    value: 0.14
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.detectorSize.y
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.detectorSize.z
+    value: 0.01
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.state.ledgeIsWithinReach
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ledgeGrabSettings.state.animationScaleValue
+    value: 1
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []

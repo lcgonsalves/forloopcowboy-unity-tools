@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f1d86619b69b2146a0f27ced01096dc, type: 3}
+  m_Name: Fireball Spell
+  m_EditorClassIdentifier: 
+  key: Fireball
+  cooldownTimeInSeconds: 0.5
+  range: 10
+  targetless: 1
+  previewEffect: {fileID: 1185270840675206, guid: 947863f9701eb7b45a36fd6ebdb979b3, type: 3}
+  mainEffect: {fileID: 0}
+  chargeStyle: 0
+  castStyle: 1
+  slowMoEfect: 1
+  previewScale: 0.25
+  castScale: 0.5
+  debugMode: 0
+  bullet: {fileID: 11400000, guid: 92031935011981a49aaf063efccc5e8d, type: 2}
+  handBackTransition: {fileID: 11400000, guid: d92806395eb19c84592faf825cdf982d, type: 2}
+  throwAngle: 5

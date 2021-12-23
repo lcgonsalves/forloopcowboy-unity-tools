@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eee870d6d06143b283d26d46c7069b05, type: 3}
+  m_Name: Barrier
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  key: 
+  cooldownTimeInSeconds: 0
+  range: 10
+  targetingStyle: 1
+  raycastLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  showPreviewOnCastTarget: 0
+  handPreviewEffect: {fileID: 1044408576232966, guid: 5936da6587e5eb74096c0cbd9c124c3f, type: 3}
+  targetPreviewEffect: {fileID: 0}
+  mainEffect: {fileID: 2262625018452713290, guid: 1d85bd685915a9d4bb307b7e91d2d2a6, type: 3}
+  chargeStyle: 0
+  castStyle: 1
+  slowMoEfect: 1
+  previewScale: 0.23
+  castScale: 0.5
+  debugMode: 0
+  initialRootName: InitialRoot
+  shatteredRootName: ShatteredRoot
+  readyAtPercent: 0.5
+  strength: 4

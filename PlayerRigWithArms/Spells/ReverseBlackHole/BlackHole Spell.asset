@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa39e3f4f9884734972ed243b360cd12, type: 3}
+  m_Name: BlackHole Spell
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  key: Black Hole
+  cooldownTimeInSeconds: 0
+  range: 10
+  targetingStyle: 1
+  raycastLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  showPreviewOnCastTarget: 1
+  handPreviewEffect: {fileID: 0}
+  targetPreviewEffect: {fileID: 1062729115367844, guid: c5c27e5f673bc5b44924a0a39f7e1aa3, type: 3}
+  mainEffect: {fileID: 0}
+  chargeStyle: 1
+  castStyle: 1
+  slowMoEfect: 1
+  previewScale: 0.23
+  castScale: 0.5
+  debugMode: 0
+  bullet: {fileID: 11400000, guid: 4c6cffeecf64b9143bb273544c5df3e6, type: 2}
+  handBackTransition: {fileID: 11400000, guid: d92806395eb19c84592faf825cdf982d, type: 2}
+  enableHoverBulletPreview: 1
+  bulletUsesGravity: 0
+  throwAngle: 10
+  Radius: 20
+  StopRadius: 0.08
+  Force: 70
