@@ -162,6 +162,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
             var obj = UnitManager.SpawnCopy(side, players[index].gameObject);
             var vcam = virtualCamera[index];
+            var playerComponent = obj.gameObject.GetOrElseAddComponent<PlayerComponent>();
+
+            playerComponent.side = obj.side;
 
             // virtual head is what rotates vertically for the camera
             vcam.Follow = obj.gameObject.transform.GetChild(0);

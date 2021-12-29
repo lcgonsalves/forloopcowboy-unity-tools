@@ -39,7 +39,7 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
         {
             if (gm == null) return TaskStatus.Failure;
 
-            FindClosestTarget( gm, self.Value.transform.position, maximumRange.Value, out var closestTarget);
+            FindClosestTarget(gm, self.Value.transform.position, maximumRange.Value, gm.side.GetOpposing(), out var closestTarget);
 
             var ragdoll = closestTarget != null ? closestTarget.GetComponent<Ragdoll>() : null;
             
@@ -61,9 +61,9 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
             else return TaskStatus.Failure;
         }
 
-        public static bool FindClosestTarget(GameplayManager gm, Vector3 position, float range, out GameObject closestTarget)
+        public static bool FindClosestTarget(GameplayManager gm, Vector3 position, float range, UnitManager.Side side, out GameObject closestTarget)
         {
-            var enemies = gm.GetUntargetedEnemies();
+            var enemies = gm.UnitManager.GetSpawned(side);
 
             float shortestDistance = float.PositiveInfinity;
             closestTarget = null;
@@ -100,11 +100,12 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
             this GameplayManager gm,
             Vector3 position,
             float range,
+            UnitManager.Side side,
             out GameObject closestTarget
             )
         {
 
-            return ScanForTargets.FindClosestTarget(gm, position, range, out closestTarget);
+            return ScanForTargets.FindClosestTarget(gm, position, range, side, out closestTarget);
         }
     }
 }

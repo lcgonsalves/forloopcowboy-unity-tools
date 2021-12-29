@@ -412,6 +412,19 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         }
     }
 
+    public static class UnitManagerHelpers
+    {
+        public static UnitManager.Side GetOpposing(this UnitManager.Side side)
+        {
+            return UnitManager.GetOpposing(side);
+        }
+        
+        public static UnitManager.Side Opposite(this UnitManager.Side side)
+        {
+            return side.GetOpposing();
+        }
+    }
+    
     public interface IManagedGameObject
     {
         public GameObject gameObject { get; }

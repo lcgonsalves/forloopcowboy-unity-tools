@@ -2,6 +2,7 @@ using System;
 using BehaviorDesigner.Runtime;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Soldier;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -12,7 +13,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     {
         public event Action onDeath;
         
-        [SerializeField, ReadOnly]
+        [SerializeField, Core.ReadOnly]
         private int health = 100;
 
         [SerializeField]
@@ -134,6 +135,13 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Handles.Label(transform.position + Vector3.up, $"Health [{Health}]");
         }
 
+        [Button]
+        public void AttachHitBox()
+        {
+            var hb = this.GetOrElseAddComponent<HitBox>();
+            hb.healthComponent = this;
+        }
+        
         public static HealthComponent GetHealthComponent(Component other) { return GetHealthComponent(other); }
     }
 }

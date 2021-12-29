@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using BehaviorDesigner.Runtime.Tasks;
+using forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
 using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -16,8 +18,19 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         [UnityEngine.Tooltip("Allowed Spells")]
         public List<Spell> spells;
+        
+        public bool GetTarget(Spell spell, out GameObject closestTarget)
+        {
+            closestTarget = null;
+            gm = gm == null ? FindObjectOfType<GameplayManager>() : gm;
+            playerComponent = playerComponent == null ? GetComponent<PlayerComponent>() : playerComponent;
 
-        public Transform target;
+            if (playerComponent == null) return false;
+            return gm.FindClosestTarget(this.transform.position, spell.range, playerComponent.side.GetOpposing(), out closestTarget);
+        }
+
+        public GameplayManager gm = null;
+        private PlayerComponent playerComponent;
         
         public InputActionReference leftHandInput;
         public InputActionReference rightHandInput;
