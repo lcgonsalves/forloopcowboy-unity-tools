@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cinemachine;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.HUD;
+using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -18,20 +21,43 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     /// - clicking draft button will spawn soldiers and discard cards.
     /// - soldiers will automatically attack the closest threat and march towards the objective
     /// </summary>
-    public class GameplayManager : MonoBehaviour
+    public class GameplayManager : SerializedMonoBehaviour
     {
         public UnitManager.Side side = UnitManager.Side.Attacker;
         
-        public int maxAvailableCards;
-        public List<SoldierRandomizer> soldierRandomizers;
-        public ScreenRecorder screenRecorder;
-        public Transform photoBoothAnchor;
-        public GameObject cardPrefab;
-        public HorizontalLayoutGroup cardPanel;
-        public float delayBetweenShuffle = 1.2f;
-
         [SerializeField]
         private UnitManager _unitManager;
+
+        [TabGroup("Player Settings"), Tooltip("Where player 1 is player uhh 1")]
+        public PlayerComponent[] players;
+
+        [TabGroup("Player Settings"), Tooltip("Which camera follows each player. 1-1 Match based on index.")] 
+        public CinemachineVirtualCamera[] virtualCamera;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public bool spawnCardsEnabled = false;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public int maxAvailableCards;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public List<SoldierRandomizer> soldierRandomizers;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public ScreenRecorder screenRecorder;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public Transform photoBoothAnchor;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public GameObject cardPrefab;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public HorizontalLayoutGroup cardPanel;
+        
+        [TabGroup("Soldier Spawn Cards")]
+        public float delayBetweenShuffle = 1.2f;
+        
         public UnitManager UnitManager => _unitManager ? _unitManager : _unitManager = GetComponent<UnitManager>();
         
         /// <returns>All objects spawned on the opposing side.</returns>
@@ -55,7 +81,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void Awake()
         {
-            ShuffleCards();
+            if (spawnCardsEnabled) ShuffleCards();
         }
 
         public SoldierCard RandomizeCard()
@@ -131,6 +157,22 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         }
 
+        [Button(ButtonStyle.CompactBox), TabGroup("Player Settings")]
+        public void SpawnPlayer(int index, UnitManager.Side side)
+        {
+            var obj = UnitManager.SpawnCopy(side, players[index].gameObject);
+            var vcam = virtualCamera[index];
+
+            // virtual head is what rotates vertically for the camera
+            vcam.Follow = obj.gameObject.transform.GetChild(0);
+            
+            // TODO: camera should follow local player only (when this is networked)
+            var mainCam = Camera.main.GetUniversalAdditionalCameraData();
+            var overlayCam = obj.gameObject.GetComponentInChildren<Camera>();
+
+            mainCam.cameraStack.Add(overlayCam);
+        }
+        
         /// <summary>
         /// Lerps card and destroys card/associated soldier.
         /// </summary>

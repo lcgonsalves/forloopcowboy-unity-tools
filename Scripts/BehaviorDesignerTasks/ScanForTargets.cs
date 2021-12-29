@@ -1,6 +1,7 @@
 using System;
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
+using BehaviorDesigner.Runtime.Tasks.Unity.Timeline;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Soldier;
@@ -37,27 +38,9 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
         public override TaskStatus OnUpdate()
         {
             if (gm == null) return TaskStatus.Failure;
-            var enemies = gm.GetUntargetedEnemies();
 
-            float shortestDistance = float.PositiveInfinity;
-            GameObject closestTarget = null;
-            
-            foreach (var soldier in enemies)
-            {
-                var hp = soldier.GetComponent<HealthComponent>();
-                float distance = Vector3.Distance(self.Value.transform.position, soldier.transform.position);
-                if (
-                    hp &&
-                    hp.IsAlive &&
-                    distance <= maximumRange.Value && distance < shortestDistance
-                )
-                {
-                    shortestDistance = distance;
-                    closestTarget = soldier;
-                }
-                // iterate entire list of soldiers to make sure we have the closest one.
-            }
-            
+            FindClosestTarget( gm, self.Value.transform.position, maximumRange.Value, out var closestTarget);
+
             var ragdoll = closestTarget != null ? closestTarget.GetComponent<Ragdoll>() : null;
             
             Transform target = null;
@@ -72,15 +55,56 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
                 gm.Target(target.gameObject);
             
             nearestLivingTarget.SetValue(target);
-            distanceToTarget.SetValue(shortestDistance);
+            distanceToTarget.SetValue(target != null ? Vector3.Distance(self.Value.transform.position, target.position) : float.PositiveInfinity);
 
             if (closestTarget != null) return TaskStatus.Success;
             else return TaskStatus.Failure;
         }
 
+        public static bool FindClosestTarget(GameplayManager gm, Vector3 position, float range, out GameObject closestTarget)
+        {
+            var enemies = gm.GetUntargetedEnemies();
+
+            float shortestDistance = float.PositiveInfinity;
+            closestTarget = null;
+
+            foreach (var soldier in enemies)
+            {
+                var hp = soldier.GetComponent<HealthComponent>();
+                float distance = Vector3.Distance(position, soldier.transform.position);
+                if (
+                    hp &&
+                    hp.IsAlive &&
+                    distance <= range && distance < shortestDistance
+                )
+                {
+                    shortestDistance = distance;
+                    closestTarget = soldier;
+                }
+                // iterate entire list of soldiers to make sure we have the closest one.
+            }
+
+            return !(closestTarget == null);
+
+        }
+
         private void InitializeGM()
         {
             gm = gameplayManager.Value != null ? gameplayManager.Value.GetComponent<GameplayManager>() : null;
+        }
+    }
+
+    public static class GameplayManagerWithScanForTargets
+    {
+        public static bool FindClosestTarget(
+            this GameplayManager gm,
+            Vector3 position,
+            float range,
+            out GameObject closestTarget
+            )
+        {
+
+            return ScanForTargets.FindClosestTarget(gm, position, range, out closestTarget);
         }
     }
 }

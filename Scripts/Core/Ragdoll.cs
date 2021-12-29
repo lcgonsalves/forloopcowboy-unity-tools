@@ -71,10 +71,10 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 // is not kinematic when ragdoll is enabled
                 limb.isKinematic = !shouldEnableRagdoll;
 
-                if (limb.TryGetComponent(out Collider c))
-                {
-                    c.enabled = shouldEnableRagdoll;
-                }
+                // if (limb.TryGetComponent(out Collider c))
+                // {
+                //     c.enabled = shouldEnableRagdoll;
+                // }
             }
 
             return IsRagdolling = shouldEnableRagdoll;
