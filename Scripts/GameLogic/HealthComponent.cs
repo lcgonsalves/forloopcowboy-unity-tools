@@ -60,15 +60,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             // currently supports 3 death animations
             int animidx = Random.Range(1, 4);
             
-            GetComponent<Animator>()?.SetInteger(DeathAnimationIndex, animidx);
-            GetComponent<AimComponent>()?.StopTracking();
-            GetComponent<AdvancedNavigation>()?.StopAndDisable();
-            GetComponent<WeaponUser>()?.CeaseFire();
+            if (TryGetComponent(out Animator animator)) animator.SetInteger(DeathAnimationIndex, animidx);
+            if (TryGetComponent(out AimComponent component)) component.StopTracking();
+            if (TryGetComponent(out AdvancedNavigation navigation)) navigation.StopAndDisable();
+            if (TryGetComponent(out WeaponUser weaponUser)) weaponUser.CeaseFire();
 
             foreach (var behavior in GetComponents<BehaviorTree>()) behavior.enabled = false;
 
             var ragdollComponent = GetComponent<Ragdoll>();
-            ragdollComponent.RunAsyncWithDelay(2.5f, () => ragdollComponent.EnableRagdoll());
+            if (ragdollComponent) ragdollComponent.RunAsyncWithDelay(2.5f, () => ragdollComponent.EnableRagdoll());
 
         }
         
