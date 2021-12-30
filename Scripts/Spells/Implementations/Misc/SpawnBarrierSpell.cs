@@ -22,7 +22,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 
         [UnityEngine.Tooltip("Number of hits that a full shield can survive.")]
         public int strength = 1;
-        
+
         /// <summary>
         /// Spawns the main effect, which should be shaped as such
         /// Object
@@ -34,13 +34,32 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// </summary>
         protected override void Execute(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
+            // barrier can never be targeted
+            showPreviewOnCastTarget = false;
             var castPosition = GetTargetPosition(caster);
 
             var barrierInstance = Instantiate(mainEffect, castPosition, caster.transform.rotation);
 
             if (barrierInstance.TryGetComponent(out SimpleReconstructLerp lerp))
             {
+
                 lerp.Initialize();
+                
+                // translate barrier instance based on the particles distance to cast position
+                float farthestHeight = 0f;
+                
+                foreach (var componentCachedParticle in lerp.cachedParticles)
+                {
+                    if (componentCachedParticle.TryGetComponent(out Collider c))
+                    {
+                        var height = castPosition.y - c.bounds.min.y;
+                        farthestHeight = height > farthestHeight ? height : farthestHeight;
+                    }
+                }
+
+                var pos = barrierInstance.transform.position;
+                barrierInstance.transform.position = new Vector3(pos.x, pos.y + farthestHeight, pos.z);
+                
                 lerp.SpawnGraduallyAndLerpToDestination(SimpleReconstructLerp.Position.Initial);
                 
                 var detector = lerp.GetOrElseAddComponent<CollisionDetector>();

@@ -23,7 +23,7 @@ MonoBehaviour:
     SerializationNodes: []
   key: Black Hole
   cooldownTimeInSeconds: 0
-  range: 10
+  range: 20
   targetingStyle: 1
   raycastLayer:
     serializedVersion: 2
