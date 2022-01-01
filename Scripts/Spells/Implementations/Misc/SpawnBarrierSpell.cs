@@ -102,6 +102,24 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
             }
         }
 
+        public override void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
+        {
+            if (caster.ParticleInstancesFor(this, source, out var particles) && particles.targetPreview)
+            {
+                var targetPreview = particles.targetPreview;
+                bool wasActive = targetPreview.activeSelf && targetPreview.activeInHierarchy;
+                base.Preview(caster, source, direction);
+                bool isActive = targetPreview.activeSelf && targetPreview.activeInHierarchy;
+
+                if (!wasActive && isActive && targetPreview.TryGetComponent(out SimpleReconstructLerp lerp))
+                {
+                    lerp.InitializeIfNeeded();
+                    lerp.ResetObjects();
+                    lerp.SpawnGradually(SimpleReconstructLerp.Position.Final);
+                }
+            }
+        }
+
         /// <summary>
         /// When a particle collides with something during
         /// its lerp, and the shield isn't solid enough,
