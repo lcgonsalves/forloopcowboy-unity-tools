@@ -22,12 +22,62 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 
         [UnityEngine.Tooltip("Number of hits that a full shield can survive.")]
         public int strength = 1;
+        
+        
+        /// <summary>
+        /// Gets the target position using a boxcast with the BoundingBox specs instead.
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="mainCamera"></param>
+        /// <returns></returns>
+        public override Vector3 GetTargetPosition(SpellUserBehaviour caster = null, Camera mainCamera = null)
+        {
+            if (showPreviewOnCastTarget && caster && caster.GetTarget(this, out var target)) return target.transform.position;
+
+            mainCamera = mainCamera ? mainCamera : Camera.main;
+
+            // cast a ray forward and if it hits anything, that's the target regardless of the style
+            var centerOfScreen = new Vector3(Screen.width / 2f, Screen.height / 2f, mainCamera.nearClipPlane);
+            Vector3 centerOfScreenWrld = mainCamera.ScreenToWorldPoint(centerOfScreen);
+            Ray forward = mainCamera.ScreenPointToRay(centerOfScreen);
+            
+            var bb = mainEffect.transform.FindRecursively(_ => _.name == "BoundingBox");
+            Vector3 boundingBoxExtents = Vector3.zero;
+            
+            if (bb && bb.TryGetComponent(out BoxCollider c))
+            {
+                boundingBoxExtents = c.size;
+            }
+
+            if (Physics.BoxCast(
+                centerOfScreenWrld,
+                boundingBoxExtents / 2,
+                forward.direction,
+                out var hit,
+                caster ? caster.transform.rotation : Quaternion.identity,
+                range, 
+                raycastLayer
+            ) && targetingStyle == TargetingStyle.Ranged)
+            {
+                // accounts for bounding extents to spawn
+                return mainCamera.transform.position + forward.direction * hit.distance;
+            }
+            
+            else if (targetingStyle == TargetingStyle.Ranged)
+            {
+                // project a point range meters away in the direction of the camera
+                return mainCamera.ScreenToWorldPoint(centerOfScreen) + (forward.direction.normalized * range);
+            }
+
+            return Vector3.zero;
+        }
 
         /// <summary>
         /// Spawns the main effect, which should be shaped as such
         /// Object
         ///   > InitialRoot - fully built barrier
         ///   > ShatteredRoot - destroyed barrier
+        ///   > BoundingBox - defines the borders of the object for proper raycasting
         ///
         /// We will lerp from shattered to initial when casting gradually.
         ///
@@ -42,24 +92,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 
             if (barrierInstance.TryGetComponent(out SimpleReconstructLerp lerp))
             {
-
                 lerp.Initialize();
-                
-                // translate barrier instance based on the particles distance to cast position
-                float farthestHeight = 0f;
-                
-                foreach (var componentCachedParticle in lerp.cachedParticles)
-                {
-                    if (componentCachedParticle.TryGetComponent(out Collider c))
-                    {
-                        var height = castPosition.y - c.bounds.min.y;
-                        farthestHeight = height > farthestHeight ? height : farthestHeight;
-                    }
-                }
-
-                var pos = barrierInstance.transform.position;
-                barrierInstance.transform.position = new Vector3(pos.x, pos.y + farthestHeight, pos.z);
-                
                 lerp.SpawnGraduallyAndLerpToDestination(SimpleReconstructLerp.Position.Initial);
                 
                 var detector = lerp.GetOrElseAddComponent<CollisionDetector>();

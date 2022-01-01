@@ -55,7 +55,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         
         public bool debugMode;
 
-        public Vector3 GetTargetPosition([CanBeNull] SpellUserBehaviour caster = null, [CanBeNull] Camera mainCamera = null)
+        virtual public Vector3 GetTargetPosition([CanBeNull] SpellUserBehaviour caster = null, [CanBeNull] Camera mainCamera = null)
         {
             if (showPreviewOnCastTarget && caster && caster.GetTarget(this, out var target)) return target.transform.position;
 
@@ -84,21 +84,22 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         /// By default, it enables the preview object and sets its position to the source's cast point.
         public virtual void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
-            Debug.DrawLine(GetTargetPosition(caster), caster.transform.position);
-            
+
             if (caster.ParticleInstancesFor(this, source, out var particles))
             {
                 var handPreview = particles.handPreview;
                 var handPreviewPosition = GetCastPointFor(source);
                 var targetPreviewPosition = GetTargetPosition(caster);
+
+                var casterRotation = caster.transform.rotation;
                 
-                UpdateEffectPosition(handPreview, handPreviewPosition, "FirstPersonObjects");
-                UpdateEffectPosition(particles.targetPreview, targetPreviewPosition, "Player", false);
+                UpdateEffect(handPreview, handPreviewPosition, casterRotation, "FirstPersonObjects");
+                UpdateEffect(particles.targetPreview, targetPreviewPosition, casterRotation, "Player", false);
                 
-            } else NoParticleInstantiatedWarning(caster); 
+            } else NoParticleInstantiatedWarning(caster);
         }
 
-        private void UpdateEffectPosition(GameObject fx, Vector3 previewPosition, string layerName, bool applyScale = true)
+        private void UpdateEffect(GameObject fx, Vector3 position, Quaternion rotation, string layerName, bool applyScale = true)
         {
             var a = fx?.activeInHierarchy;
             var b = fx?.activeSelf;
@@ -113,7 +114,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
             var fxTr = fx.transform;
             
-            fxTr.position = previewPosition;
+            fxTr.position = position;
+            fxTr.rotation = rotation;
             
             var fxLayer = LayerMask.NameToLayer(layerName);
             if (fx.layer != fxLayer)

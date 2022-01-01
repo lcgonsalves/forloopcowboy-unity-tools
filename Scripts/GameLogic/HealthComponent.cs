@@ -12,6 +12,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     public class HealthComponent : MonoBehaviour, IHasHealth, IManagedGameObject
     {
         public event Action onDeath;
+        public event Action<int> onDamage;
         
         [SerializeField, Core.ReadOnly]
         private int health = 100;
@@ -28,7 +29,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             get => health;
             set
             {
-                health = Mathf.Clamp(value, 0, MaxHealth);
+                var clampedValue = Mathf.Clamp(value, 0, MaxHealth);
+                if (clampedValue < health) OnOnDamage(health - clampedValue);
+                
+                health = clampedValue;
                 if (health == 0)
                 {
                     // if for some reason the character wakes up already dead, this will never trigger the destruction
@@ -44,6 +48,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void Start()
         {
+            SetMaxHealth(MaxHealth);
             AttachOnDeathListeners();
         }
 
@@ -143,5 +148,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         }
         
         public static HealthComponent GetHealthComponent(Component other) { return GetHealthComponent(other); }
+
+        protected virtual void OnOnDamage(int dmgAmount)
+        {
+            onDamage?.Invoke(dmgAmount);
+        }
     }
 }
