@@ -117,9 +117,13 @@ public class HealthTracker : MonoBehaviour
 
         if (follower.canvas == null) 
             follower.canvas = GetComponent<Canvas>();
-        
-        if (follower.lookAt.GetInstanceID() != healthComponent.gameObject.GetInstanceID()) 
+
+        if (follower.lookAt.GetInstanceID() != healthComponent.gameObject.GetInstanceID())
+        {
+            if (healthComponent.TryGetComponent(out Ragdoll ragdoll))
+                follower.lookAt = ragdoll.neck;
             follower.lookAt = healthComponent.transform;
+        }
     }
 
     private static void UpdateProgressbarFromHealthComponent(HealthComponent healthComponent, ProgressBar progressBar)
