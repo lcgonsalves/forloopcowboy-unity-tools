@@ -35,6 +35,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core
 
         public static void ClearGizmo(string key)
         {
+            singleton = GetSingleton();
+            
             if (singleton.callbacks.ContainsKey(key)) singleton.callbacks.Remove(key);
         }
 

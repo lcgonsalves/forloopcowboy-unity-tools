@@ -1,40 +1,56 @@
 using System;
+using System.Collections.Generic;
 using BehaviorDesigner.Runtime.Tasks;
+using BehaviorDesigner.Runtime.Tasks.Unity.UnityString;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
 using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
+using RayFire;
+using Sirenix.OdinInspector;
+using Sirenix.Utilities;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
+using Random = System.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 {
-    public class SpawnBarrierSpell : Spell
+    public class SpawnMeshSpell : Spell
     {
         private Camera mainCam = null;
 
+        [FoldoutGroup("Mesh Spell Settings")]
         public string initialRootName = "InitialRoot";
+        
+        [FoldoutGroup("Mesh Spell Settings")]
         public string shatteredRootName = "ShatteredRoot";
 
+        [FoldoutGroup("Mesh Spell Settings")]
         [UnityEngine.Tooltip("When shattered barrier object is at X percent built, it begins to protect against impact.")]
         public float readyAtPercent = 0.5f;
 
+        [FoldoutGroup("Mesh Spell Settings")]
         [UnityEngine.Tooltip("Number of hits that a full shield can survive.")]
         public int strength = 1;
+        
+        [FoldoutGroup("Mesh Spell Settings")] public float selfDestructAfterSeconds = 5f;
         
         
         /// <summary>
         /// Gets the target position using a boxcast with the BoundingBox specs instead.
         /// </summary>
         /// <param name="caster"></param>
-        /// <param name="mainCamera"></param>
+        /// <param name="mainCamera">If none is provided, uses Camera.main</param>
         /// <returns></returns>
         public override Vector3 GetTargetPosition(SpellUserBehaviour caster = null, Camera mainCamera = null)
         {
             if (showPreviewOnCastTarget && caster && caster.GetTarget(this, out var target)) return target.transform.position;
 
             mainCamera = mainCamera ? mainCamera : Camera.main;
+            
+            Assert.IsNotNull(mainCamera, "Must define a main camera.");
 
             // cast a ray forward and if it hits anything, that's the target regardless of the style
             var centerOfScreen = new Vector3(Screen.width / 2f, Screen.height / 2f, mainCamera.nearClipPlane);
@@ -43,10 +59,18 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
             
             var bb = mainEffect.transform.FindRecursively(_ => _.name == "BoundingBox");
             Vector3 boundingBoxExtents = Vector3.zero;
-            
+            Vector3 boundingBoxCenterPosition = bb?.localPosition ?? Vector3.zero;
+
             if (bb && bb.TryGetComponent(out BoxCollider c))
             {
-                boundingBoxExtents = c.size;
+                var size = c.size;
+                var localScale = c.transform.localScale;
+                
+                boundingBoxExtents = new Vector3(
+                    size.x * localScale.x,
+                    size.y * localScale.y,
+                    size.z * localScale.z
+                );
             }
 
             if (Physics.BoxCast(
@@ -57,13 +81,53 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
                 caster ? caster.transform.rotation : Quaternion.identity,
                 range, 
                 raycastLayer
-            ) && targetingStyle == TargetingStyle.Ranged)
+            ))
             {
+                var endpoint = mainCamera.transform.position + forward.direction * hit.distance;
+                
+                GlobalGizmoDrawer.CustomGizmo(
+                    "BoxProjection",
+                    () =>
+                    {
+                        Gizmos.color = Color.blue;
+
+                        Gizmos.DrawLine(mainCamera.transform.position, endpoint);
+                        
+                        Gizmos.matrix = caster.transform.localToWorldMatrix;
+                        var correctedEndpoint = caster.transform.InverseTransformPoint(endpoint);
+                        
+                        Gizmos.DrawWireCube(correctedEndpoint, boundingBoxExtents);
+                    }
+                );
+                
+                
+                
                 // accounts for bounding extents to spawn
-                return mainCamera.transform.position + forward.direction * hit.distance;
+                // accounts for bounding box's extents so shape is in the middle
+                // and it makes it easier to set them up in the editor
+                return endpoint + boundingBoxCenterPosition;
             }
-            
-            else if (targetingStyle == TargetingStyle.Ranged)
+            else
+            {
+                var endpoint = mainCamera.ScreenToWorldPoint(centerOfScreen) + (forward.direction.normalized * range);
+                
+                GlobalGizmoDrawer.CustomGizmo(
+                    "BoxProjection",
+                    () =>
+                    {
+                        Gizmos.color = Color.red;
+
+                        Gizmos.DrawLine(mainCamera.transform.position, endpoint);
+                        
+                        Gizmos.matrix = caster.transform.localToWorldMatrix;
+                        var correctedEndpoint = caster.transform.InverseTransformPoint(endpoint);
+                        
+                        Gizmos.DrawWireCube(correctedEndpoint, boundingBoxExtents);
+                    }
+                );
+            }
+
+            if (targetingStyle == TargetingStyle.Ranged)
             {
                 // project a point range meters away in the direction of the camera
                 return mainCamera.ScreenToWorldPoint(centerOfScreen) + (forward.direction.normalized * range);
@@ -93,12 +157,29 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
             if (barrierInstance.TryGetComponent(out SimpleReconstructLerp lerp))
             {
                 lerp.Initialize();
-                lerp.SpawnGraduallyAndLerpToDestination(SimpleReconstructLerp.Position.Initial);
                 
                 var detector = lerp.GetOrElseAddComponent<CollisionDetector>();
                 
                 detector.Initialize();
                 detector.onCollision += OnBarrierParticleCollision(detector, lerp);
+                
+                lerp.SpawnGraduallyAndLerpToDestination(
+                    SimpleReconstructLerp.Position.Initial,
+                    // begins self destruction once all particles have been SPAWNED
+                    // you must still account for the lerp to position time, this is the simple
+                    // solution i felt like implementing rn 
+                    () => 
+                    {
+                        lerp.RunAsyncWithDelay(
+                            selfDestructAfterSeconds,
+                            () =>
+                            {
+                                detector.onCollision -= OnBarrierParticleCollision(detector, lerp);
+                                BlowItUp(detector, lerp, barrierInstance.transform);
+                            }
+                        );
+                    }
+                );
             }
         }
 
@@ -115,15 +196,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
                 {
                     lerp.InitializeIfNeeded();
                     lerp.ResetObjects();
-                    lerp.SpawnGradually(SimpleReconstructLerp.Position.Final);
+                    lerp.SpawnGradually(SimpleReconstructLerp.Position.Initial, .15f);
                 }
             }
         }
 
         /// <summary>
-        /// When a particle collides with something during
-        /// its lerp, and the shield isn't solid enough,
-        /// all particles break away.
         /// If the shield is solid, and the particle is lerping, only the particle activates.
         /// If the particle is part of the shield, it increments a hit count. If the hit count
         /// reaches above the threshold, the whole shield breaks away.
@@ -147,12 +225,36 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
                 
                 bool isShieldSolidEnough = lerp.percentInPlace >= readyAtPercent;
 
-                hitCount++;
+                if (detector.TryGetComponent(out SimpleReconstructLerp.ReconstructLerpSlave lerpSlave))
+                {
+                    lerpSlave.StopCurrent();
+                }
+                
+                
+                if (detector.c is { } && detector.c.TryGetComponent(out RayfireRigid rigid))
+                {
+                    Debug.Log($"Impact on rayfire rigid. Hit count {hitCount}/{strength}"); 
+                    
+                    rigid.Initialize();
+                    rigid.Activate();
+                    rigid.Demolish();
+                    
+                    float impactForce = 20f;
+                    var contact = collision.GetContact(0);
 
-                if (!isShieldSolidEnough || hitCount == strength)
+                    var rb = rigid.GetComponent<Rigidbody>();
+                    if (rb) rb.AddExplosionForce(impactForce, contact.point, 1.5f);
+                }
+                
+                // if is a slave, we check if it is lerping
+                // collision with loose lerping particles shouldn't blow up the mesh
+                bool isSlaveAndIslerping = lerpSlave != null && lerpSlave.isLerping;
+                
+                if (!isSlaveAndIslerping && !isShieldSolidEnough || hitCount == strength)
                 {
                     BlowItUp(master, lerp, collision.transform);
                 }
+                else hitCount++;
             };
         }
 
@@ -161,21 +263,48 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
             master.onCollision -= OnBarrierParticleCollision(master, lerp);
             
             lerp.InterruptAll();
-            
-            foreach (var cachedParticle in lerp.cachedParticles)
-            {
-                var rb = cachedParticle.GetComponentInChildren<Rigidbody>();
-                lerp.StopAndEnablePhysics(cachedParticle);
-            
-                // todo: bullet / spell defines explosion force?
-                float force = 140f, radius = 1.5f;
 
-                if (rb)
+            if (lerp.cachedParticles != null)
+            {
+                bool hasExploded = false;
+                var rigidbodies = new List<Rigidbody>(lerp.cachedParticles.Length);
+                
+                foreach (var cachedParticle in lerp.cachedParticles)
                 {
-                    rb.AddExplosionForce(force, impactPosition.transform.position, radius);
+                    try
+                    {
+                        // particle has already been destroyed by another process.
+                        if (cachedParticle == null) continue;
+                    
+                        var rb = cachedParticle.GetComponentInChildren<Rigidbody>();
+                        lerp.StopAndEnablePhysics(cachedParticle);
+                        
+                        Destroy(cachedParticle, UnityEngine.Random.Range(5f, 10f));
+
+                        if (rb)
+                        {
+                            rigidbodies.Add(rb);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Caught an exception while trying to disable and explode: {e.Message}");
+                    }
                 }
+
+                if (!rigidbodies.IsNullOrEmpty())
+                {
+                    // todo: bullet / spell defines explosion force?
+                    float force = 150f, radius = 1.5f;
+                    
+                    var xploderb = rigidbodies[UnityEngine.Random.Range(0, rigidbodies.Count)];
+                    xploderb.AddExplosionForce(force, impactPosition.transform.position, radius);
+                    
+                }
+
+                lerp.ResetInitialization(false);
+
             }
-            
         }
 
         private void OnValidate()
@@ -197,6 +326,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         }
 
         [MenuItem("Spells/New.../Barrier")]
-        static void CreateBulletSpell(){ Spell.CreateSpell<SpawnBarrierSpell>("Barrier"); }
+        static void CreateBulletSpell(){ Spell.CreateSpell<SpawnMeshSpell>("Barrier"); }
     }
 }

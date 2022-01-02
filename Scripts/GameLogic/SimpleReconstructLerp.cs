@@ -61,9 +61,22 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         // for performance, since the match is made by name.
         public GameObject[] cachedParticles { get; private set; }
 
+        public void ResetInitialization(bool destroyCachedParticles)
+        {
+            if (destroyCachedParticles)
+            {
+                foreach (var cachedParticle in cachedParticles)
+                {
+                    Destroy(cachedParticle);
+                }
+            }
+
+            cachedParticles = null;
+        }
+
         public (LocationRotation, LocationRotation)[] startAndEndPosition;
         
-        public int totalParticles => cachedParticles.Length;
+        public int totalParticles => cachedParticles?.Length ?? 0;
         public int particlesInPlace = 0;
         public float percentInPlace => (float) particlesInPlace / (float) totalParticles;
 
@@ -121,7 +134,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         }
         
         [Button(ButtonStyle.CompactBox)]
-        public Coroutine SpawnGradually(SimpleReconstructLerp.Position startinPosition) { return SpawnGradually(startinPosition, (_, __) => {}); }
+        public Coroutine SpawnGradually(SimpleReconstructLerp.Position startinPosition, float? overrideDuration = null)
+        {
+            return SpawnGradually(
+                startinPosition, 
+                (_, __) => { },
+                () => { },
+                overrideDuration
+            );
+        }
 
         /// <summary>
         /// Using spawn transition, gradually activates each object of the selected position, calling onSpawn
@@ -129,9 +150,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// </summary>
         /// <param name="startinPosition">Either initial or final objects.</param>
         /// <param name="onSpawn">Called after an object is set active.</param>
-        public Coroutine SpawnGradually(SimpleReconstructLerp.Position startinPosition, Action<GameObject, int> onSpawn)
+        public Coroutine SpawnGradually(SimpleReconstructLerp.Position startinPosition, Action<GameObject, int> onSpawn, Action onDone, float? overrideDuration = null)
         {
             int lastSpawnedIndex = 0;
+            overrideDuration = overrideDuration.HasValue ? overrideDuration.Value : overrideSpawnDuration;
             
             // yikes this is not super efficient
             void SpawnUpTo(int idxUpperBound)
@@ -165,8 +187,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 endState =>
                 {
                     SpawnUpTo(cachedParticles.Length);
+                    onDone();
                 },
-                overrideSpawnDuration <= 0.001 ? spawnTransition.duration : overrideSpawnDuration
+                overrideDuration <= 0.001 ? spawnTransition.duration : overrideDuration.Value
             );
         }
 
@@ -182,9 +205,14 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
             public SimpleReconstructLerp master;
 
+            public bool isLerping => master && master.lerpsHappening.TryGetValue(gameObject, out Coroutine lerp) &&
+                                     lerp != null;
+            
             public void StopCurrent()
             {
-                if (master && master.lerpsHappening.TryGetValue(gameObject, out Coroutine lerp) && lerp != null)
+                // still need ref to lerp :shrug:
+                if (isLerping && master && master.lerpsHappening.TryGetValue(gameObject, out Coroutine lerp) &&
+                    lerp != null)
                 {
                     StopCoroutine(lerp);
                 }
@@ -193,7 +221,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         }
         
         [Button]
-        public void SpawnGraduallyAndLerpToDestination(Position to)
+        public void SpawnGraduallyAndLerpToDestination(Position to, Action onDone)
         {
             particlesInPlace = 0;
             
@@ -223,7 +251,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                                 particlesInPlace++;
                             })
                     );
-                });
+                },
+                onDone
+            );
         }
 
         [Button]
@@ -247,6 +277,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         public void StopAndEnablePhysics(GameObject objectThatIsMoving, Coroutine coroutine = null)
         {
+            if (objectThatIsMoving == null) return;
             if (coroutine != null) StopCoroutine(coroutine);
 
             if (objectThatIsMoving.TryGetComponent(out RayfireRigid r))
