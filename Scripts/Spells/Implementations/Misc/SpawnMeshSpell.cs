@@ -326,6 +326,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         }
 
         [MenuItem("Spells/New.../Barrier")]
-        static void CreateBulletSpell(){ Spell.CreateSpell<SpawnMeshSpell>("Barrier"); }
+        static void CreateBulletSpell(){ Spell.CreateSpellAsset<SpawnMeshSpell>("Barrier"); }
     }
 }

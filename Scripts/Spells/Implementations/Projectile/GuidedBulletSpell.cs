@@ -51,6 +51,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
         }
         
         [MenuItem("Spells/New.../GuidedBullet")]
-        static void CreateBulletSpell(){ Spell.CreateSpell<GuidedBulletSpell>("Guided Projectile"); }
+        static void CreateBulletSpell(){ Spell.CreateSpellAsset<GuidedBulletSpell>("Guided Projectile"); }
     }
 }

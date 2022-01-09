@@ -6,8 +6,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
+using Object = System.Object;
 
 namespace forloopcowboy_unity_tools.Scripts.Core
 {
@@ -457,6 +459,12 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         }
     }
 
+    public class LazyGetter<T> where T : Component
+    {
+        private T _reference;
+        public T Get(GameObject self) => _reference != null ? _reference : _reference = self.GetComponent<T>();
+    }
+    
     public static class GameObjectHelpers
     {
         public static T CreateDeepCopy<T>(T obj)
@@ -468,6 +476,16 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 ms.Seek(0, SeekOrigin.Begin);
                 return (T)formatter.Deserialize(ms);
             }
+        }
+        
+        public static bool HasComponent<T> (this GameObject obj)
+        {
+            return (obj.GetComponent<T>() as Component) != null;
+        }
+        
+        public static bool HasComponent<T> (this Component obj)
+        {
+            return (obj.GetComponent<T>() as Component) != null;
         }
 
         public static void SetLayerRecursively(this GameObject go, int layerNumber)

@@ -80,6 +80,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
         }
 
         [MenuItem("Spells/New.../Beam")]
-        static void CreateBeamSpell() { Spell.CreateSpell<Beam>("Beam"); }
+        static void CreateBeamSpell() { Spell.CreateSpellAsset<Beam>("Beam"); }
     }
 }

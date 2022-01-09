@@ -15,44 +15,51 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
     public abstract class Spell : SerializedScriptableObject
     {
 
-        [Tooltip("Unique spell identifier.")]
-        public string key;
+        [Tooltip("Unique spell identifier."), TabGroup("General")]
+        public string key = nameof(Spell);
 
+        [TabGroup("General")]
         public float cooldownTimeInSeconds = 0f;
 
-        [Tooltip("How far the spell can reach")]
+        [Tooltip("How far the spell can reach"), TabGroup("Targeting")]
         public float range = 10f;
 
         public enum TargetingStyle { Grounded, Ranged }
 
+        [TabGroup("Targeting")]
         public TargetingStyle targetingStyle = TargetingStyle.Ranged;
 
+        [TabGroup("Targeting")]
         public LayerMask raycastLayer;
         
-        [Tooltip("When true, spell will preview directly on whatever target transform is set in the spell user behaviour. If false, falls back to whatever targeting style is used.")]
+        [TabGroup("Targeting"), Tooltip("When true, spell will preview directly on whatever target transform is set in the spell user behaviour. If false, falls back to whatever targeting style is used.")]
         public bool showPreviewOnCastTarget = false;
 
-        [FormerlySerializedAs("previewEffect")] [Tooltip("The effect that plays in the hand.")]
+        [TabGroup("FX")] [FormerlySerializedAs("previewEffect")] [Tooltip("The effect that plays in the hand.")]
         public GameObject handPreviewEffect;
         
-        [Tooltip("The effect that plays either on the ground, middle of the screen, or on the spell caster's target")]
+        [TabGroup("FX")] [Tooltip("The effect that plays either on the ground, middle of the screen, or on the spell caster's target")]
         public GameObject targetPreviewEffect;
 
-        [Tooltip("The effect that plays in the location where the raycast hits, before the spell is executed.")]
+        [TabGroup("FX")] [Tooltip("The effect that plays in the location where the raycast hits, before the spell is executed.")]
         public GameObject mainEffect;
 
-        [Tooltip("Defines the type of hand animation that plays when holding a spell")]
+        [TabGroup("Animation")] [Tooltip("Defines the type of hand animation that plays when holding a spell")]
         public ArmComponent.ChargeStyles chargeStyle = ArmComponent.ChargeStyles.TwoFingerHold;
 
-        [Tooltip("Defines the type of hand animation that plays when casting a spell.")]
+        [TabGroup("Animation")] [Tooltip("Defines the type of hand animation that plays when casting a spell.")]
         public ArmComponent.CastStyles castStyle = ArmComponent.CastStyles.CastThrow;
 
-        [Tooltip("The time scale that should be used when the characters enter preview mode. If 0 < x < 1 then time is slowed down.")]
+        [TabGroup("Animation")] [Tooltip("The time scale that should be used when the characters enter preview mode. If 0 < x < 1 then time is slowed down.")]
         public float slowMoEfect = 1f;
 
+        [TabGroup("FX")]
         public float previewScale = 0.23f;
+        
+        [TabGroup("FX")]
         public float castScale = 0.5f;
         
+        [TabGroup("General")]
         public bool debugMode;
 
         virtual public Vector3 GetTargetPosition([CanBeNull] SpellUserBehaviour caster = null, [CanBeNull] Camera mainCamera = null)
@@ -196,7 +203,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             bool LatestSpellCastTimeFor(Spell spell, Side<ArmComponent> arm, out System.DateTime time);
         }
 
-        protected static void CreateSpell<S>(string name) where S : Spell
+        protected static void CreateSpellAsset<S>(string name) where S : Spell
         {
             Object s = ScriptableObject.CreateInstance<S>();
             AssetDatabase.CreateAsset(s, $"Assets/Spells/New{name}.asset");
@@ -216,6 +223,19 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             if (debugMode)
                 Debug.LogWarning($"Caster {caster.name} has no particles for {this.name}. Make sure particles are initialized properly. Particles are optional, but their preparation in the Caster is required.");
         }
+
+        ////  Custom Spell Particle Preprocessing  ////
+        //                                          //
+        // the functions below should be overridden //
+        // if spell implementations need to do      //
+        // things to the particle instances upon    //
+        // instantiation.                           //
+        //                                          //
+        //////////////////////////////////////////////
+
+        public virtual void PreprocessMainFX(GameObject mainEffectInstance) {}
+        public virtual void PreprocessHandPreviewFX(GameObject previewEffectInstance) {}
+        public virtual void PreprocessTargetPreviewFX(GameObject previewEffectInstance) {}
 
     }
 }

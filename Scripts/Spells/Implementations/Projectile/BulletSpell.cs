@@ -142,7 +142,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
         public event Action<SpellUserBehaviour, BulletController> OnBulletFired;
 
         [MenuItem("Spells/New.../Bullet")]
-        static void CreateBulletSpell(){ Spell.CreateSpell<BulletSpell>("Projectile"); }
+        static void CreateBulletSpell(){ Spell.CreateSpellAsset<BulletSpell>("Projectile"); }
 
     }
 }

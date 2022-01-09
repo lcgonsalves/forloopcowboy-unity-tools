@@ -258,7 +258,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                     return reached;
                 },
                 GameObjectHelpers.RoutineTypes.TimeInterval,
-                0.25f
+                delay: 0.25f
             );
         }
 
