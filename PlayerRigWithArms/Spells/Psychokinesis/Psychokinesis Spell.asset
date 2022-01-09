@@ -43,7 +43,7 @@ MonoBehaviour:
   showPreviewOnCastTarget: 0
   handPreviewEffect: {fileID: 1299800856089280, guid: 52c905a5c18593340b901188f5e86857, type: 3}
   targetPreviewEffect: {fileID: 0}
-  mainEffect: {fileID: 0}
+  mainEffect: {fileID: 1934077706430022, guid: 37894271a0ea7a343a9598484f0e507e, type: 3}
   chargeStyle: 0
   castStyle: 1
   slowMoEfect: 1

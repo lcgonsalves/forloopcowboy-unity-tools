@@ -80,7 +80,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// <param name="other"></param>
         private void OnTriggerExit(Collider other)
         {
-            Debug.Log($"Exit {other.name}");
+            if (!isValid(other)) return;
             
             if (other.TryGetComponent(out Rigidbody rb))
             {

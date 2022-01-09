@@ -41,11 +41,17 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 
         protected override void Execute(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
+
             if (
                 caster.ParticleInstancesFor(this, source, out var instances) && 
                 instances.handPreview &&
                 instances.handPreview.TryGetComponent(out PsychokinesisSpellPreviewComponent pspc))
             {
+                Destroy(
+                    Instantiate(mainEffect, pspc.PivotPoint, caster.mainCamera.transform.rotation),
+                    5f
+                );
+                
                 foreach (var collider in pspc.objectsInRange)
                 {
                     if (collider == null) continue;
