@@ -1,7 +1,9 @@
+using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
+using Sirenix.Utilities;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
@@ -36,7 +38,23 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         {
             var component = previewEffectInstance.GetOrElseAddComponent<PsychokinesisSpellPreviewComponent>();
             component.spell = this;
-            component.ThisTrigger.radius = range;
+            component.trigger.radius = range;
+        }
+
+        /// <summary>
+        /// Returns true if the preview component
+        /// has at least 1 object in range to be propelled.
+        /// </summary>
+        /// <param name="caster"></param>
+        /// <param name="arm"></param>
+        /// <returns></returns>
+        public override bool CanCast(SpellCaster caster, Side<ArmComponent> arm)
+        {
+            return base.CanCast(caster, arm) &&
+                   caster.ParticleInstancesFor(this, arm, out var instances) && 
+                   instances.handPreview &&
+                   instances.handPreview.TryGetComponent(out PsychokinesisSpellPreviewComponent pspc) &&
+                   pspc.objectsInRange.Count > 0;
         }
 
         protected override void Execute(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
@@ -47,16 +65,21 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
                 instances.handPreview &&
                 instances.handPreview.TryGetComponent(out PsychokinesisSpellPreviewComponent pspc))
             {
+                
                 Destroy(
                     Instantiate(mainEffect, pspc.PivotPoint, caster.mainCamera.transform.rotation),
                     5f
                 );
                 
-                foreach (var collider in pspc.objectsInRange)
+                // immutable list allows for cleanup of objects in range while we iterate the list
+                foreach (var collider in pspc.objectsInRange.ToImmutableList())
                 {
                     if (collider == null) continue;
+
+                    // call cleanup manually as objects will leave after preview gets disabled.
+                    var (rb, bc) = pspc.OnObjectExitCleanup(collider);
                     
-                    if (collider.TryGetComponent(out Rigidbody rb))
+                    if (rb)
                     {
                         rb.velocity = Vector3.zero;
                         rb.AddForce(direction.normalized * castForce, _forceMode);

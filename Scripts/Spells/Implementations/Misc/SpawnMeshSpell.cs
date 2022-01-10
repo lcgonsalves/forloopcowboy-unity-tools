@@ -233,8 +233,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
                 
                 if (detector.c is { } && detector.c.TryGetComponent(out RayfireRigid rigid))
                 {
-                    Debug.Log($"Impact on rayfire rigid. Hit count {hitCount}/{strength}"); 
-                    
                     rigid.Initialize();
                     rigid.Activate();
                     rigid.Demolish();

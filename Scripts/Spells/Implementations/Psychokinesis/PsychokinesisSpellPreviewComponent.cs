@@ -3,22 +3,32 @@ using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
+using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 {
-    [RequireComponent(typeof(SphereCollider))]
-    public class PsychokinesisSpellPreviewComponent : MonoBehaviour
+    public class PsychokinesisSpellPreviewComponent : SerializedMonoBehaviour
     {
-        private LazyGetter<SphereCollider> triggerGetter = new LazyGetter<SphereCollider>();
 
+        [OnValueChanged("UpdateCoreColliderRadius")]
         [CanBeNull] public PsychokinesisSpell spell;
 
         public Func<Collider, Vector3, bool> PhysicsUpdater => 
             spell ? Force.PhysicsUpdate(spell.forceSettings) : ((c, v) => false);
-
-        public SphereCollider ThisTrigger => triggerGetter.Get(gameObject);
+        
+        /// <summary>
+        /// Used to detect if an object is in range for attraction.
+        /// </summary>
+        public SphereCollider trigger;
+        
+        /// <summary>
+        /// Where objects are attracted to.
+        /// </summary>
+        [OnValueChanged("UpdateCoreColliderRadius")]
+        public SphereCollider coreCollider;
 
         [SerializeField, Tooltip("This setting is overriden by the spell setting.")]
         private bool _useGravity = false;
@@ -29,7 +39,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// Center of attraction, based on the trigger position relative to this
         /// instance.
         /// </summary>
-        public Vector3 PivotPoint => transform.TransformPoint(ThisTrigger.center);
+        public Vector3 PivotPoint => trigger ? transform.TransformPoint(trigger.center) : transform.position;
 
         /// <summary>
         /// By default, bullets are valid targets.
@@ -56,6 +66,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
                 rb.useGravity = useGravity;
                 rb.velocity = Vector3.zero;
             }
+            
+            // if it is a bullet, stop counting bounces so it doesn't accidentally get disabled while within our grasp
+            if (other.TryGetComponent(out BulletController bc))
+            {
+                bc.countBounces = false;
+            }
 
             objectsInRange.Add(other);
 
@@ -81,22 +97,79 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         private void OnTriggerExit(Collider other)
         {
             if (!isValid(other)) return;
-            
+
+            OnObjectExitCleanup(other);
+
+        }
+
+        
+        /// <summary>
+        /// To be executed on any objects that leave the
+        /// trigger. Resets the rigidbody / bullet to the
+        /// state it was before this object came in contact
+        /// with the spell.
+        /// </summary>
+        /// <param name="other"></param>
+        public OnObjectExitCleanupResult OnObjectExitCleanup(Collider other)
+        {
             if (other.TryGetComponent(out Rigidbody rb))
             {
                 rb.useGravity = true;
             }
+
+            if (other.TryGetComponent(out BulletController bc))
+            {
+                bc.countBounces = true;
+            }
             
             objectsInRange.Remove(other);
+
+            return new OnObjectExitCleanupResult(
+                rb,
+                bc
+            );
+        }
+
+        public struct OnObjectExitCleanupResult
+        {
+            [CanBeNull] public Rigidbody rb;
+            [CanBeNull] public BulletController bulletController;
+
+            public OnObjectExitCleanupResult([CanBeNull] Rigidbody rb, [CanBeNull] BulletController bulletController)
+            {
+                this.rb = rb;
+                this.bulletController = bulletController;
+            }
+
+            #nullable enable
+            public void Deconstruct(out Rigidbody? rb, out BulletController? bc)
+            {
+                rb = this.rb;
+                bc = this.bulletController;
+            }
+            
+            #nullable disable
         }
 
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
-            if (ThisTrigger) Gizmos.DrawWireSphere(transform.TransformPoint(ThisTrigger.center), ThisTrigger.radius);
+            if (trigger) Gizmos.DrawWireSphere(transform.TransformPoint(trigger.center), trigger.radius);
             
             Gizmos.color = Color.red;
-            if (spell) Gizmos.DrawWireSphere(transform.TransformPoint(ThisTrigger.center), spell.forceSettings.stopRadius);
+            if (spell) Gizmos.DrawWireSphere(transform.TransformPoint(trigger.center), spell.forceSettings.stopRadius);
+        }
+
+        private void UpdateCoreColliderRadius()
+        {
+            if (coreCollider)
+            {
+                if (spell)
+                {
+                    coreCollider.radius = spell.forceSettings.stopRadius;
+                }
+            }
+            else throw new NullReferenceException("Cannot update core collider radius as core collider is null.");
         }
     }
 }

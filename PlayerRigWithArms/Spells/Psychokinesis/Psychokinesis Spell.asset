@@ -26,7 +26,7 @@ MonoBehaviour:
       Data: forloopcowboy_unity_tools.Scripts.GameLogic.Force+Settings, Assembly-CSharp
     - Name: forceMagnitude
       Entry: 4
-      Data: 5
+      Data: 7
     - Name: stopRadius
       Entry: 4
       Data: 0.25
@@ -35,7 +35,7 @@ MonoBehaviour:
       Data: 
   key: psychokinesis
   cooldownTimeInSeconds: 1
-  range: 2
+  range: 1.5
   targetingStyle: 1
   raycastLayer:
     serializedVersion: 2
@@ -52,4 +52,4 @@ MonoBehaviour:
   debugMode: 0
   useGravity: 0
   _forceMode: 1
-  castForce: 10
+  castForce: 100

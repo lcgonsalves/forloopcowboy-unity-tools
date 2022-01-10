@@ -17,6 +17,13 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         // start @ -1 because it fucking bounces the character's hand first
         int bouncesSoFar = -1;
 
+        /// <summary>
+        /// When set to false, bouncesSoFar is not incremented, therefore
+        /// if this is set to false before the final impact, it will never
+        /// call that function.
+        /// </summary>
+        public bool countBounces = true;
+
         public virtual void ResetBullet()
         {
             bouncesSoFar = -1;
@@ -37,13 +44,13 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         }
 
         private void OnCollisionEnter(Collision other) {
-            bouncesSoFar++;
+            if (countBounces) bouncesSoFar++;
 
             if (bouncesSoFar == 0) OnFirstImpact(other);
 
             // enough bounces, disable object
-            if (bouncesSoFar >= (Settings?.maxBounces ?? 0)) OnFinalImpact(other);
-            else OnImpact(other); // on impact is called only while bounces is < max 
+            if (bouncesSoFar >= (Settings != null ? Settings.maxBounces : 0)) OnFinalImpact(other);
+            else OnImpact(other); // on impact is called only while bounces is < max
         }
 
         private Coroutine killSequence = null;

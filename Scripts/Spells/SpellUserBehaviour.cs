@@ -202,7 +202,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 // automatically begin holding the selected spell
                 if (wasHolding) this.RunAsyncWithDelay(0.08f, () => {
                     Spell newSpell = activeSpell.Get(selectedArm);
-                    Debug.Log("setting " + newSpell.chargeStyle.ToString() + "to true for spell " + newSpell.name);
                     selectedArm.content.SetHolder(newSpell.chargeStyle, true);
                 });
 
