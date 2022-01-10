@@ -13,7 +13,7 @@ using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells
 {
-    public class SpellUserBehaviour : MonoBehaviour, Spell.SpellCaster
+    public class SpellUserBehaviour : MonoBehaviour, Spell.SpellCaster<SpellUserBehaviour.Config>
     {
 
         [UnityEngine.Tooltip("Allowed Spells")]
@@ -47,13 +47,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         [SerializeField, ReadOnly]
         private Core.Tuple<Spell, Spell> activeSpell;
 
-        [SerializeField, ReadOnly]
-        private bool previewingLeftHandSpell = false;
-
-        [SerializeField, ReadOnly]
-        private bool previewingRightHandSpell = false;
-
-        private class Config : Spell.InstanceConfiguration
+        public class Config : Spell.InstanceConfiguration
         {
             // cannot be instantiated from outside of this context
             internal Config() { }
@@ -65,15 +59,35 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             GameObject Spell.InstanceConfiguration.handPreview => handPreview;
             GameObject Spell.InstanceConfiguration.main => main;
 
+            private Dictionary<string, GameObject> customInstances = new Dictionary<string, GameObject>();
+
+            public void RegisterCustom(string key, GameObject template)
+            {
+                if (!customInstances.ContainsKey(key))
+                {
+                    var newInstance = Instantiate(template, Vector3.zero, Quaternion.identity);
+                    newInstance.name = $"{key} {template.name}";
+                    newInstance.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
+                    newInstance.gameObject.SetActive(false);
+                    
+                    customInstances.Add(key, newInstance);
+                }
+            }
+
+            public bool TryGetCustom(string key, out GameObject instance)
+            {
+                return customInstances.TryGetValue(key, out instance);
+            }
+
             GameObject Spell.InstanceConfiguration.targetPreview => targetPreview;
         }
 
 
         // fixme: fuck
         // update: still not fixing this
-        private Core.Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>> spellParticles = 
-            new Core.Tuple<Dictionary<Spell, Spell.InstanceConfiguration>, Dictionary<Spell, Spell.InstanceConfiguration>>(
-                new Dictionary<Spell, Spell.InstanceConfiguration>(), new Dictionary<Spell, Spell.InstanceConfiguration>()
+        private Core.Tuple<Dictionary<Spell, Config>, Dictionary<Spell, Config>> spellParticles = 
+            new Core.Tuple<Dictionary<Spell, Config>, Dictionary<Spell, Config>>(
+                new Dictionary<Spell, Config>(), new Dictionary<Spell, Config>()
             );
 
         private Core.Tuple<Dictionary<Spell, System.DateTime>, Dictionary<Spell, System.DateTime>> latestSpellCastTime =
@@ -81,7 +95,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 new Dictionary<Spell, System.DateTime>(), new Dictionary<Spell, System.DateTime>()
             );
 
-        public bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out Spell.InstanceConfiguration instances)
+        public bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out Config instances)
         {
             // spell particles are shared between both hands
             return spellParticles.Get(arm).TryGetValue(spell, out instances);
@@ -134,21 +148,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             }
         }
 
-        private void Update()
-        {
-            ArmComponent.ChargeStyles activeSpellChargeStyleL = activeSpell.Get(arms.l).chargeStyle;
-            ArmComponent.ChargeStyles activeSpellChargeStyleR = activeSpell.Get(arms.r).chargeStyle;
-
-            previewingRightHandSpell = rightArm.IsHoldingAndReady(activeSpellChargeStyleR);
-            previewingLeftHandSpell  = leftArm.IsHoldingAndReady(activeSpellChargeStyleL);
-        }
-
         private void FixedUpdate()
         {
-            if (previewingLeftHandSpell) PreviewSpell(arms.l);
+            if (IsReady(arms.l)) PreviewSpell(arms.l);
             else activeSpell?.Left?.ResetPreview(this, arms.l);
 
-            if (previewingRightHandSpell) PreviewSpell(arms.r);
+            if (IsReady(arms.r)) PreviewSpell(arms.r);
             else activeSpell?.Right?.ResetPreview(this, arms.r);
         }
 
@@ -200,10 +205,18 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 }
 
                 // automatically begin holding the selected spell
-                if (wasHolding) this.RunAsyncWithDelay(0.08f, () => {
-                    Spell newSpell = activeSpell.Get(selectedArm);
-                    selectedArm.content.SetHolder(newSpell.chargeStyle, true);
-                });
+                if (wasHolding)
+                {
+
+                    selectedArm.content.holdReady = false;
+                    
+                    this.RunAsyncWithDelay(0.08f, () => {
+                        Spell newSpell = activeSpell.Get(selectedArm);
+                        selectedArm.content.SetHolder(newSpell.chargeStyle, true);
+                    });
+                
+                
+                }
 
             };
 
@@ -277,6 +290,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
                 return previewInstance;
             }
+            
+            spell.RegisterCustomParticles(spellParticleInstanceContainer);
 
             if (spell.handPreviewEffect)
             {
@@ -304,20 +319,17 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         private bool CastSpell(Side<ArmComponent> arm)
         {
-            bool previewingCorrectHand =
-                (arm is Left<ArmComponent> && previewingLeftHandSpell) ||
-                (arm is Right<ArmComponent> && previewingRightHandSpell);
+            bool isHoldingAndReady = IsHoldingAndReady(arm);
 
-            if (previewingCorrectHand)
+            if (isHoldingAndReady)
             {
                 Spell active = activeSpell.Get(arm);
 
                 var justCasted = active.Cast(this, arm, mainCamera.transform.TransformDirection(Vector3.forward));
                 if (justCasted) latestSpellCastTime.Get(arm)[activeSpell.Get(arm)] = System.DateTime.Now;
-
-                // if just casted, stop previewing. if didn't cast (and by the previous 'if', also previewing), continue to preview
-                if (arm is Left<ArmComponent>) previewingLeftHandSpell = false;
-                if (arm is Right<ArmComponent>) previewingRightHandSpell = false;
+                
+                // disable hold to prevent preview from lingering
+                arm.content.holdReady = false;
 
                 return justCasted;
 
@@ -369,6 +381,18 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             if (leftArm) Gizmos.DrawWireSphere(leftArm.transform.position, 0.1f);
             if (rightArm) Gizmos.DrawWireSphere(rightArm.transform.position, 0.1f);
         }
+        
+        
+        public bool IsHolding(Side<ArmComponent> arm)
+        {
+            ArmComponent.ChargeStyles style = activeSpell.Get(arm).chargeStyle;
+            return arm.content.IsHolding(style);
+        }
+
+        public bool IsReady(Side<ArmComponent> arm) => arm.content.holdReady;
+
+        public bool IsHoldingAndReady(Side<ArmComponent> arm) => IsHolding(arm) && IsReady(arm);
+        
         public bool CanCast<T>(Side<T> side)
         {
             return activeSpell.Get(side).CanCast(this, side);

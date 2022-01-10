@@ -48,7 +48,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// <param name="caster"></param>
         /// <param name="arm"></param>
         /// <returns></returns>
-        public override bool CanCast(SpellCaster caster, Side<ArmComponent> arm)
+        public override bool CanCast(SpellUserBehaviour caster, Side<ArmComponent> arm)
         {
             return base.CanCast(caster, arm) &&
                    caster.ParticleInstancesFor(this, arm, out var instances) && 

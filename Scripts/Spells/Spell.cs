@@ -106,11 +106,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             } else NoParticleInstantiatedWarning(caster);
         }
 
-        private void UpdateEffect(GameObject fx, Vector3 position, Quaternion rotation, string layerName, bool applyScale = true)
+        protected void UpdateEffect(GameObject fx, Vector3 position, Quaternion rotation, string layerName, bool applyScale = true)
         {
-            var a = fx?.activeInHierarchy;
-            var b = fx?.activeSelf;
-
             if (fx == null) return;
             
             if (!fx.gameObject.activeInHierarchy)
@@ -151,37 +148,49 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         /// Casts the spell from proper arm position
         public bool Cast(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
-            bool canCast = CanCast(caster, source, out var time);
-            if (canCast) Execute(caster, source, direction);
+            bool canCast = CanCast(caster, source);
+            if (canCast)
+            {
+                Execute(caster, source, direction);
+            }
             return canCast;
         }
-
-        /// See CanCast(SpellUserBehaviour caster,  out System.DateTime time)
-        public bool CanCast(SpellCaster caster, Side<ArmComponent> arm)
+        
+        /// <summary>
+        /// Returns true if ready to cast. Overridable by
+        /// specific spell implementations.
+        /// </summary>
+        /// <param name="caster">Spell caster.</param>
+        /// <param name="arm">Arm from which the spell is being cast.</param>
+        /// <returns>By default, returns true if arm hold is ready, and
+        /// if the spell cooldown has been reached.</returns>
+        public virtual bool CanCast(SpellUserBehaviour caster, Side<ArmComponent> arm)
         {
-            return CanCast(caster, arm, out var _);
+            return CanHoldAndArmHoldIsReady(caster, arm, out var _);
         }
 
-        public bool CanCast(SpellCaster caster, Side<ArmComponent> arm, out System.DateTime time)
-        {
-            bool canHold = CanHold(caster, arm, out time);
-
+        public bool CanHoldAndArmHoldIsReady(
+            SpellUserBehaviour caster,
+            Side<ArmComponent> arm,
+            out System.DateTime lastSpellCastTime
+        ) {
+            bool canHold = CanHold(caster, arm, out lastSpellCastTime);
             return arm.content.holdReady && canHold;
         }
 
-        public bool CanHold(SpellCaster caster, Side<ArmComponent> arm)
+        public bool CanHold(SpellUserBehaviour caster, Side<ArmComponent> arm)
         {
             return CanHold(caster, arm, out var _);
         }
 
         // true if a spell has never been casted before or if the cooldown is over
-        public bool CanHold(SpellCaster caster, Side<ArmComponent> arm, out System.DateTime time)
+        public bool CanHold(SpellUserBehaviour caster, Side<ArmComponent> arm, out System.DateTime lastSpellCastTime)
         {
-            bool spellNeverCastedBefore = caster.LatestSpellCastTimeFor(this, arm, out time) && time == DateTime.MinValue;
+            bool spellNeverCastedBefore = caster.LatestSpellCastTimeFor(this, arm, out lastSpellCastTime) && lastSpellCastTime == DateTime.MinValue;
             bool spellHasBeenCastedBefore = !spellNeverCastedBefore;
 
             // here we define: if a spell has never been casted before (for whatever reason we couldn't get the latest cast time) we just let the user cast it
-            return (spellHasBeenCastedBefore && ((System.DateTime.Now - time).TotalSeconds > cooldownTimeInSeconds)) ||
+            return (spellHasBeenCastedBefore && ((System.DateTime.Now - lastSpellCastTime).TotalSeconds > cooldownTimeInSeconds)) ||
                    spellNeverCastedBefore;
         }
 
@@ -192,12 +201,32 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             GameObject targetPreview { get; }
             
             GameObject main { get; }
+
+            /// <summary>
+            /// Adds a new game object to the list of instances, if one does not
+            /// exist with the same key.
+            /// 
+            /// This registration creates a copy of the template which
+            /// can be accessed by the function GetCustom().
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="template"></param>
+            /// <returns></returns>
+            public void RegisterCustom(string key, GameObject template);
+
+            /// <summary>
+            /// Gets custom instance if one exists for the given key.
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="instance"></param>
+            /// <returns>True if the instance exists.</returns>
+            public bool TryGetCustom(string key, out GameObject instance);
         }
 
-        public interface SpellCaster
+        public interface SpellCaster<IC> where IC : InstanceConfiguration
         {
             // Getter for fetching instantiated emitters for the given spell
-            bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out InstanceConfiguration instances);
+            bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out IC instances);
 
             // Getter for fetching latest cast time to calculate cooldown
             bool LatestSpellCastTimeFor(Spell spell, Side<ArmComponent> arm, out System.DateTime time);
@@ -218,7 +247,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             return source.content.GetCastPoint(chargeStyle);
         }
 
-        private void NoParticleInstantiatedWarning(Object caster)
+        protected void NoParticleInstantiatedWarning(Object caster)
         {
             if (debugMode)
                 Debug.LogWarning($"Caster {caster.name} has no particles for {this.name}. Make sure particles are initialized properly. Particles are optional, but their preparation in the Caster is required.");
@@ -236,6 +265,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         public virtual void PreprocessMainFX(GameObject mainEffectInstance) {}
         public virtual void PreprocessHandPreviewFX(GameObject previewEffectInstance) {}
         public virtual void PreprocessTargetPreviewFX(GameObject previewEffectInstance) {}
+
+        /// <summary>
+        /// Override this function to instantiate custom particles on startup.
+        /// </summary>
+        public virtual void RegisterCustomParticles(InstanceConfiguration configuration) {}
 
     }
 }

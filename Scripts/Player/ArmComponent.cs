@@ -215,7 +215,6 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         // disables all holders
         public void DisableHold()
         {
-            holdReady = false;
             foreach (var style in chargeStyles) animator.SetBool(style.ToString(), false);
         }
 

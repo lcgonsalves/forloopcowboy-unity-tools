@@ -52,4 +52,4 @@ MonoBehaviour:
   debugMode: 0
   useGravity: 0
   _forceMode: 1
-  castForce: 100
+  castForce: 45
