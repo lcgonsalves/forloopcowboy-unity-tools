@@ -16,6 +16,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         [OnValueChanged("UpdateCoreColliderRadius")]
         [CanBeNull] public PsychokinesisSpell spell;
 
+        /// <summary>
+        /// The entity who is in charge of this spell preview.
+        /// Knowing who the caster is prevents this spell from affecting
+        /// spells cast by the same entity.
+        /// </summary>
+        [CanBeNull] public SpellUserBehaviour caster = null;
+        
         public Func<Collider, Vector3, bool> PhysicsUpdater => 
             spell ? Force.PhysicsUpdate(spell.forceSettings) : ((c, v) => false);
         
@@ -42,9 +49,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         public Vector3 PivotPoint => trigger ? transform.TransformPoint(trigger.center) : transform.position;
 
         /// <summary>
-        /// By default, bullets are valid targets.
+        /// By default, bullets are valid targets, as long as they haven't
+        /// been fired by the caster themself.
         /// </summary>
-        public virtual Func<Collider, bool> isValid => c => c.HasComponent<BulletController>();
+        public static bool IsValid(Collider c, SpellUserBehaviour caster) => 
+            c.TryGetComponent(out BulletController bc) && (bc.firedBy == null || bc.firedBy.GetInstanceID() != caster.gameObject.GetInstanceID());
 
 
         /// <summary>
@@ -59,7 +68,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// </summary>
         private void OnTriggerEnter(Collider other)
         {
-            if (!isValid(other)) return;
+            if (!caster || !IsValid(other, caster)) return;
             
             if (other.TryGetComponent(out Rigidbody rb))
             {
@@ -84,7 +93,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// </summary>
         private void OnTriggerStay(Collider other)
         {
-            if (!isValid(other)) return;
+            if (!caster || !IsValid(other, caster)) return;
 
             PhysicsUpdater(other, PivotPoint);
         }
@@ -96,7 +105,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// <param name="other"></param>
         private void OnTriggerExit(Collider other)
         {
-            if (!isValid(other)) return;
+            if (!caster || !IsValid(other, caster)) return;
 
             OnObjectExitCleanup(other);
 

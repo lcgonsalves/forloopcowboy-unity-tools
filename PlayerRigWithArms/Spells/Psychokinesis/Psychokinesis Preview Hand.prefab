@@ -82,6 +82,7 @@ MonoBehaviour:
       Entry: 8
       Data: 
   spell: {fileID: 11400000, guid: cfd6ff386e63a564591bafcd7c6ced4d, type: 2}
+  caster: {fileID: 0}
   trigger: {fileID: 6540814928097447551}
   coreCollider: {fileID: 8193091786993522722}
   _useGravity: 0

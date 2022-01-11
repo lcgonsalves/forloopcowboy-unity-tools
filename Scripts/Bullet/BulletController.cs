@@ -2,6 +2,7 @@ using System.Collections;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Bullet
@@ -13,6 +14,12 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         public Bullet Settings;
 
         public Rigidbody rb;
+
+        /// <summary>
+        /// If bullet was fired by somebody, it will be set here.
+        /// For bullets fired anonymously, this value will be null.
+        /// </summary>
+        [CanBeNull] public GameObject firedBy = null;
 
         // start @ -1 because it fucking bounces the character's hand first
         int bouncesSoFar = -1;

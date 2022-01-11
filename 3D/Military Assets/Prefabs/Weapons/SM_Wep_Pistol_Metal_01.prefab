@@ -358,8 +358,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8eb75e63668b65f4e97677748c610f89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maximum: 100
-  currentActive: 0
+  maximum: 10
   bullets: []
 --- !u!114 &4051983867142983992
 MonoBehaviour:

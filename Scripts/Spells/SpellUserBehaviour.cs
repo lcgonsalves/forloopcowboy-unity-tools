@@ -291,26 +291,26 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 return previewInstance;
             }
             
-            spell.RegisterCustomParticles(spellParticleInstanceContainer);
+            spell.RegisterCustomParticles(this, spellParticleInstanceContainer);
 
             if (spell.handPreviewEffect)
             {
                 spellParticleInstanceContainer.handPreview = InitializeEffect("Hand Preview", spell.handPreviewEffect);
-                spell.PreprocessHandPreviewFX(spellParticleInstanceContainer.handPreview);
+                spell.PreprocessHandPreviewFX(this, spellParticleInstanceContainer.handPreview);
             }
             else Debug.LogWarning("No HAND preview particle assigned in spell definition. Please update the asset.");
 
             if (spell.targetPreviewEffect)
             {
                 spellParticleInstanceContainer.targetPreview = InitializeEffect("Target Preview", spell.targetPreviewEffect);
-                spell.PreprocessTargetPreviewFX(spellParticleInstanceContainer.targetPreview);
+                spell.PreprocessTargetPreviewFX(this, spellParticleInstanceContainer.targetPreview);
             }
             else Debug.LogWarning("No TARGET preview particle assigned in spell definition. Please update the asset.");
 
             if (spell.mainEffect)
             {
                 spellParticleInstanceContainer.main = InitializeEffect("Main", spell.mainEffect);
-                spell.PreprocessMainFX(spellParticleInstanceContainer.main);
+                spell.PreprocessMainFX(this, spellParticleInstanceContainer.main);
             }
             else Debug.LogWarning("No MAIN particle assigned in spell definition. Please update the asset.");
             

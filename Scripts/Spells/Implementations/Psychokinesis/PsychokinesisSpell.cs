@@ -33,12 +33,17 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         /// <summary>
         /// Hand preview must know which spell it refers to, so it has access to the settings.
         /// </summary>
+        /// <param name="caster"></param>
         /// <param name="previewEffectInstance"></param>
-        public override void PreprocessHandPreviewFX(GameObject previewEffectInstance)
+        public override void PreprocessHandPreviewFX(SpellUserBehaviour caster, GameObject previewEffectInstance)
         {
             var component = previewEffectInstance.GetOrElseAddComponent<PsychokinesisSpellPreviewComponent>();
+            
             component.spell = this;
             component.trigger.radius = range;
+            
+            // preview component is aware of who is casting so as to avoid spells cast from the same entity
+            component.caster = caster;
         }
 
         /// <summary>

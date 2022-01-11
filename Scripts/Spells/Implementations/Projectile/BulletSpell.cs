@@ -29,7 +29,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 
         public string BulletInstanceKey => $"{key} Bullet";
         
-        public override void RegisterCustomParticles(InstanceConfiguration configuration)
+        public override void RegisterCustomParticles(SpellUserBehaviour caster, InstanceConfiguration configuration)
         {
             configuration.RegisterCustom(BulletInstanceKey, bullet.prefab);
         }
@@ -79,7 +79,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             
             var correctedDirection = Quaternion.AngleAxis(throwAngle, caster.transform.TransformDirection(Vector3.left)) * (projectedPoint - castPoint).normalized;
 
-            var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection);
+            var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection, caster.gameObject);
             b.rb.AddTorque(5f, 3f, 0f);
             b.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Player"));
             b.rb.useGravity = bulletUsesGravity;

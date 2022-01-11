@@ -262,14 +262,14 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         //                                          //
         //////////////////////////////////////////////
 
-        public virtual void PreprocessMainFX(GameObject mainEffectInstance) {}
-        public virtual void PreprocessHandPreviewFX(GameObject previewEffectInstance) {}
-        public virtual void PreprocessTargetPreviewFX(GameObject previewEffectInstance) {}
+        public virtual void PreprocessMainFX(SpellUserBehaviour caster, GameObject mainEffectInstance) {}
+        public virtual void PreprocessHandPreviewFX(SpellUserBehaviour caster, GameObject previewEffectInstance) {}
+        public virtual void PreprocessTargetPreviewFX(SpellUserBehaviour caster, GameObject previewEffectInstance) {}
 
         /// <summary>
         /// Override this function to instantiate custom particles on startup.
         /// </summary>
-        public virtual void RegisterCustomParticles(InstanceConfiguration configuration) {}
+        public virtual void RegisterCustomParticles(SpellUserBehaviour caster, InstanceConfiguration configuration) {}
 
     }
 }
