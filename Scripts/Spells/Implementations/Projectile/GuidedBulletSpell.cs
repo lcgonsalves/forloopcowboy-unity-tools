@@ -31,14 +31,14 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
         private void OnBulletFiredHandler(SpellUserBehaviour caster, BulletController controller)
         {
             // no target, no guide
-            if (caster.target == null) return;
+            if (!caster.GetTarget(this, out var target)) return;
 
             var force = controller.GetOrElseAddComponent<Force>();
 
             force.enabled = true;
             
             force.m_Force = Force;
-            force.m_Pivot = caster.target;
+            force.m_Pivot = target.transform;
             force.m_Radius = Radius;
             force.m_StopRadius = StopRadius;
             force.m_Layers = LayerHelper.LayerMaskFor(controller.gameObject.layer);

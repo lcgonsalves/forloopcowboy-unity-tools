@@ -161,11 +161,18 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         public WaypointNode[] GetNearbyWaypointNodes(float maxDistance) => 
             GetNearbyWaypointNodes(maxDistance, maxDistance, 5);
 
+        
         public bool MoveTo(Vector3 destination, float speed, float angularSpeed, out NavMeshPath path)
         {
             path = new NavMeshPath();
             
-            bool destinationIsAccessible = _navMeshAgent != null && _navMeshAgent.CalculatePath(destination, path);
+            // make sure character is actually on navmesh before moving
+            if (!_navMeshAgent.isOnNavMesh && NavMesh.SamplePosition(transform.position, out var hit, 1f, -1))
+            {
+                _navMeshAgent.Warp(hit.position);
+            }
+            
+            bool destinationIsAccessible = _navMeshAgent != null && _navMeshAgent.isOnNavMesh && _navMeshAgent.CalculatePath(destination, path);
 
             if (destinationIsAccessible)
             {

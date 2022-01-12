@@ -57,7 +57,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         public Vector3 GetTargetPosition([CanBeNull] SpellUserBehaviour caster = null, [CanBeNull] Camera mainCamera = null)
         {
-            if (showPreviewOnCastTarget && caster && caster.target) return caster.target.position;
+            if (showPreviewOnCastTarget && caster && caster.GetTarget(this, out var target)) return target.transform.position;
 
             mainCamera = mainCamera ? mainCamera : Camera.main;
             

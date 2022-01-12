@@ -2,6 +2,7 @@ using System;
 using BehaviorDesigner.Runtime;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Soldier;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -12,7 +13,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     {
         public event Action onDeath;
         
-        [SerializeField, ReadOnly]
+        [SerializeField, Core.ReadOnly]
         private int health = 100;
 
         [SerializeField]
@@ -59,15 +60,15 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             // currently supports 3 death animations
             int animidx = Random.Range(1, 4);
             
-            GetComponent<Animator>()?.SetInteger(DeathAnimationIndex, animidx);
-            GetComponent<AimComponent>()?.StopTracking();
-            GetComponent<AdvancedNavigation>()?.StopAndDisable();
-            GetComponent<WeaponUser>()?.CeaseFire();
+            if (TryGetComponent(out Animator animator)) animator.SetInteger(DeathAnimationIndex, animidx);
+            if (TryGetComponent(out AimComponent component)) component.StopTracking();
+            if (TryGetComponent(out AdvancedNavigation navigation)) navigation.StopAndDisable();
+            if (TryGetComponent(out WeaponUser weaponUser)) weaponUser.CeaseFire();
 
             foreach (var behavior in GetComponents<BehaviorTree>()) behavior.enabled = false;
 
             var ragdollComponent = GetComponent<Ragdoll>();
-            ragdollComponent.RunAsyncWithDelay(2.5f, () => ragdollComponent.EnableRagdoll());
+            if (ragdollComponent) ragdollComponent.RunAsyncWithDelay(2.5f, () => ragdollComponent.EnableRagdoll());
 
         }
         
@@ -134,6 +135,13 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Handles.Label(transform.position + Vector3.up, $"Health [{Health}]");
         }
 
+        [Button]
+        public void AttachHitBox()
+        {
+            var hb = this.GetOrElseAddComponent<HitBox>();
+            hb.healthComponent = this;
+        }
+        
         public static HealthComponent GetHealthComponent(Component other) { return GetHealthComponent(other); }
     }
 }

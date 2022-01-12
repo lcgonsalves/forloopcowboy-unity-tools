@@ -5,6 +5,7 @@ using System.Linq;
 using BehaviorDesigner.Runtime;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Environment;
+using forloopcowboy_unity_tools.Scripts.Player;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEngine;
 
@@ -130,7 +131,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="prefab"></param>
         /// <param name="spawnType"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void SpawnCopy(
+        public SpawnedGameObject SpawnCopy(
             Side side,
             GameObject prefab,
             SpawnType spawnType = SpawnType.Grounded
@@ -140,12 +141,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             {
                 case Side.Attacker:
                     attackerCacheOutdated = true;
-                    Spawn(side, prefab, true, spawnType, attackerSpawnPoints);
-                    break;
+                    return Spawn(side, prefab, true, spawnType, attackerSpawnPoints);
+                    
                 case Side.Defender:
                     defenderCacheOutdated = true;
-                    Spawn(side, prefab, true, spawnType, defenderSpawnPoints);
-                    break;
+                    return Spawn(side, prefab, true, spawnType, defenderSpawnPoints);
+                    
                 default:
                     throw new ArgumentOutOfRangeException(nameof(side), side, null);
             }
@@ -159,7 +160,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="obj"></param>
         /// <param name="spawnType"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Spawn(
+        public SpawnedGameObject Spawn(
             Side side,
             GameObject obj,
             SpawnType spawnType = SpawnType.Grounded
@@ -169,12 +170,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             {
                 case Side.Attacker:
                     attackerCacheOutdated = true;
-                    Spawn(side, obj, false, spawnType, attackerSpawnPoints);
-                    break;
+                    return Spawn(side, obj, false, spawnType, attackerSpawnPoints);
+                    
                 case Side.Defender:
                     defenderCacheOutdated = true;
-                    Spawn(side, obj, false, spawnType, defenderSpawnPoints);
-                    break;
+                    return Spawn(side, obj, false, spawnType, defenderSpawnPoints);
+                    
                 default:
                     throw new ArgumentOutOfRangeException(nameof(side), side, null);
             }
@@ -205,26 +206,28 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj, spawnAt));
         }
 
-        private void Spawn(Side side, GameObject obj, bool instantiateNew, SpawnType spawnType, List<SpawnPoint> spawnPoints)
+        public void SpawnPlayer(PlayerComponent player, Transform location, Side side, bool instantiateNew = true)
+        {
+            var i = instantiateNew ? Instantiate(player, location.position, location.rotation) : player;
+            SpawnedGameObjects.Add(new SpawnedGameObject(side, i.gameObject.GetManaged()));
+        }
+
+        private SpawnedGameObject Spawn(Side side, GameObject obj, bool instantiateNew, SpawnType spawnType, List<SpawnPoint> spawnPoints)
         {
             var spawnAt = spawnPoints.Find(_ => _.type == spawnType);
             if (spawnAt != null)
             {
                 var t = spawnAt.node.transform;
-                var instance = instantiateNew ? Instantiate(obj) : obj;
+                var instance = instantiateNew ? Instantiate(obj, t.position, t.rotation) : obj;
 
-                instance.transform.position = t.position;
-                instance.transform.rotation = t.rotation;
-                
                 instance.SetActive(true);
                 instance.transform.SetParent(null);
                 
-                var navigation = instance.GetComponent<AdvancedNavigation>();
-                
-                // either get health component or get/add a generic managed mono behaviour if no health component is present.
-                // health components by default expose logic to auto-destruct on death so we can use this here if available.
-                IManagedGameObject managedGameObj = instance.GetComponent<HealthComponent>() as IManagedGameObject ?? instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
-                instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
+                instance.transform.position = t.position;
+                instance.transform.rotation = t.rotation;
+
+                var isPlayer = instance.TryGetComponent(out PlayerComponent playerComponent);
+                var managedGameObj = isPlayer ? playerComponent.gameObject.GetManaged() : InitializeSoldier(side, instance, spawnAt);
 
                 if (managedGameObj is HealthComponent healthComponent)
                     healthComponent.onDeath += () =>
@@ -233,26 +236,44 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                             attackerCacheOutdated = true;
                         else defenderCacheOutdated = true;
                     };
+
+                var sgo = new SpawnedGameObject(side, managedGameObj, spawnAt.node);
                 
-                // set reference to GameplayManager for any behaviours that may require it.
-                var gm = FindObjectsOfType<GameplayManager>().First(_ => _.side == side);
-                if (gm) foreach (var tree in instance.GetComponents<BehaviorTree>())
+                SpawnedGameObjects.Add(sgo);
+                return sgo;
+            }
+            else throw new NullReferenceException("No spawn points found for type " + nameof(spawnType));
+        }
+
+        private IManagedGameObject InitializeSoldier(Side side, GameObject instance, SpawnPoint spawnAt)
+        {
+            var navigation = instance.GetComponent<AdvancedNavigation>();
+
+            // either get health component or get/add a generic managed mono behaviour if no health component is present.
+            // health components by default expose logic to auto-destruct on death so we can use this here if available.
+            IManagedGameObject managedGameObj = instance.GetComponent<HealthComponent>() as IManagedGameObject ??
+                                                instance.GetOrElseAddComponent<ManagedMonoBehaviour>();
+            instance.SetLayerRecursively(LayerMask.NameToLayer(SpawnLayer));
+
+            // set reference to GameplayManager for any behaviours that may require it.
+            var gm = FindObjectsOfType<GameplayManager>().First(_ => _.side == side);
+            if (gm)
+                foreach (var tree in instance.GetComponents<BehaviorTree>())
                 {
                     var gmVariable = tree.GetVariable("GameplayManager");
                     if (gmVariable != null) gmVariable.SetValue(gm.gameObject);
                 }
-                else Debug.LogError($"No GameplayManager for side {side} found. Behaviour trees that require this reference may encounter errors.");
-                
-                if (navigation == null)
-                    throw new NullReferenceException(
-                        "Spawned game objects must have an AdvancedNavigation component attached.");
+            else
+                Debug.LogError(
+                    $"No GameplayManager for side {side} found. Behaviour trees that require this reference may encounter errors.");
 
-                // run with small delay so the thing has time to think
-                navigation.RunAsyncWithDelay(1f, () => navigation.FollowWaypoint(spawnAt.node));
-                
-                SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj, spawnAt.node));
-            }
-            else throw new NullReferenceException("No spawn points found for type " + nameof(spawnType));
+            if (navigation == null)
+                throw new NullReferenceException(
+                    "Spawned game objects must have an AdvancedNavigation component attached.");
+
+            // run with small delay so the thing has time to think
+            navigation.RunAsyncWithDelay(1f, () => navigation.FollowWaypoint(spawnAt.node));
+            return managedGameObj;
         }
 
         public void Start()
@@ -391,6 +412,19 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         }
     }
 
+    public static class UnitManagerHelpers
+    {
+        public static UnitManager.Side GetOpposing(this UnitManager.Side side)
+        {
+            return UnitManager.GetOpposing(side);
+        }
+        
+        public static UnitManager.Side Opposite(this UnitManager.Side side)
+        {
+            return side.GetOpposing();
+        }
+    }
+    
     public interface IManagedGameObject
     {
         public GameObject gameObject { get; }
