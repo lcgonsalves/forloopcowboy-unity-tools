@@ -14,6 +14,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
     /// previewing, and blasts any objects that are within the user's grasp
     /// when executing, dropping on the floor whatever other items
     /// that were not within the grasp.
+    ///
+    /// this spell relies a lot on the prefab,
+    /// which needs to have its core collider in a different layer
+    /// than the rest of the object such that the preview renders in the
+    /// correct layer first person overlay, but that its collisions are
+    /// on the Player layer so they avoid being hit by our own projectiles
+    /// but also the physics of the core still works in attracting bullets.
     /// </summary>
     [CreateAssetMenu(fileName = "Psychokinesis Spell", menuName = "Spells/Psychokinesis", order = 0)]
     public class PsychokinesisSpell : Spell
@@ -29,6 +36,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         
         [TabGroup("Psychokinesis"), Tooltip("The range of the spell is defined in the targeting settings.")] 
         public Force.Settings forceSettings;
+        
 
         /// <summary>
         /// Hand preview must know which spell it refers to, so it has access to the settings.

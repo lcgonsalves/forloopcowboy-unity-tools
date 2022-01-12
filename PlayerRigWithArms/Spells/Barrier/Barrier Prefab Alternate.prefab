@@ -8293,16 +8293,28 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3a38670b3f9a35141916b59480734b02, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 28.198257
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a38670b3f9a35141916b59480734b02, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 51.080578
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a38670b3f9a35141916b59480734b02, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 51.080578
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a38670b3f9a35141916b59480734b02, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 5.6132e-10
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3a38670b3f9a35141916b59480734b02, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.0000000011226
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3a38670b3f9a35141916b59480734b02, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.0090187
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3a38670b3f9a35141916b59480734b02, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8467,7 +8479,7 @@ MonoBehaviour:
     source: 0
     suffix: Fragments_2
   showCenter: 0
-  centerPosition: {x: 0.00033397228, y: 1.6483453e-11, z: 0}
+  centerPosition: {x: 0, y: 0, z: 0}
   centerDirection: {x: 0, y: 0, z: 0, w: 1}
   transForm: {fileID: 4790116433491191732}
   meshFilter: {fileID: 8491029196671281169}

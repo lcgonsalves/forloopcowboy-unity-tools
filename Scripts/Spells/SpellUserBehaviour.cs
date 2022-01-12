@@ -173,11 +173,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 Side<ArmComponent> selectedArm;
 
                 if (holdToSelectLeftAction.action.ReadValueAsObject() != null)
-                {
                     selectedArm = arms.l;
-                }
                 else selectedArm = arms.r;
 
+                if (selectedArm == null) throw new NullReferenceException("Attempted to select a null arm.");
+                
                 Spell aspell = activeSpell.Get(selectedArm);
                 ArmComponent.ChargeStyles cs = aspell.chargeStyle;
                 bool wasHolding = selectedArm.content.IsHolding(cs);
@@ -204,12 +204,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                     activeSpell.r = new Right<Spell>(spells[selectedSpellIndex]);
                 }
 
+                // always reset hold ready status immediately when switching spells
+                selectedArm.content.holdReady = false;
+                
                 // automatically begin holding the selected spell
                 if (wasHolding)
                 {
 
-                    selectedArm.content.holdReady = false;
-                    
                     this.RunAsyncWithDelay(0.08f, () => {
                         Spell newSpell = activeSpell.Get(selectedArm);
                         selectedArm.content.SetHolder(newSpell.chargeStyle, true);
@@ -285,7 +286,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 GameObject previewInstance = GameObject.Instantiate(fx, transform.position, transform.rotation);
 
                 previewInstance.name = $"{key} {fx.name}";
-                previewInstance.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
+                previewInstance.gameObject.layer = LayerMask.NameToLayer("FirstPersonObjects");
                 previewInstance.gameObject.SetActive(false);
 
                 return previewInstance;

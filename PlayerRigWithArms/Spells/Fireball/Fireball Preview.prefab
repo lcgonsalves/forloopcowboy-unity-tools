@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4005969787237348}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Fireball Preview
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,7 +42,7 @@ GameObject:
   - component: {fileID: 8013104743841428583}
   - component: {fileID: 9169094342350677677}
   - component: {fileID: 4503602536170012766}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Fireball Preview
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4946,7 +4946,7 @@ GameObject:
   - component: {fileID: 3072776641871487908}
   - component: {fileID: 6670354518467011418}
   - component: {fileID: 6962248947707948083}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: FireLinger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9847,7 +9847,7 @@ GameObject:
   - component: {fileID: 6049963911635174543}
   - component: {fileID: 3600790295601068566}
   - component: {fileID: 5954085008502364387}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Smoke
   m_TagString: Untagged
   m_Icon: {fileID: 0}

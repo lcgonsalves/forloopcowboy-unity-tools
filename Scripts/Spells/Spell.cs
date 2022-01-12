@@ -106,8 +106,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             } else NoParticleInstantiatedWarning(caster);
         }
 
-        protected void UpdateEffect(GameObject fx, Vector3 position, Quaternion rotation, string layerName, bool applyScale = true)
-        {
+        protected void UpdateEffect(
+            GameObject fx,
+            Vector3 position, 
+            Quaternion rotation,
+            [CanBeNull] string layerName = null,
+            bool applyScale = true
+        ) {
             if (fx == null) return;
             
             if (!fx.gameObject.activeInHierarchy)
@@ -120,10 +125,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             
             fxTr.position = position;
             fxTr.rotation = rotation;
-            
-            var fxLayer = LayerMask.NameToLayer(layerName);
-            if (fx.layer != fxLayer)
-                fx.SetLayerRecursively(fxLayer);
+
+            if (layerName != null)
+            {
+                var fxLayer = LayerMask.NameToLayer(layerName);
+                if (fx.layer != fxLayer)
+                    fx.SetLayerRecursively(fxLayer);
+            }
             
             if (applyScale && fxTr.childCount > 0)
                 fxTr.GetChild(0).localScale = previewScale * Vector3.one;

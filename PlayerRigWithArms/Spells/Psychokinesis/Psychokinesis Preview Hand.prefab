@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4125846685030920}
   - component: {fileID: 6540814928097447551}
   - component: {fileID: 7356945112368483615}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Psychokinesis Preview Hand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +97,7 @@ GameObject:
   - component: {fileID: 9110910891787053544}
   - component: {fileID: 1547454253191809075}
   - component: {fileID: 3931226191975141748}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Glow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4971,7 +4971,7 @@ GameObject:
   - component: {fileID: 2248713237659519855}
   - component: {fileID: 7523075167094966431}
   - component: {fileID: 6811217562058299269}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Ring
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9854,7 +9854,7 @@ GameObject:
   - component: {fileID: 1885960001929873148}
   - component: {fileID: 5309306137768533484}
   - component: {fileID: 1233923815632778261}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Sparks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14755,7 +14755,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5625299868296139102}
   - component: {fileID: 8193091786993522722}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: CoreCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14787,7 +14787,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.25
+  m_Radius: 0.15
   m_Center: {x: 0, y: 0, z: 0.5}
 --- !u!1 &5161509762237353254
 GameObject:
@@ -14800,7 +14800,7 @@ GameObject:
   - component: {fileID: 7488046658449910452}
   - component: {fileID: 9220977503057259402}
   - component: {fileID: 1681154655623512468}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Ring3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19683,7 +19683,7 @@ GameObject:
   - component: {fileID: 6287290337922612814}
   - component: {fileID: 1283617580960837640}
   - component: {fileID: 4902125493973066474}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Psychokinesis Preview Hand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24572,7 +24572,7 @@ GameObject:
   - component: {fileID: 5555629508533708419}
   - component: {fileID: 8332252775681792640}
   - component: {fileID: 6386873301154541188}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Ring2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29455,7 +29455,7 @@ GameObject:
   - component: {fileID: 2566205320913904466}
   - component: {fileID: 3153749360741127237}
   - component: {fileID: 5854315635737140363}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: SquareGlow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
