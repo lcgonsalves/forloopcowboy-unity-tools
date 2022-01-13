@@ -84,6 +84,25 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private bool attackerCacheOutdated = true;
         private bool defenderCacheOutdated = true;
 
+        
+        public void Start()
+        {
+            // start garbage collection:
+            // coroutine that periodically checks if game objects are ready to 
+            // get fucking yeeted
+            StartCoroutine(GarbageCollection());
+            CacheCurrentSpawnPoints();
+        }
+        
+        public void CacheCurrentSpawnPoints()
+        {
+            foreach (var waypoint in FindObjectsOfType<WaypointNode>())
+            {
+                // todo: handle different spawn types
+                AddSpawnPoint(waypoint.settings.side, SpawnType.Grounded, waypoint);
+            }
+        }
+        
         public void AddSpawnPoint(Side side, SpawnType type, WaypointNode node)
         {
             switch (side)
@@ -214,7 +233,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private SpawnedGameObject Spawn(Side side, GameObject obj, bool instantiateNew, SpawnType spawnType, List<SpawnPoint> spawnPoints)
         {
-            var spawnAt = spawnPoints.Find(_ => _.type == spawnType);
+            var spawnAt = spawnPoints.Find(_ => _.node != null && _.type == spawnType);
             if (spawnAt != null)
             {
                 var t = spawnAt.node.transform;
@@ -274,14 +293,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             // run with small delay so the thing has time to think
             navigation.RunAsyncWithDelay(1f, () => navigation.FollowWaypoint(spawnAt.node));
             return managedGameObj;
-        }
-
-        public void Start()
-        {
-            // start garbage collection:
-            // coroutine that periodically checks if game objects are ready to 
-            // get fucking yeeted
-            StartCoroutine(GarbageCollection());
         }
 
         [SerializeField] private float garbageCollectionInterval = 5f;

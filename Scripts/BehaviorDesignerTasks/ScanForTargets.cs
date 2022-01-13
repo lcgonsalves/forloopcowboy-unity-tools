@@ -45,7 +45,7 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
             
             Transform target = null;
 
-            if (ragdoll) target = ragdoll.neck;
+            if (ragdoll) target = (Transform) ragdoll.neck;
             else if (closestTarget != null) target = closestTarget.transform; 
 
             if (nearestLivingTarget.Value != null && (target == null || nearestLivingTarget.Value.GetInstanceID() != target.GetInstanceID()))

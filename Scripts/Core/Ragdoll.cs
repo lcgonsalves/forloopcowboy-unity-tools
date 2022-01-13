@@ -10,10 +10,12 @@ namespace forloopcowboy_unity_tools.Scripts.Core
     {
         public Rigidbody[] limbs;
         public Animator animator;
-
-        public Transform neck;
-
-        public Tuple<Transform, Transform> hands = new Tuple<Transform, Transform>(null, null);
+        
+        public Cache<Transform> neck;
+        public Cache<Transform> head;
+        public Cache<Transform> chest;
+        public Cache<Transform> handL;
+        public Cache<Transform> handR;
 
         public bool IsRagdolling { get; private set; } = false;
         
@@ -22,35 +24,32 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             // find all rigid bodies in children
             limbs = GetComponentsInChildren<Rigidbody>();
             
-            // make them kinematic
+            InitializeKeyLimbCache();
             InitializeLimbs();
-
-            if (neck == null)
-            {
-                neck = transform.FindRecursively(_ => _.name == "Neck");
-            }
-            
-            if (hands.Left == null) hands.Set(new Left<Transform>(transform.FindRecursively(_ => _.name == "Hand_L")));
-            if (hands.Right == null) hands.Set(new Right<Transform>(transform.FindRecursively(_ => _.name == "Hand_R")));
 
             if (!animator) animator = GetComponent<Animator>();
 
         }
 
+        public void InitializeKeyLimbCache()
+        {
+            // Locate some key limbs (don't search from rigid body list because they might not have rbs)
+            if (neck == null) neck = new Cache<Transform>(() => transform.FindRecursively(_ => _.name == "Neck"));
+            if (head == null) head = new Cache<Transform>(() => transform.FindRecursively(_ => _.name == "Head"));
+            if (chest == null) chest = new Cache<Transform>(() => transform.FindRecursively(_ => _.name == "Spine_02"));
+            if (handL == null) handL = new Cache<Transform>(() => transform.FindRecursively(_ => _.name == "Hand_L"));
+            if (handR == null) handR = new Cache<Transform>(() => transform.FindRecursively(_ => _.name == "Hand_R"));
+        }
+        
         [Button]
         private void InitializeLimbs()
         {
+
             foreach (var limb in limbs)
             {
                 limb.isKinematic = true;
                 var l = limb.gameObject.GetOrElseAddComponent<Limb>();
                 l.master = this;
-                
-                // // Start with collider disabled to avoid any weird physics behavior while not in ragdoll
-                // if (limb.TryGetComponent(out Collider c))
-                // {
-                //     c.enabled = false;
-                // }
             }
         }
 

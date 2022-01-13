@@ -9,7 +9,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         [Header("Tweaks")] 
         public Transform lookAt;
         public Vector3 offset;
-        [Tooltip("Hello")] public Canvas canvas;
+        public Canvas canvas;
 
         // //
 
@@ -18,7 +18,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         
         private void Start()
         {
-            cam = Camera.main;
+            cam = canvas.worldCamera ?? Camera.main;
             rt = GetComponent<RectTransform>();
         }
 

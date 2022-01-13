@@ -30,10 +30,16 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             set
             {
                 var clampedValue = Mathf.Clamp(value, 0, MaxHealth);
-                if (clampedValue < health) OnOnDamage(health - clampedValue);
+                var previousHealth = health;
                 
+                // set now so event is called with the health updated
                 health = clampedValue;
-                if (health == 0)
+                
+                // can only be a damage event if player is not dead
+                if (previousHealth > 0) OnOnDamage(previousHealth - clampedValue);
+                
+                // only death event if dead AND WAS NOT DEAD BEFORE
+                if (health == 0 && health < previousHealth)
                 {
                     // if for some reason the character wakes up already dead, this will never trigger the destruction
                     // signal to the unit manager.
