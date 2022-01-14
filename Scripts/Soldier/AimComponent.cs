@@ -124,7 +124,10 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                             state.Snapshot()
                         );
                     },
-                    finishState => AimTowardsTarget(target.position, bodyTransform.position)
+                    finishState =>
+                    {
+                        if (target) AimTowardsTarget(target.position, bodyTransform.position);
+                    }
                 );
             }
             else AimTowardsTarget(target.position, bodyTransform.position);

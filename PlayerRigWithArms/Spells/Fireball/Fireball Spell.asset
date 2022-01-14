@@ -40,7 +40,7 @@ MonoBehaviour:
   debugMode: 0
   bullet: {fileID: 11400000, guid: 92031935011981a49aaf063efccc5e8d, type: 2}
   handBackTransition: {fileID: 11400000, guid: d92806395eb19c84592faf825cdf982d, type: 2}
-  enableHoverBulletPreview: 1
+  enableHoverBulletPreview: 0
   bulletUsesGravity: 1
   throwAngle: 5
   previewBulletRotation: 0

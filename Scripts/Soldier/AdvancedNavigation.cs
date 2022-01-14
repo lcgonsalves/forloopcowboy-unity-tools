@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BehaviorDesigner.Runtime.Tasks.Unity.UnityCharacterController;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Environment;
 using JetBrains.Annotations;
@@ -28,7 +29,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         [SerializeField, ReadOnly] private WaypointNode _lastWaypointPathStart = null;
         [SerializeField, ReadOnly] private List<WaypointNode> _lastWaypointPath = new List<WaypointNode>(15);
 
-        public NavMeshAgent NavMeshAgent => _navMeshAgent;
+        public NavMeshAgent NavMeshAgent => _navMeshAgent ? _navMeshAgent : GetComponent<NavMeshAgent>();
         
         /// <summary>
         /// Points to the last visited <c>WaypointNode</c>, or null if no
@@ -162,23 +163,43 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             GetNearbyWaypointNodes(maxDistance, maxDistance, 5);
 
         
+        public bool MoveToTransform(Transform destination, float speed, float angularSpeed)
+        {
+            if (
+                destination == null ||
+                !destination.hasChanged && _navMeshAgent.velocity.magnitude < 0.001f
+            ) return false;
+
+            return MoveTo(destination.position, speed, angularSpeed, out var _);
+        }
+        
         public bool MoveTo(Vector3 destination, float speed, float angularSpeed, out NavMeshPath path)
         {
             path = new NavMeshPath();
             
             // make sure character is actually on navmesh before moving
-            if (!_navMeshAgent.isOnNavMesh && NavMesh.SamplePosition(transform.position, out var hit, 1f, -1))
+            if (!NavMeshAgent.isOnNavMesh && NavMesh.SamplePosition(transform.position, out var hit, 1f, -1))
             {
-                _navMeshAgent.Warp(hit.position);
+                NavMeshAgent.Warp(
+                    new Vector3(
+                        hit.position.x,
+                        hit.position.y + 0.02f,
+                        hit.position.z
+                    )
+                );
             }
             
-            bool destinationIsAccessible = _navMeshAgent != null && _navMeshAgent.isOnNavMesh && _navMeshAgent.CalculatePath(destination, path);
+            bool destinationIsAccessible = 
+                NavMeshAgent != null && 
+                NavMeshAgent.isOnNavMesh &&
+                NavMesh.SamplePosition(destination, out var destinationOnNavMesh, 1f, -1) &&
+                NavMeshAgent.CalculatePath(destinationOnNavMesh.position, path);
 
             if (destinationIsAccessible)
             {
-                _navMeshAgent.speed = Mathf.Clamp(speed, 0f, maxSpeed);
-                _navMeshAgent.angularSpeed = Mathf.Clamp(angularSpeed, 0f, maxAngularSpeed);
-                _navMeshAgent.SetPath(path);
+                NavMeshAgent.speed = Mathf.Clamp(speed, 0f, maxSpeed);
+                NavMeshAgent.angularSpeed = Mathf.Clamp(angularSpeed, 0f, maxAngularSpeed);
+                NavMeshAgent.SetPath(path);
             }
 
             return destinationIsAccessible;
