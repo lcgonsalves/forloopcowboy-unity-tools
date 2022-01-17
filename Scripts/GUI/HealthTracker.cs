@@ -51,23 +51,31 @@ public class HealthTracker : MonoBehaviour
 
     public void UpdateValues(HealthComponent healthComponent)
     {
-        GetOrCreateHealthBar(healthComponent, progressBar => UpdateProgressbarFromHealthComponent(healthComponent, progressBar));
+        GetOrCreateHealthBar(healthComponent, (progressBar, _) => UpdateProgressbarFromHealthComponent(healthComponent, progressBar));
     }
     
-    private void GetOrCreateHealthBar(HealthComponent healthComponent, Action<ProgressBar> update)
+    /// <summary>
+    /// Gets or creates healthbar.
+    /// </summary>
+    /// <param name="healthComponent"></param>
+    /// <param name="update">Update closure to be done to the progress bar. First param is the progress bar game object component, second is true if the progress bar is a fresh instance.</param>
+    private void GetOrCreateHealthBar(HealthComponent healthComponent, Action<ProgressBar, bool> update)
     {
         var id = healthComponent.gameObject.GetInstanceID();
+        bool isNewInstance = false;
+        
         if (healthComponent.IsAlive)
         {
             if (!progressBars.ContainsKey(id))
             {
                 progressBars.Add(id, Instantiate(progressBarPrefab, transform));
+                isNewInstance = true;
             }
 
             // update position to follow above head.
             if (progressBars.TryGetValue(id, out var progressBar))
             {
-                update(progressBar);
+                update(progressBar, isNewInstance);
             }
         }
         else if (progressBars.ContainsKey(id)) // && component is dead
@@ -75,7 +83,7 @@ public class HealthTracker : MonoBehaviour
 
             if (progressBars.TryGetValue(id, out var progressBar))
             {
-                update(progressBar);
+                update(progressBar, false); // expression is always false
                 Destroy(progressBar.gameObject, 5f);
             }
 
@@ -85,32 +93,15 @@ public class HealthTracker : MonoBehaviour
     
     private void UpdateAndTrack(HealthComponent healthComponent, Transform lookAt)
     {
-        var id = healthComponent.gameObject.GetInstanceID();
-        if (healthComponent.IsAlive)
-        {
-            if (!progressBars.ContainsKey(id))
+        GetOrCreateHealthBar(
+            healthComponent,
+            (progressBar, isNewInstance) =>
             {
-                progressBars.Add(id, Instantiate(progressBarPrefab, transform));
-            }
-
-            // update position to follow above head.
-            if (progressBars.TryGetValue(id, out var progressBar))
-            {
+                // only needs to be done once
+                if (isNewInstance) TrackPosition(lookAt, progressBar);
                 UpdateProgressbarFromHealthComponent(healthComponent, progressBar);
-                TrackPosition(lookAt, progressBar);
             }
-        }
-        else if (progressBars.ContainsKey(id)) // && component is dead
-        {
-            if (progressBars.TryGetValue(id, out var progressBar))
-            {
-                UpdateProgressbarFromHealthComponent(healthComponent, progressBar);
-                TrackPosition(lookAt, progressBar);
-                Destroy(progressBar.gameObject, 5f);
-            }
-
-            progressBars.Remove(id);
-        }
+        );
     }
 
     private void TrackPosition(Transform lookAt, ProgressBar progressBar)

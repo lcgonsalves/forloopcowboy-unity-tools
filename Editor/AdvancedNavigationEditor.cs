@@ -123,6 +123,11 @@ namespace forloopcowboy_unity_tools.Editor
 
             EditorGUILayout.BeginHorizontal();
             
+            if (GUILayout.Button("Simple Move"))
+            {
+                navigation.MoveToTransform(forcedTarget.transform, speed, 120f);
+            }
+            
             if (GUILayout.Button("Apply"))
             {
                 FollowWaypointAndDisplayNotification();

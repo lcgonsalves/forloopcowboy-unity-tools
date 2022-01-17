@@ -195,7 +195,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public void SpawnRandomSoldier()
         {
             // just find a random waypoint and place them there.
-            var allNodes = FindObjectsOfType<WaypointNode>();
+            var allNodes = UnitManager.GetSpawnPointsFor(side).ToArray();
 
             if (allNodes.Length == 0)
             {

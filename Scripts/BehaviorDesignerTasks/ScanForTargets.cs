@@ -50,13 +50,13 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
             if (ragdoll) target = (Transform) ragdoll.neck;
             else if (closestTarget != null) target = closestTarget.transform; 
 
-            if (nearestLivingTarget.Value != null && (target == null || nearestLivingTarget.Value.GetInstanceID() != target.GetInstanceID()))
+            if (nearestLivingTarget?.Value != null && (target == null || nearestLivingTarget.Value.GetInstanceID() != target.GetInstanceID()))
                 gm.StopTargeting(nearestLivingTarget.Value.gameObject);
 
             if (target != null) 
                 gm.Target(target.gameObject);
             
-            nearestLivingTarget.SetValue(target);
+            nearestLivingTarget?.SetValue(target);
             distanceToTarget.SetValue(target != null ? Vector3.Distance(self.Value.transform.position, target.position) : float.PositiveInfinity);
 
             if (closestTarget != null) return TaskStatus.Success;

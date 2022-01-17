@@ -84,6 +84,20 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private bool attackerCacheOutdated = true;
         private bool defenderCacheOutdated = true;
 
+        public IEnumerable<WaypointNode> GetSpawnPointsFor(Side side)
+        {
+            // fixme: change this when we use a single spawn point list
+            
+            switch (side)
+            {
+                case Side.Attacker:
+                    return attackerSpawnPoints.Where(_ => _.node != null).Select(_ => _.node);
+                case Side.Defender:
+                    return defenderSpawnPoints.Where(_ => _.node != null).Select(_ => _.node);
+                default:
+                    return Array.Empty<WaypointNode>();
+            }
+        }
         
         public void Start()
         {
@@ -96,6 +110,11 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         
         public void CacheCurrentSpawnPoints()
         {
+            // TODO: when redesign is done, encode list of waypoint nodes as a set, and then build the list of "SpawnPoints" from it.
+            // for now, just clear
+            attackerSpawnPoints.Clear();
+            defenderSpawnPoints.Clear();
+            
             foreach (var waypoint in FindObjectsOfType<WaypointNode>())
             {
                 // todo: handle different spawn types

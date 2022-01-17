@@ -163,56 +163,37 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             GetNearbyWaypointNodes(maxDistance, maxDistance, 5);
 
         
-        public bool MoveToTransform(Transform destination, float speed, float angularSpeed)
+        public void MoveToTransform(Transform destination, float speed, float angularSpeed)
         {
             if (
                 destination == null ||
                 !destination.hasChanged && _navMeshAgent.velocity.magnitude < 0.001f
-            ) return false;
+            ) return;
 
-            return MoveTo(destination.position, speed, angularSpeed, out var _);
+            MoveTo(destination.position, speed, angularSpeed);
         }
-        
-        public bool MoveTo(Vector3 destination, float speed, float angularSpeed, out NavMeshPath path)
+
+        public void MoveTo(Vector3 destination, float speed, float angularSpeed)
         {
-            path = new NavMeshPath();
-            
-            // make sure character is actually on navmesh before moving
-            if (!NavMeshAgent.isOnNavMesh && NavMesh.SamplePosition(transform.position, out var hit, 1f, -1))
+            // place on navmesh to be sure
+            if (NavMeshAgent.isOnNavMesh)
             {
-                NavMeshAgent.Warp(
-                    new Vector3(
-                        hit.position.x,
-                        hit.position.y + 0.02f,
-                        hit.position.z
-                    )
-                );
+                NavMeshAgent.speed = speed;
+                NavMeshAgent.angularSpeed = angularSpeed;
+                NavMeshAgent.destination = destination;
             }
+            else Debug.Log($"{name} not on navmesh! Fuck!!");
             
-            bool destinationIsAccessible = 
-                NavMeshAgent != null && 
-                NavMeshAgent.isOnNavMesh &&
-                NavMesh.SamplePosition(destination, out var destinationOnNavMesh, 1f, -1) &&
-                NavMeshAgent.CalculatePath(destinationOnNavMesh.position, path);
-
-            if (destinationIsAccessible)
-            {
-                NavMeshAgent.speed = Mathf.Clamp(speed, 0f, maxSpeed);
-                NavMeshAgent.angularSpeed = Mathf.Clamp(angularSpeed, 0f, maxAngularSpeed);
-                NavMeshAgent.SetPath(path);
-            }
-
-            return destinationIsAccessible;
         }
 
-        public bool MoveTo(Vector3 destination, float speed)
+        public void MoveTo(Vector3 destination, float speed)
         {
-            return MoveTo(destination, speed, maxAngularSpeed, out _);
+            MoveTo(destination, speed, maxAngularSpeed);
         }
 
-        public bool MoveTo(Vector3 destination)
+        public void MoveTo(Vector3 destination)
         {
-            return MoveTo(destination, maxSpeed);
+            MoveTo(destination, maxSpeed);
         }
 
         private Coroutine waypointChecker = null;
