@@ -9,7 +9,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
     
     [RequireComponent(typeof(Rigidbody))]
-    public class BulletController : MonoBehaviour
+    public class BulletController : MonoBehaviour, IDamageProvider
     {
         public Bullet Settings;
 
@@ -111,5 +111,9 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             gameObject.SetActive(false);
         }
 
+        public int GetDamageAmount()
+        {
+            return Settings != null ? Settings.GetDamageAmount() : 0;
+        }
     }
 }

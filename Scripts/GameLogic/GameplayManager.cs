@@ -176,7 +176,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var playerComponent = obj.gameObject.GetOrElseAddComponent<PlayerComponent>();
             var playerHealth = playerComponent.healthComponent;
 
-            playerHealth.onDamage += dmg => HealthTracker.UpdatePlayerProgressBar(playerHealth);
+            playerHealth.onDamage += (dmg, _) => HealthTracker.UpdatePlayerProgressBar(playerHealth);
             playerHealth.onDeath += () => HealthTracker.UpdatePlayerProgressBar(playerHealth);
             
             playerComponent.side = obj.side;
@@ -208,7 +208,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var soldier = GetNewRandomSoldier(randomNode.transform);
             
             HealthTracker.UpdateAndTrackProgressbar(soldier.health, soldier.ragdoll.neck.Get);
-            soldier.health.onDamage += dmg => HealthTracker.UpdateProgressbar(soldier.health);
+            soldier.health.onDamage += (dmg, _) => HealthTracker.UpdateProgressbar(soldier.health);
             soldier.health.onDeath += () => HealthTracker.UpdateProgressbar(soldier.health);
         }
         

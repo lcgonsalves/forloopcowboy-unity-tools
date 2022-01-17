@@ -3,7 +3,7 @@ using UnityEngine;
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
     /// Damage providers are tagged with "IDamaging" in the game
-    public class SimpleDamageProvider : MonoBehaviour, IDamaging
+    public class SimpleDamageProvider : MonoBehaviour, IDamageProvider
     {
         public int max = 2;
         public int min = 1;

@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
     [CreateAssetMenu]
-    public class Bullet : ScriptableObject, IDamaging
+    public class Bullet : ScriptableObject, IDamageProvider
     {
         public GameObject prefab;
 

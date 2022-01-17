@@ -106,6 +106,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             // get fucking yeeted
             StartCoroutine(GarbageCollection());
             CacheCurrentSpawnPoints();
+            
         }
         
         public void CacheCurrentSpawnPoints()
