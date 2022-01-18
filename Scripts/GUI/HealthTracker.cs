@@ -13,6 +13,11 @@ public class HealthTracker : MonoBehaviour
     public GameplayManager unitManager;
     public ProgressBar progressBarPrefab;
 
+    private void Awake()
+    {
+        GetComponent<Canvas>().worldCamera = Camera.main;
+    }
+
     private void Start()
     {
         if (unitManager == null)

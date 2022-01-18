@@ -18,7 +18,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         
         private void Start()
         {
-            cam = canvas.worldCamera ?? Camera.main;
+            cam = canvas.worldCamera ? canvas.worldCamera : Camera.main;
             rt = GetComponent<RectTransform>();
         }
 
@@ -26,7 +26,13 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         {
             if (!lookAt) return;
 
-            // fuck you unity and your black magic to perform such a basic op using a built in system
+            var cameraTransform = cam.transform;
+            
+            var heading = lookAt.position - cameraTransform.position;
+            bool isBehindCamera = Vector3.Dot(heading, cameraTransform.forward) < 0;
+
+            if (isBehindCamera) return;
+            
             Vector2 adjustedPosition = cam.WorldToScreenPoint(lookAt.position) + offset;
 
             var canvasRT = canvas.GetComponent<RectTransform>();
