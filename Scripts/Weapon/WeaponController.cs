@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
+using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using JetBrains.Annotations;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Weapon
 {
-    [RequireComponent(typeof(BulletSystem), typeof(ReloadSystem)), SelectionBase]
+    [RequireComponent(typeof(ReloadSystem)), SelectionBase]
     public class WeaponController : MonoBehaviour
     {
         public Weapon weaponSettings;
@@ -57,7 +58,6 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
         public event Action onMagazineEmpty;
 
-        private BulletSystem _bulletSystem;
         private WaitForSeconds _fireRateWFS;
 
         private GameObject _weaponUser;
@@ -78,10 +78,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         
             // begin burst managment coroutine
             _burstCoroutine = StartCoroutine(BurstCoroutine());
-            
-            // cache bullet system
-            _bulletSystem = GetComponent<BulletSystem>();
-            
+
             // memory optimization
             _fireRateWFS = new WaitForSeconds(60f / weaponSettings.bulletsPerMinute);
 
@@ -114,7 +111,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
                         Debug.DrawRay(muzzlePosition, muzzleDirection);
                     }
                     
-                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzlePosition, muzzleDirection, _weaponUser);
+                    BulletSystem.SpawnAndFire(weaponSettings.ammo, muzzlePosition, muzzleDirection, _weaponUser);
 
                     if (weaponSettings.muzzleEffect != null)
                     {

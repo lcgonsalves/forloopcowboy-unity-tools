@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 33671062423145800}
   - component: {fileID: 23011332790633300}
   - component: {fileID: 64399669390340984}
-  - component: {fileID: 2693874450907609284}
   - component: {fileID: 7606533059131643264}
   - component: {fileID: 4883491637742274905}
   m_Layer: 0
@@ -105,21 +104,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43720360947133670, guid: c80463f84f4dec14b8f780b8c3898b85, type: 2}
---- !u!114 &2693874450907609284
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1142781627598564}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8eb75e63668b65f4e97677748c610f89, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maximum: 100
-  currentActive: 0
-  bullets: []
 --- !u!114 &7606533059131643264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -134,6 +118,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponSettings: {fileID: 11400000, guid: 9fc25e1e655d65748946f8c0c79e0af7, type: 2}
   bulletsInClip: 0
+  magazinesInInventory: 2
   currentlyFiring: 0
   shouldFire: 0
   burstSettings:
@@ -156,6 +141,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   magazine: {fileID: 1798792452758554}
+  _initialLocalPosition: {x: 0, y: 0, z: 0}
+  _initialLocalRotation: {x: 0, y: 0, z: 0, w: 0}
+  _initialParent: {fileID: 0}
 --- !u!1 &1532592066197970
 GameObject:
   m_ObjectHideFlags: 0

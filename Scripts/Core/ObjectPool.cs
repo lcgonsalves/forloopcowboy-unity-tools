@@ -9,7 +9,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
     /// <summary>
     /// Generic definition of an object pool
     /// </summary>
-    public interface IObjectPool<T> where T : class
+    public interface IObjectPool<out T> where T : class
     {
         /// <summary>
         /// Maximum number of objects in the pool that will be instantiated
@@ -27,9 +27,15 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         /// </summary>
         T GetInstance();
 
+        /// <summary>
+        /// Destroys all objects in pool.
+        /// </summary>
+        /// <returns>Number of objects cleared.</returns>
+        int Clear(float delay = 0.0f);
+
     }
 
-    public interface ISpawner<T> where T : class
+    public interface ISpawner<out T> where T : class
     {
         public T SpawnAt(Transform locationAndRotation);
         
@@ -127,7 +133,13 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             oldestActivePooledObject.lastEnabled = DateTime.Now;
             return oldestActivePooledObject.reference;
         }
-        
+
+        public virtual int Clear(float delay = 0.0f)
+        {
+            int totalObjects = pooledObjects.Count;
+            pooledObjects.Clear();
+            return totalObjects;
+        }
     }
 
     public class GameObjectPool : ObjectPool<GameObject>, ISpawner<GameObject>
@@ -145,12 +157,22 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public GameObject SpawnAt(Vector3 position, Quaternion? rotation = null)
         {
             var instance = GetInstance();
-            return UpdateInstancePositionAndRotationAndActivate(position, rotation, instance);
+            return UpdateInstancePositionAndRotationAndActivate(instance, position, rotation);
         }
-        
-        public static GameObject UpdateInstancePositionAndRotationAndActivate(Vector3 position, Quaternion? rotation,
-            GameObject instance)
+
+        public override int Clear(float delay = 0.0f)
         {
+            foreach (var pooledObject in pooledObjects)
+                Object.Destroy(pooledObject.reference, delay);
+            
+            return base.Clear(delay);
+        }
+
+        public static GameObject UpdateInstancePositionAndRotationAndActivate(
+            GameObject instance,
+            Vector3 position,
+            Quaternion? rotation = null
+        ) {
             instance.SetActive(true);
             instance.transform.position = position;
             if (rotation.HasValue) instance.transform.rotation = rotation.Value;
@@ -192,8 +214,16 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public TC SpawnAt(Vector3 position, Quaternion? rotation = null)
         {
             var instance = GetInstance();
-            GameObjectPool.UpdateInstancePositionAndRotationAndActivate(position, rotation, instance.gameObject);
+            GameObjectPool.UpdateInstancePositionAndRotationAndActivate(instance.gameObject, position, rotation);
             return instance;
+        }
+        
+        public override int Clear(float delay = 0.0f)
+        {
+            foreach (var pooledObject in pooledObjects)
+                Object.Destroy(pooledObject.reference.gameObject, delay);
+            
+            return base.Clear(delay);
         }
     }
 

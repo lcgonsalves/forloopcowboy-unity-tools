@@ -27,6 +27,10 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         public int maxDamage = 10;
         public int defaultDamage = 5;
 
+        [Header("Pooling settings")]
+        [Tooltip("Number of bullets kind that are spawned before previous bullet is recycled.")]
+        public int maximumConcurrentSpawnedBullets = 10;
+        
         [Range(0f, 1f)]
         public float bias = 0f;
 
