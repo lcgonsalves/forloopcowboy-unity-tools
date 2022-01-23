@@ -48,11 +48,6 @@ public class HealthTracker : MonoBehaviour
     {
         singletonHelper.Singleton.UpdateAndTrack(healthComponent: component, lookAt);
     }
-    
-    public static void UpdateAndTrackProgressbar(HealthComponent component)
-    {
-        singletonHelper.Singleton.UpdateAndTrack(healthComponent: component, component.transform);
-    }
 
     public void UpdateValues(HealthComponent healthComponent)
     {
@@ -113,11 +108,27 @@ public class HealthTracker : MonoBehaviour
     {
         WorldPositionFollower follower =
             progressBar.gameObject.GetOrElseAddComponent<WorldPositionFollower>();
+        
+        HideBarIfTrackedTargetIsInvisible(progressBar, follower); // Coroutine
 
         if (follower.canvas == null) 
             follower.canvas = GetComponent<Canvas>();
         
         follower.lookAt = lookAt;
+    }
+
+    private static Coroutine HideBarIfTrackedTargetIsInvisible(ProgressBar progressBar, WorldPositionFollower follower)
+    {
+        return follower.RunAsync(
+            () =>
+            {
+                if (follower.lookAtIsNotVisible) progressBar.Hide();
+                else progressBar.Show();
+            },
+            () => progressBar == null,
+            GameObjectHelpers.RoutineTypes.TimeInterval,
+            0.1f // not that often but fast enough to disappear when needed without much delay.
+        );
     }
 
     private static void UpdateProgressbarFromHealthComponent(HealthComponent healthComponent, ProgressBar progressBar)

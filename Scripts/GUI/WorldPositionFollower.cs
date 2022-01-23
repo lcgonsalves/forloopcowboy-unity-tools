@@ -16,6 +16,9 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         private Camera cam;
         private RectTransform rt;
         
+        public bool lookAtIsNotVisible => lookAt && Vector3.Dot(lookAt.position - cam.transform.position, cam.transform.forward) < 0;
+        public bool lookAtIsVisible => !lookAtIsNotVisible;
+
         private void Start()
         {
             cam = canvas.worldCamera ? canvas.worldCamera : Camera.main;
@@ -27,11 +30,8 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
             if (!lookAt) return;
 
             var cameraTransform = cam.transform;
-            
-            var heading = lookAt.position - cameraTransform.position;
-            bool isBehindCamera = Vector3.Dot(heading, cameraTransform.forward) < 0;
 
-            if (isBehindCamera) return;
+            if (lookAtIsNotVisible) return;
             
             Vector2 adjustedPosition = cam.WorldToScreenPoint(lookAt.position) + offset;
 

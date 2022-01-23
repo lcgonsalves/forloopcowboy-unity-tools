@@ -549,7 +549,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             RoutineTypes type = RoutineTypes.Update,
             float delay = 0f
         ){
-            return m.StartCoroutine(Routine(type, callback, shouldStop, delay));
+            return m.StartCoroutine(GenericCoroutineWithStopCondition(type, callback, shouldStop, delay));
         }
 
     	// Runs coroutine forever
@@ -583,8 +583,11 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             FixedUpdate
         }
 
-        private static IEnumerator Routine(RoutineTypes type, Action callback, Func<bool> stopCondition, float delay = 0f)
+        private static IEnumerator GenericCoroutineWithStopCondition(RoutineTypes type, Action callback, Func<bool> stopCondition, float delay = 0f)
         {
+            var wfs = new WaitForSeconds(delay);
+            var wffu = new WaitForFixedUpdate();
+            
             while(stopCondition() == false)
             {
                 callback();
@@ -592,7 +595,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 switch(type)
                 {
                     case RoutineTypes.TimeInterval:
-                        yield return new WaitForSeconds(delay);
+                        yield return wfs;
                         break;
 
                     case RoutineTypes.Update:
@@ -600,7 +603,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                         break;
 
                     case RoutineTypes.FixedUpdate:
-                        yield return new WaitForFixedUpdate();
+                        yield return wffu;
                         break;
                 }
             }
