@@ -207,9 +207,10 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 !destination.hasChanged && _navMeshAgent.velocity.magnitude < 0.001f
             ) return;
             
-            state = new NavigationState(destination, speed, () => { });
+            var correctedSpeed = Mathf.Clamp(speed, 0f, maxSpeed);
+            state = new NavigationState(destination, correctedSpeed, () => { });
             
-            MoveTo(destination.position, speed, angularSpeed);
+            MoveTo(destination.position, correctedSpeed, angularSpeed);
         }
 
         public void MoveTo(Vector3 destination, float speed, float angularSpeed)
@@ -217,7 +218,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
             if (NavMeshAgent.isOnNavMesh)
             {
-                NavMeshAgent.speed = speed;
+                NavMeshAgent.speed = Mathf.Clamp(speed, 0f, maxSpeed);;
                 NavMeshAgent.angularSpeed = angularSpeed;
                 NavMeshAgent.destination = destination;
             }
