@@ -31,6 +31,35 @@ public class HealthTracker : MonoBehaviour
 
     public static SingletonHelper<HealthTracker> singletonHelper = new SingletonHelper<HealthTracker>();
 
+    /// <summary>
+    /// Updates heath bar on damage and death.
+    /// </summary>
+    public static void AssociateReactiveUpdate(HealthComponent healthComponent, bool isPlayer = false)
+    {
+        void DoUpdate() {
+            if (isPlayer)
+                UpdatePlayerProgressBar(healthComponent);
+            else
+                UpdateProgressbar(healthComponent);
+        }
+
+        healthComponent.onDamage += (dmg, _) => DoUpdate();
+        healthComponent.onDeath += DoUpdate;
+
+        // initialize it
+        DoUpdate();
+    }
+
+    /// <summary>
+    /// Updates heath bar on damage and death, and follows it's position.
+    /// </summary>
+    public static void AssociateReactiveUpdateAndTrack(HealthComponent healthComponent, Transform lookAt)
+    {
+        UpdateAndTrackProgressbar(healthComponent, lookAt);
+        AssociateReactiveUpdate(healthComponent);
+    }
+    
+    
     public static void UpdatePlayerProgressBar(HealthComponent playerHealthComponent)
     {
         var ppb = singletonHelper.Singleton.playerProgressBar;

@@ -54,7 +54,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             }
         }
 
-        private void Start()
+        private void Awake()
         {
             SetMaxHealth(MaxHealth);
             AttachOnDeathListeners();

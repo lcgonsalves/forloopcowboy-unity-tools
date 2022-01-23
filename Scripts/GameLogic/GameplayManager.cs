@@ -174,10 +174,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var obj = UnitManager.SpawnCopy(side, players[index].gameObject);
             var vcam = virtualCamera[index];
             var playerComponent = obj.gameObject.GetOrElseAddComponent<PlayerComponent>();
-            var playerHealth = playerComponent.healthComponent;
 
-            playerHealth.onDamage += (dmg, _) => HealthTracker.UpdatePlayerProgressBar(playerHealth);
-            playerHealth.onDeath += () => HealthTracker.UpdatePlayerProgressBar(playerHealth);
+            HealthTracker.AssociateReactiveUpdate(playerComponent.healthComponent, true);
             
             playerComponent.side = obj.side;
 
@@ -207,9 +205,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
             var soldier = GetNewRandomSoldier(randomNode.transform);
             
-            HealthTracker.UpdateAndTrackProgressbar(soldier.health, soldier.ragdoll.neck.Get);
-            soldier.health.onDamage += (dmg, _) => HealthTracker.UpdateProgressbar(soldier.health);
-            soldier.health.onDeath += () => HealthTracker.UpdateProgressbar(soldier.health);
+            HealthTracker.AssociateReactiveUpdateAndTrack(soldier.health, soldier.ragdoll.neck.Get);
         }
         
         /// <summary>
