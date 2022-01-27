@@ -12,11 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f1d86619b69b2146a0f27ced01096dc, type: 3}
   m_Name: Fireball Spell
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   key: Fireball
   cooldownTimeInSeconds: 0.5
   range: 10
-  targetless: 1
-  previewEffect: {fileID: 1185270840675206, guid: 947863f9701eb7b45a36fd6ebdb979b3, type: 3}
+  targetingStyle: 1
+  raycastLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  showPreviewOnCastTarget: 0
+  handPreviewEffect: {fileID: 1221179271255340, guid: 936149db9fc9c8b40896084b17e1cded, type: 3}
+  targetPreviewEffect: {fileID: 0}
   mainEffect: {fileID: 0}
   chargeStyle: 0
   castStyle: 1
@@ -26,4 +40,7 @@ MonoBehaviour:
   debugMode: 0
   bullet: {fileID: 11400000, guid: 92031935011981a49aaf063efccc5e8d, type: 2}
   handBackTransition: {fileID: 11400000, guid: d92806395eb19c84592faf825cdf982d, type: 2}
+  enableHoverBulletPreview: 1
+  bulletUsesGravity: 1
   throwAngle: 5
+  previewBulletRotation: 0

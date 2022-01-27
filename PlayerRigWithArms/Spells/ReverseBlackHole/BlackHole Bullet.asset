@@ -17,8 +17,8 @@ MonoBehaviour:
   muzzleVelocity: 5
   maxBounces: 0
   lifetime: 10
-  minDamage: 1
-  maxDamage: 10
+  minDamage: 35
+  maxDamage: 67
   defaultDamage: 5
   bias: 0
   damageMode: 0

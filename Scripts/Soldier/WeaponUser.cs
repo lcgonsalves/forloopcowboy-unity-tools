@@ -32,7 +32,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
 
         public interface WeaponContainer
         {
-            [CanBeNull] Transform weaponTransform { get; }
+            Transform? weaponTransform { get; }
             Vector3 correctiveRotation { get; set; }
             Vector3 correctiveTranslation { get; set; }
         }
@@ -257,9 +257,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
                 return content?.Equals(item) ?? false;
             }
 
-            // intellij did this, i trust it
-            [CanBeNull]
-            public Transform weaponTransform => content?.weaponTransform != null
+            public Transform? weaponTransform => content?.weaponTransform != null
                 ? content.weaponTransform != null ? content.weaponTransform.transform : null
                 : null;
 
@@ -324,7 +322,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
             var target = aimComponent.TrackedTarget;
             var scrambledTarget = target ? accuracyProcessor?.Scramble(target) : null;
             
-            _active?.weapon?.OpenFire(enableBurst, scrambledTarget);
+            _active?.weapon?.OpenFire(enableBurst, scrambledTarget, gameObject);
         }
 
         public void CeaseFire()

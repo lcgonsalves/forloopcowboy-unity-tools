@@ -11,9 +11,6 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
         [Tooltip("Number of bullets kind that are spawned before previous bullet is recycled.")]
         public int maximum = 30;
 
-        [SerializeField, ReadOnly]
-        private int currentActive = 0;
-
         /// <summary>
         /// Accessing this gets you all the active bullet game objects.
         /// Setting this object updates the serialized count.
@@ -28,16 +25,11 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
                 {
                     foreach (var bulletController in bulletQueue.Value)
                     {
-                        if (bulletController.gameObject.activeSelf) newActiveCount++;
+                        if (bulletController.gameObject.activeInHierarchy) newActiveCount++;
                     }
                 }
-
+                
                 return newActiveCount;
-            }
-            
-            set
-            {
-                currentActive = NumberOfActiveBullets;
             }
         }
 
@@ -70,12 +62,11 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
                 GameObject instance;
                 BulletController controller;
 
-                if (currentActive < maximum) {
+                if (NumberOfActiveBullets < maximum) {
 
                     instance = Instantiate(bulletAsset.prefab, position, Quaternion.identity); 
                     controller = instance.gameObject.GetOrElseAddComponent<BulletController>();
                     controller.Settings = bulletAsset;
-                    currentActive++;
                 
                 } else { controller = queue.Dequeue(); instance = controller.gameObject; }
 
@@ -92,6 +83,19 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 
         }
 
+        public BulletController SpawnAndFire(
+            Bullet bulletAsset, 
+            Vector3 position,
+            Vector3 direction,
+            GameObject firedFrom
+        )
+        {
+            var spawned = SpawnAndFire(bulletAsset, position, direction);
+            spawned.firedBy = firedFrom;
+
+            return spawned;
+        }
+
         /// <summary>
         /// Either spawns or repossesses a bullet, calling BulletController.Fire immediately.
         /// </summary>
@@ -100,6 +104,8 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 
             var spawned = Spawn(bulletAsset, position, direction);
             spawned.Fire(direction);
+            spawned.firedBy = null;
+            
             return spawned;
 
         }

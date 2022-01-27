@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6304ee848a042bba8eaa1df7431e3e6, type: 3}
+  m_Name: Psychokinesis Spell
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: forceSettings
+      Entry: 7
+      Data: forloopcowboy_unity_tools.Scripts.GameLogic.Force+Settings, Assembly-CSharp
+    - Name: forceMagnitude
+      Entry: 4
+      Data: 7
+    - Name: stopRadius
+      Entry: 4
+      Data: 0.12
+    - Name: 
+      Entry: 8
+      Data: 
+  key: psychokinesis
+  cooldownTimeInSeconds: 1
+  range: 1.5
+  targetingStyle: 1
+  raycastLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  showPreviewOnCastTarget: 0
+  handPreviewEffect: {fileID: 1299800856089280, guid: 52c905a5c18593340b901188f5e86857, type: 3}
+  targetPreviewEffect: {fileID: 0}
+  mainEffect: {fileID: 1934077706430022, guid: 37894271a0ea7a343a9598484f0e507e, type: 3}
+  chargeStyle: 0
+  castStyle: 1
+  slowMoEfect: 1
+  previewScale: 0.23
+  castScale: 0.5
+  debugMode: 0
+  useGravity: 0
+  _forceMode: 1
+  castForce: 45

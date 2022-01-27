@@ -23,7 +23,7 @@ MonoBehaviour:
     SerializationNodes: []
   key: Black Hole
   cooldownTimeInSeconds: 0
-  range: 10
+  range: 20
   targetingStyle: 1
   raycastLayer:
     serializedVersion: 2
@@ -42,7 +42,8 @@ MonoBehaviour:
   handBackTransition: {fileID: 11400000, guid: d92806395eb19c84592faf825cdf982d, type: 2}
   enableHoverBulletPreview: 1
   bulletUsesGravity: 0
-  throwAngle: 10
+  throwAngle: 0
+  previewBulletRotation: 5
   Radius: 20
   StopRadius: 0.08
   Force: 70

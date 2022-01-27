@@ -50,14 +50,17 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
 
         public Transform muzzle { get; private set; }
 
-        private Coroutine firingCoroutine;
-        private Coroutine burstCoroutine;
+        private Coroutine _firingCoroutine;
+        private Coroutine _burstCoroutine;
 
         public List<ParticleSystem> peripheralEmitters = new List<ParticleSystem>();
 
         public event Action onMagazineEmpty;
 
         private BulletSystem _bulletSystem;
+        private WaitForSeconds _fireRateWFS;
+
+        private GameObject _weaponUser;
 
         void Start()
         {
@@ -71,13 +74,16 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             muzzle = Weapon.MuzzlePosition(gameObject);
 
             // begin firing coroutine
-            firingCoroutine = StartCoroutine(FiringCoroutine());
+            _firingCoroutine = StartCoroutine(FiringCoroutine());
         
             // begin burst managment coroutine
-            burstCoroutine = StartCoroutine(BurstCoroutine());
+            _burstCoroutine = StartCoroutine(BurstCoroutine());
             
             // cache bullet system
             _bulletSystem = GetComponent<BulletSystem>();
+            
+            // memory optimization
+            _fireRateWFS = new WaitForSeconds(60f / weaponSettings.bulletsPerMinute);
 
         }
 
@@ -108,7 +114,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
                         Debug.DrawRay(muzzlePosition, muzzleDirection);
                     }
                     
-                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzlePosition, muzzleDirection);
+                    _bulletSystem.SpawnAndFire(weaponSettings.ammo, muzzlePosition, muzzleDirection, _weaponUser);
 
                     if (weaponSettings.muzzleEffect != null)
                     {
@@ -125,14 +131,14 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
                     bulletsInClip--;
 
                     if (bulletsInClip == 0) onMagazineEmpty?.Invoke();
-
-                    yield return new WaitForSeconds(60f / weaponSettings.bulletsPerMinute);
+                    
+                    yield return _fireRateWFS;
                 }
 
                 isFiring = false;
 
                 // if not firing check every frame
-                yield return new WaitForEndOfFrame();
+                yield return null;
 
             }
         }
@@ -164,16 +170,22 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         /// </summary>
         /// <param name="burst">When true, uses burst logic. When false, fires on full-auto.</param>
         /// <param name="scrambledTarget">When set, the gun will shoot towards the target's scrambled position.</param>
-        public void OpenFire(bool burst = false, [CanBeNull] AccuracyProcessor.ScrambledTransform scrambledTarget = null)
-        {
+        /// <param name="firedBy">Whoever is the game object responsible for calling this function. Can be null. Used to trace the bullet's origin.</param>
+        public void OpenFire(
+            bool burst = false,
+            [CanBeNull] AccuracyProcessor.ScrambledTransform scrambledTarget = null,
+            [CanBeNull] GameObject firedBy = null
+        ) {
             burstSettings.enabled = burst;
             shouldFire = true;
             if (!burst) isFiring = true;
             _target = scrambledTarget;
+            _weaponUser = firedBy;
         }
 
         public void CeaseFire()
         {
+            _weaponUser = null;
             shouldFire = false;
             _target = null;
         }

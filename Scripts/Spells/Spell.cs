@@ -15,47 +15,54 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
     public abstract class Spell : SerializedScriptableObject
     {
 
-        [Tooltip("Unique spell identifier.")]
-        public string key;
+        [Tooltip("Unique spell identifier."), TabGroup("General")]
+        public string key = nameof(Spell);
 
+        [TabGroup("General")]
         public float cooldownTimeInSeconds = 0f;
 
-        [Tooltip("How far the spell can reach")]
+        [Tooltip("How far the spell can reach"), TabGroup("Targeting")]
         public float range = 10f;
 
         public enum TargetingStyle { Grounded, Ranged }
 
+        [TabGroup("Targeting")]
         public TargetingStyle targetingStyle = TargetingStyle.Ranged;
 
+        [TabGroup("Targeting")]
         public LayerMask raycastLayer;
         
-        [Tooltip("When true, spell will preview directly on whatever target transform is set in the spell user behaviour. If false, falls back to whatever targeting style is used.")]
+        [TabGroup("Targeting"), Tooltip("When true, spell will preview directly on whatever target transform is set in the spell user behaviour. If false, falls back to whatever targeting style is used.")]
         public bool showPreviewOnCastTarget = false;
 
-        [FormerlySerializedAs("previewEffect")] [Tooltip("The effect that plays in the hand.")]
+        [TabGroup("FX")] [FormerlySerializedAs("previewEffect")] [Tooltip("The effect that plays in the hand.")]
         public GameObject handPreviewEffect;
         
-        [Tooltip("The effect that plays either on the ground, middle of the screen, or on the spell caster's target")]
+        [TabGroup("FX")] [Tooltip("The effect that plays either on the ground, middle of the screen, or on the spell caster's target")]
         public GameObject targetPreviewEffect;
 
-        [Tooltip("The effect that plays in the location where the raycast hits, before the spell is executed.")]
+        [TabGroup("FX")] [Tooltip("The effect that plays in the location where the raycast hits, before the spell is executed.")]
         public GameObject mainEffect;
 
-        [Tooltip("Defines the type of hand animation that plays when holding a spell")]
+        [TabGroup("Animation")] [Tooltip("Defines the type of hand animation that plays when holding a spell")]
         public ArmComponent.ChargeStyles chargeStyle = ArmComponent.ChargeStyles.TwoFingerHold;
 
-        [Tooltip("Defines the type of hand animation that plays when casting a spell.")]
+        [TabGroup("Animation")] [Tooltip("Defines the type of hand animation that plays when casting a spell.")]
         public ArmComponent.CastStyles castStyle = ArmComponent.CastStyles.CastThrow;
 
-        [Tooltip("The time scale that should be used when the characters enter preview mode. If 0 < x < 1 then time is slowed down.")]
+        [TabGroup("Animation")] [Tooltip("The time scale that should be used when the characters enter preview mode. If 0 < x < 1 then time is slowed down.")]
         public float slowMoEfect = 1f;
 
+        [TabGroup("FX")]
         public float previewScale = 0.23f;
+        
+        [TabGroup("FX")]
         public float castScale = 0.5f;
         
+        [TabGroup("General")]
         public bool debugMode;
 
-        public Vector3 GetTargetPosition([CanBeNull] SpellUserBehaviour caster = null, [CanBeNull] Camera mainCamera = null)
+        virtual public Vector3 GetTargetPosition([CanBeNull] SpellUserBehaviour caster = null, [CanBeNull] Camera mainCamera = null)
         {
             if (showPreviewOnCastTarget && caster && caster.GetTarget(this, out var target)) return target.transform.position;
 
@@ -84,25 +91,28 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         /// By default, it enables the preview object and sets its position to the source's cast point.
         public virtual void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
-            Debug.DrawLine(GetTargetPosition(caster), caster.transform.position);
-            
+
             if (caster.ParticleInstancesFor(this, source, out var particles))
             {
                 var handPreview = particles.handPreview;
                 var handPreviewPosition = GetCastPointFor(source);
                 var targetPreviewPosition = GetTargetPosition(caster);
+
+                var casterRotation = caster.transform.rotation;
                 
-                UpdateEffectPosition(handPreview, handPreviewPosition, "FirstPersonObjects");
-                UpdateEffectPosition(particles.targetPreview, targetPreviewPosition, "Player", false);
+                UpdateEffect(handPreview, handPreviewPosition, casterRotation, "FirstPersonObjects");
+                UpdateEffect(particles.targetPreview, targetPreviewPosition, casterRotation, "Player", false);
                 
-            } else NoParticleInstantiatedWarning(caster); 
+            } else NoParticleInstantiatedWarning(caster);
         }
 
-        private void UpdateEffectPosition(GameObject fx, Vector3 previewPosition, string layerName, bool applyScale = true)
-        {
-            var a = fx?.activeInHierarchy;
-            var b = fx?.activeSelf;
-
+        protected void UpdateEffect(
+            GameObject fx,
+            Vector3 position, 
+            Quaternion rotation,
+            [CanBeNull] string layerName = null,
+            bool applyScale = true
+        ) {
             if (fx == null) return;
             
             if (!fx.gameObject.activeInHierarchy)
@@ -113,11 +123,15 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
             var fxTr = fx.transform;
             
-            fxTr.position = previewPosition;
-            
-            var fxLayer = LayerMask.NameToLayer(layerName);
-            if (fx.layer != fxLayer)
-                fx.SetLayerRecursively(fxLayer);
+            fxTr.position = position;
+            fxTr.rotation = rotation;
+
+            if (layerName != null)
+            {
+                var fxLayer = LayerMask.NameToLayer(layerName);
+                if (fx.layer != fxLayer)
+                    fx.SetLayerRecursively(fxLayer);
+            }
             
             if (applyScale && fxTr.childCount > 0)
                 fxTr.GetChild(0).localScale = previewScale * Vector3.one;
@@ -142,37 +156,49 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         /// Casts the spell from proper arm position
         public bool Cast(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
-            bool canCast = CanCast(caster, source, out var time);
-            if (canCast) Execute(caster, source, direction);
+            bool canCast = CanCast(caster, source);
+            if (canCast)
+            {
+                Execute(caster, source, direction);
+            }
             return canCast;
         }
-
-        /// See CanCast(SpellUserBehaviour caster,  out System.DateTime time)
-        public bool CanCast(SpellCaster caster, Side<ArmComponent> arm)
+        
+        /// <summary>
+        /// Returns true if ready to cast. Overridable by
+        /// specific spell implementations.
+        /// </summary>
+        /// <param name="caster">Spell caster.</param>
+        /// <param name="arm">Arm from which the spell is being cast.</param>
+        /// <returns>By default, returns true if arm hold is ready, and
+        /// if the spell cooldown has been reached.</returns>
+        public virtual bool CanCast(SpellUserBehaviour caster, Side<ArmComponent> arm)
         {
-            return CanCast(caster, arm, out var _);
+            return CanHoldAndArmHoldIsReady(caster, arm, out var _);
         }
 
-        public bool CanCast(SpellCaster caster, Side<ArmComponent> arm, out System.DateTime time)
-        {
-            bool canHold = CanHold(caster, arm, out time);
-
+        public bool CanHoldAndArmHoldIsReady(
+            SpellUserBehaviour caster,
+            Side<ArmComponent> arm,
+            out System.DateTime lastSpellCastTime
+        ) {
+            bool canHold = CanHold(caster, arm, out lastSpellCastTime);
             return arm.content.holdReady && canHold;
         }
 
-        public bool CanHold(SpellCaster caster, Side<ArmComponent> arm)
+        public bool CanHold(SpellUserBehaviour caster, Side<ArmComponent> arm)
         {
             return CanHold(caster, arm, out var _);
         }
 
         // true if a spell has never been casted before or if the cooldown is over
-        public bool CanHold(SpellCaster caster, Side<ArmComponent> arm, out System.DateTime time)
+        public bool CanHold(SpellUserBehaviour caster, Side<ArmComponent> arm, out System.DateTime lastSpellCastTime)
         {
-            bool spellNeverCastedBefore = caster.LatestSpellCastTimeFor(this, arm, out time) && time == DateTime.MinValue;
+            bool spellNeverCastedBefore = caster.LatestSpellCastTimeFor(this, arm, out lastSpellCastTime) && lastSpellCastTime == DateTime.MinValue;
             bool spellHasBeenCastedBefore = !spellNeverCastedBefore;
 
             // here we define: if a spell has never been casted before (for whatever reason we couldn't get the latest cast time) we just let the user cast it
-            return (spellHasBeenCastedBefore && ((System.DateTime.Now - time).TotalSeconds > cooldownTimeInSeconds)) ||
+            return (spellHasBeenCastedBefore && ((System.DateTime.Now - lastSpellCastTime).TotalSeconds > cooldownTimeInSeconds)) ||
                    spellNeverCastedBefore;
         }
 
@@ -183,18 +209,38 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             GameObject targetPreview { get; }
             
             GameObject main { get; }
+
+            /// <summary>
+            /// Adds a new game object to the list of instances, if one does not
+            /// exist with the same key.
+            /// 
+            /// This registration creates a copy of the template which
+            /// can be accessed by the function GetCustom().
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="template"></param>
+            /// <returns></returns>
+            public void RegisterCustom(string key, GameObject template);
+
+            /// <summary>
+            /// Gets custom instance if one exists for the given key.
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="instance"></param>
+            /// <returns>True if the instance exists.</returns>
+            public bool TryGetCustom(string key, out GameObject instance);
         }
 
-        public interface SpellCaster
+        public interface SpellCaster<IC> where IC : InstanceConfiguration
         {
             // Getter for fetching instantiated emitters for the given spell
-            bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out InstanceConfiguration instances);
+            bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out IC instances);
 
             // Getter for fetching latest cast time to calculate cooldown
             bool LatestSpellCastTimeFor(Spell spell, Side<ArmComponent> arm, out System.DateTime time);
         }
 
-        protected static void CreateSpell<S>(string name) where S : Spell
+        protected static void CreateSpellAsset<S>(string name) where S : Spell
         {
             Object s = ScriptableObject.CreateInstance<S>();
             AssetDatabase.CreateAsset(s, $"Assets/Spells/New{name}.asset");
@@ -209,11 +255,29 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             return source.content.GetCastPoint(chargeStyle);
         }
 
-        private void NoParticleInstantiatedWarning(Object caster)
+        protected void NoParticleInstantiatedWarning(Object caster)
         {
             if (debugMode)
                 Debug.LogWarning($"Caster {caster.name} has no particles for {this.name}. Make sure particles are initialized properly. Particles are optional, but their preparation in the Caster is required.");
         }
+
+        ////  Custom Spell Particle Preprocessing  ////
+        //                                          //
+        // the functions below should be overridden //
+        // if spell implementations need to do      //
+        // things to the particle instances upon    //
+        // instantiation.                           //
+        //                                          //
+        //////////////////////////////////////////////
+
+        public virtual void PreprocessMainFX(SpellUserBehaviour caster, GameObject mainEffectInstance) {}
+        public virtual void PreprocessHandPreviewFX(SpellUserBehaviour caster, GameObject previewEffectInstance) {}
+        public virtual void PreprocessTargetPreviewFX(SpellUserBehaviour caster, GameObject previewEffectInstance) {}
+
+        /// <summary>
+        /// Override this function to instantiate custom particles on startup.
+        /// </summary>
+        public virtual void RegisterCustomParticles(SpellUserBehaviour caster, InstanceConfiguration configuration) {}
 
     }
 }

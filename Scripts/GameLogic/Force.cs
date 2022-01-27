@@ -40,33 +40,77 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void FixedUpdate()
         {
-            Collider[] colliders = Physics.OverlapSphere(m_Pivot.position, m_Radius, m_Layers);
-
-            float signal = (float)m_Type;
-
+            var pivotPosition = m_Pivot.position;
+            
+            Collider[] colliders = Physics.OverlapSphere(pivotPosition, m_Radius, m_Layers);
+            var updater = PhysicsUpdate(m_Force, m_StopRadius, m_Type);
+            
             foreach (var collider in colliders)
             {
                 // only pull objects that are listed in the set of affected objects
                 if (m_AffectedObjectIDs != null && !m_AffectedObjectIDs.Contains(collider.GetInstanceID())) continue;
 
-                Rigidbody body = collider.GetComponent<Rigidbody>();
-                if (body == null) 
-                    continue;
+                updater(collider, pivotPosition);
+            }
+        }
 
-                Vector3 direction = m_Pivot.position - body.position;
+        public struct Settings
+        {
+            public float forceMagnitude;
+            public float stopRadius;
+
+            public Settings(float stopRadius = 0.15f, float forceMagnitude = 10f)
+            {
+                this.stopRadius = stopRadius;
+                this.forceMagnitude = forceMagnitude;
+            }
+        }
+
+        /// <summary>
+        /// Given the set parameters, performs a physics update
+        /// on the given collider, pulling it to/pushing it out from a given
+        /// pivot position..
+        /// </summary>
+        /// <param name="forceType">Whether to attract, repel, or none.</param>
+        /// <param name="stopRadius">Radius at which the force should no longer take effect.</param>
+        /// <param name="forceMagnitude">Amount of force to use.</param>
+        /// <returns>A physics updater function, that returns true when the given collider had a force applied to itself (ForceType.None always returns false.).</returns>
+        public static Func<Collider, Vector3, bool> PhysicsUpdate(
+            float forceMagnitude,
+            float stopRadius,
+            ForceType forceType = ForceType.Attraction
+        ) {
+            return (Collider collider, Vector3 pivotPosition) =>
+            {
+                
+                float signal = (float) forceType;
+
+                Rigidbody body = collider.GetComponent<Rigidbody>();
+                if (body == null)
+                    return false;
+
+                Vector3 direction = pivotPosition - body.position;
 
                 float distance = direction.magnitude;
 
                 direction = direction.normalized;
 
-                if (distance < m_StopRadius) 
-                    continue;
+                if (distance < stopRadius)
+                    return false;
 
-                float forceRate = (m_Force / distance);
+                float forceRate = (forceMagnitude / distance);
 
                 body.AddForce(direction * (forceRate / body.mass) * signal);
-            }
+
+                return forceType != ForceType.None;
+            };
         }
+        
+        // Overload to pass settings directly
+        public static Func<Collider, Vector3, bool> PhysicsUpdate(
+            Settings settings,
+            ForceType forceType = ForceType.Attraction
+        ){ return PhysicsUpdate(settings.forceMagnitude, settings.stopRadius, forceType); }
 
         private void OnDrawGizmos()
         {

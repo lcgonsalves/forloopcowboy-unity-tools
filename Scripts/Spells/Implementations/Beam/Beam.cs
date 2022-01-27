@@ -16,7 +16,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
         protected override void Execute(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
             Transform start = source.content.GetArmPosition(ArmComponent.ArmPosition.Palm);
-            bool particlesAreInstantiated = caster.ParticleInstancesFor(this, source, out InstanceConfiguration instances);
+            bool particlesAreInstantiated = caster.ParticleInstancesFor(this, source, out var instances);
 
             // When cast is executed, we BEGIN to draw the beam
             if (particlesAreInstantiated)
@@ -80,6 +80,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
         }
 
         [MenuItem("Spells/New.../Beam")]
-        static void CreateBeamSpell() { Spell.CreateSpell<Beam>("Beam"); }
+        static void CreateBeamSpell() { Spell.CreateSpellAsset<Beam>("Beam"); }
     }
 }

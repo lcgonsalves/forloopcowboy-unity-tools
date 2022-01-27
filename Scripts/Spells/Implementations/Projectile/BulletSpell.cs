@@ -13,7 +13,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {
     public class BulletSpell : Spell
     {
-        [Header("Replaces Main Effect if none is specified"), InlineEditor(InlineEditorModes.FullEditor)]
+        [InlineEditor(InlineEditorModes.FullEditor)]
         public Bullet.Bullet bullet;
 
         [InlineEditor(InlineEditorModes.FullEditor)]
@@ -25,88 +25,44 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
         
         public float throwAngle = 0f;
 
-        protected Dictionary<int, BulletController> hoveringBullets = new Dictionary<int, BulletController>();
+        public float previewBulletRotation;
+
+        public string BulletInstanceKey => $"{key} Bullet";
+        
+        public override void RegisterCustomParticles(SpellUserBehaviour caster, InstanceConfiguration configuration)
+        {
+            configuration.RegisterCustom(BulletInstanceKey, bullet.prefab);
+        }
 
         public override void Preview(SpellUserBehaviour caster, Side<ArmComponent> source, Vector3 direction)
         {
-            if (!CanCast(caster, source)) return;
-    
-            PrepareBulletCache(caster);
-
-            bool hasParticleInstances = caster.ParticleInstancesFor(this, source, out var instances);
+            base.Preview(caster, source, direction);
             
-            // default behaviour is tracking hand preview and/or target previews depending on what is set.
-            if (hasParticleInstances)
+            if (
+                caster.ParticleInstancesFor(this, source, out var particles) &&
+                enableHoverBulletPreview && 
+                particles.TryGetCustom(BulletInstanceKey, out var bulletPreview)
+            )
             {
-                base.Preview(caster, source, direction);
-            }
-            
-            if (enableHoverBulletPreview && hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
-            {
-                if (!sphere.gameObject.activeInHierarchy)
-                {
-                    sphere.gameObject.GetComponentInChildren<VoxelSoundSpawn>()?.Start();
-                    sphere.gameObject.SetActive(true);
-                }
+                var previewPosition = GetCastPointFor(source);
                 
-                var castPoint = source.content.GetCastPoint(chargeStyle);
-
-                sphere.rb.MovePosition(castPoint);
-                sphere.rb.useGravity = false;
-                sphere.rb.AddTorque(0.001f, 0.02f, 0f);
-                sphere.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("FirstPersonObjects"));
-                var t = sphere.rb.transform;
-
-                if (t.childCount > 0)
-                {
-                    t.GetChild(0).localScale = previewScale * Vector3.one;
-                }
-            }
-
-        }
-
-        private void PrepareBulletCache(SpellUserBehaviour caster)
-        {
-
-            if (!hoveringBullets.ContainsKey(caster.leftArm.GetInstanceID()) || !hoveringBullets.ContainsKey(caster.rightArm.GetInstanceID()))
-            {
-                var l = GameObject.Instantiate(bullet.prefab).gameObject.GetOrElseAddComponent<BulletController>();
-                var r = GameObject.Instantiate(bullet.prefab).gameObject.GetOrElseAddComponent<BulletController>();
-
-                l.name = $"Left Hovering Bullet ({bullet.prefab.name})";
-                r.name = $"Right Hovering Bullet ({bullet.prefab.name})";
+                bulletPreview.transform.Rotate(Vector3.up * ( previewBulletRotation * Time.deltaTime ));
+                UpdateEffect(bulletPreview, previewPosition, bulletPreview.transform.rotation, "FirstPersonObjects");
                 
-                l.Settings = bullet;
-                r.Settings = bullet;
-                
-                l.gameObject.SetActive(false);
-                r.gameObject.SetActive(false);
-
-                if (l is EnergyBulletController)
-                {
-                    EnergyBulletController energyBullet = (EnergyBulletController) l;
-                    energyBullet.dieOnImpact = false; // preview bullet shouldn't interact with the environment
-
-                    energyBullet = (EnergyBulletController) r;
-                    energyBullet.dieOnImpact = false; // preview bullet shouldn't interact with the environment
-                    // energyBullet.rb.isKinematic = true;
-                    l.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
-                    r.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
-                }
-
-                hoveringBullets.Add(caster.leftArm.GetInstanceID(), l);
-                hoveringBullets.Add(caster.rightArm.GetInstanceID(), r);
             }
         }
 
-        public override void ResetPreview(SpellUserBehaviour caster, Side<ArmComponent> arm)
+        public override void ResetPreview(SpellUserBehaviour caster, Side<ArmComponent> source)
         {
-            base.ResetPreview(caster, arm);
-            PrepareBulletCache(caster);
+            base.ResetPreview(caster, source);
 
-            if (hoveringBullets.TryGetValue(arm.content.GetInstanceID(), out BulletController sphere))
+            if (caster.ParticleInstancesFor(
+                this,
+                source,
+                out var particles
+            ) && particles.TryGetCustom(BulletInstanceKey, out var bulletPreview))
             {
-                sphere.gameObject.SetActive(false);
+                bulletPreview.SetActive(false);
             }
         }
 
@@ -123,7 +79,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             
             var correctedDirection = Quaternion.AngleAxis(throwAngle, caster.transform.TransformDirection(Vector3.left)) * (projectedPoint - castPoint).normalized;
 
-            var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection);
+            var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection, caster.gameObject);
             b.rb.AddTorque(5f, 3f, 0f);
             b.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Player"));
             b.rb.useGravity = bulletUsesGravity;
@@ -132,17 +88,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
                 b.transform.GetChild(0).localScale = castScale * Vector3.one;
             
             OnBulletFired?.Invoke(caster, b);
-
-            if (hoveringBullets.TryGetValue(source.content.GetInstanceID(), out BulletController sphere))
-            {
-                sphere.rb.angularVelocity = Vector3.zero; // reset spin
-            } else PrepareBulletCache(caster);
         }
 
         public event Action<SpellUserBehaviour, BulletController> OnBulletFired;
 
         [MenuItem("Spells/New.../Bullet")]
-        static void CreateBulletSpell(){ Spell.CreateSpell<BulletSpell>("Projectile"); }
+        static void CreateBulletSpell(){ Spell.CreateSpellAsset<BulletSpell>("Projectile"); }
 
     }
 }

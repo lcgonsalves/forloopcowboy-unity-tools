@@ -23,16 +23,16 @@ MonoBehaviour:
     SerializationNodes: []
   key: 
   cooldownTimeInSeconds: 0
-  range: 10
+  range: 5
   targetingStyle: 1
   raycastLayer:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 513
   showPreviewOnCastTarget: 0
   handPreviewEffect: {fileID: 1044408576232966, guid: 5936da6587e5eb74096c0cbd9c124c3f, type: 3}
-  targetPreviewEffect: {fileID: 0}
-  mainEffect: {fileID: 2262625018452713290, guid: 1d85bd685915a9d4bb307b7e91d2d2a6, type: 3}
-  chargeStyle: 0
+  targetPreviewEffect: {fileID: 7236097112344555144, guid: f7d020c72647d5d45b7af7581644b1ae, type: 3}
+  mainEffect: {fileID: 2262625018452713290, guid: a70bd24d9a5350043ae9ef91c12f1160, type: 3}
+  chargeStyle: 1
   castStyle: 1
   slowMoEfect: 1
   previewScale: 0.23
@@ -41,4 +41,5 @@ MonoBehaviour:
   initialRootName: InitialRoot
   shatteredRootName: ShatteredRoot
   readyAtPercent: 0.5
-  strength: 4
+  strength: 2
+  selfDestructAfterSeconds: 15

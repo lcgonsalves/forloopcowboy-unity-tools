@@ -10,5 +10,8 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         
         public AdvancedPlayerMovementBehaviour movement => _movement == null ? _movement = GetComponent<AdvancedPlayerMovementBehaviour>() : _movement;
         private AdvancedPlayerMovementBehaviour _movement;
+
+        public HealthComponent healthComponent => _healthComponent == null ? _healthComponent = GetComponent<HealthComponent>() : _healthComponent;
+        private HealthComponent _healthComponent;
     }
 }
