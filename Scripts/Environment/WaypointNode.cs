@@ -8,7 +8,7 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
     public class WaypointNode : MonoBehaviour
     {
         [SerializeField] private WaypointNode next;
-        [FormerlySerializedAs("configuration")] [SerializeField] private WaypointSettings settings;
+        [FormerlySerializedAs("configuration")] [SerializeField] public WaypointSettings settings;
 
         public bool TryGetNext(out WaypointNode nextWaypoint)
         {

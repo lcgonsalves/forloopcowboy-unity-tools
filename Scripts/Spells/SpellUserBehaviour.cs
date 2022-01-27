@@ -359,18 +359,26 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
             void DestroyInstances(Spell spell, Side<ArmComponent> side)
             {
-                Spell.InstanceConfiguration instances = null;
-
-                if (spellParticles.Get(side)?.TryGetValue(spell, out instances) ?? false)
+                try
                 {
+
+                    Dictionary<Spell, Config> particlesForArm = spellParticles.Get(side);
+
+                    if (particlesForArm.TryGetValue(spell, out var instances))
+                    {
 #if UNITY_EDITOR
-                    if (instances.main != null) GameObject.DestroyImmediate(instances.main);
-                    if (instances.handPreview != null) GameObject.DestroyImmediate(instances.handPreview);
+                        if (instances.main != null) DestroyImmediate(instances.main);
+                        if (instances.handPreview != null) DestroyImmediate(instances.handPreview);
 #endif
 
-                    if (instances.main != null) GameObject.Destroy(instances.main);
-                    if (instances.handPreview != null) GameObject.Destroy(instances.handPreview);
+                        if (instances.main != null) Destroy(instances.main);
+                        if (instances.handPreview != null) Destroy(instances.handPreview);
 
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
                 }
             }
         } 

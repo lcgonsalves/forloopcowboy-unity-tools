@@ -127,7 +127,8 @@ namespace forloopcowboy_unity_tools.Editor
                     _ikLerpOutTransition,
                     _firstNames,
                     _lastNames,
-                    _npcSettings
+                    _npcSettings,
+                    FindObjectOfType<GameplayManager>() // *shrug*
                 )(_weapons, Vector3.zero);
 
                 Selection.activeGameObject = instance.gameObject;

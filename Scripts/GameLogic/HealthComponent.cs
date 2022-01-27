@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using BehaviorDesigner.Runtime;
 using forloopcowboy_unity_tools.Scripts.Core;
@@ -11,8 +12,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
     public class HealthComponent : MonoBehaviour, IHasHealth, IManagedGameObject
     {
-        public event Action onDeath;
-        public event Action<int> onDamage;
+        public event Action? onDeath;
+        
+        /// <summary>
+        /// When health component loses health, emits the damage amount and a damage provider, if one was provided.
+        /// </summary>
+        public event Action<int, IDamageProvider?>? onDamage;
         
         [SerializeField, Core.ReadOnly]
         private int health = 100;
@@ -30,10 +35,13 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             set
             {
                 var clampedValue = Mathf.Clamp(value, 0, MaxHealth);
-                if (clampedValue < health) OnOnDamage(health - clampedValue);
+                var previousHealth = health;
                 
+                // set now so event is called with the health updated
                 health = clampedValue;
-                if (health == 0)
+
+                // only death event if dead AND WAS NOT DEAD BEFORE
+                if (health == 0 && health < previousHealth)
                 {
                     // if for some reason the character wakes up already dead, this will never trigger the destruction
                     // signal to the unit manager.
@@ -46,7 +54,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             }
         }
 
-        private void Start()
+        private void Awake()
         {
             SetMaxHealth(MaxHealth);
             AttachOnDeathListeners();
@@ -90,7 +98,19 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public bool IsDead => !IsAlive;
         
         
-        public void Damage(int amount) { Health -= amount; }
+        public void Damage(int amount, IDamageProvider damageSource)
+        {
+            var previousHealth = Health;
+            Health -= amount;
+            
+            if (previousHealth > 0 && amount > 0) OnOnDamage(amount, damageSource);
+        }
+
+        public void Damage(int amount)
+        {
+            // invoked event expects source to be possibly null
+            Damage(amount, null!);
+        }
 
         public void Heal(int amount) { Health += amount; }
 
@@ -146,12 +166,10 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var hb = this.GetOrElseAddComponent<HitBox>();
             hb.healthComponent = this;
         }
-        
-        public static HealthComponent GetHealthComponent(Component other) { return GetHealthComponent(other); }
 
-        protected virtual void OnOnDamage(int dmgAmount)
+        protected virtual void OnOnDamage(int dmgAmount, IDamageProvider? damageProvider = null)
         {
-            onDamage?.Invoke(dmgAmount);
+            onDamage?.Invoke(dmgAmount, damageProvider);
         }
     }
 }

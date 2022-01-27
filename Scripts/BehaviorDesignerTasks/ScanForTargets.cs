@@ -41,26 +41,31 @@ namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks
 
             FindClosestTarget(gm, self.Value.transform.position, maximumRange.Value, gm.side.GetOpposing(), out var closestTarget);
 
+            nearestLivingTarget?.SetValue(closestTarget?.transform);
+
             var ragdoll = closestTarget != null ? closestTarget.GetComponent<Ragdoll>() : null;
             
             Transform target = null;
 
-            if (ragdoll) target = ragdoll.neck;
+            if (ragdoll) target = (Transform) ragdoll.neck;
             else if (closestTarget != null) target = closestTarget.transform; 
 
-            if (nearestLivingTarget.Value != null && (target == null || nearestLivingTarget.Value.GetInstanceID() != target.GetInstanceID()))
+            if (nearestLivingTarget?.Value != null && (target == null || nearestLivingTarget.Value.GetInstanceID() != target.GetInstanceID()))
                 gm.StopTargeting(nearestLivingTarget.Value.gameObject);
 
             if (target != null) 
                 gm.Target(target.gameObject);
             
-            nearestLivingTarget.SetValue(target);
+            nearestLivingTarget?.SetValue(target);
             distanceToTarget.SetValue(target != null ? Vector3.Distance(self.Value.transform.position, target.position) : float.PositiveInfinity);
 
             if (closestTarget != null) return TaskStatus.Success;
             else return TaskStatus.Failure;
         }
 
+        /// <summary>
+        /// Returns true if target exists within range.
+        /// </summary>
         public static bool FindClosestTarget(GameplayManager gm, Vector3 position, float range, UnitManager.Side side, out GameObject closestTarget)
         {
             var enemies = gm.UnitManager.GetSpawned(side);

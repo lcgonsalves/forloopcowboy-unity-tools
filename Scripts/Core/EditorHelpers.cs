@@ -459,10 +459,34 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         }
     }
 
-    public class LazyGetter<T> where T : Component
+    /// <summary>
+    /// It's a cache.
+    /// </summary>
+    /// <typeparam name="T">The type of value to be cached.</typeparam>
+    [Serializable]
+    public class Cache<T> where T : Component
     {
-        private T _reference;
-        public T Get(GameObject self) => _reference != null ? _reference : _reference = self.GetComponent<T>();
+        [SerializeField]
+        private T? reference;
+        
+        private Func<T> _getter;
+        
+        /// <summary>
+        /// If this is the first time the value is called, the getter function
+        /// is called, and its value saved. All subsequent calls will return the cached reference.
+        /// </summary>
+        public T Get => reference != null ? reference : reference = _getter();
+
+        /// <summary>
+        /// Nice little trick to allow you to pass in the
+        /// cache as the value.
+        /// </summary>
+        public static explicit operator T(Cache<T> cache) => cache.Get;
+
+        public Cache(Func<T> getFunction)
+        {
+            _getter = getFunction;
+        }
     }
     
     public static class GameObjectHelpers
@@ -525,7 +549,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             RoutineTypes type = RoutineTypes.Update,
             float delay = 0f
         ){
-            return m.StartCoroutine(Routine(type, callback, shouldStop, delay));
+            return m.StartCoroutine(GenericCoroutineWithStopCondition(type, callback, shouldStop, delay));
         }
 
     	// Runs coroutine forever
@@ -559,8 +583,11 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             FixedUpdate
         }
 
-        private static IEnumerator Routine(RoutineTypes type, Action callback, Func<bool> stopCondition, float delay = 0f)
+        private static IEnumerator GenericCoroutineWithStopCondition(RoutineTypes type, Action callback, Func<bool> stopCondition, float delay = 0f)
         {
+            var wfs = new WaitForSeconds(delay);
+            var wffu = new WaitForFixedUpdate();
+            
             while(stopCondition() == false)
             {
                 callback();
@@ -568,7 +595,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 switch(type)
                 {
                     case RoutineTypes.TimeInterval:
-                        yield return new WaitForSeconds(delay);
+                        yield return wfs;
                         break;
 
                     case RoutineTypes.Update:
@@ -576,7 +603,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                         break;
 
                     case RoutineTypes.FixedUpdate:
-                        yield return new WaitForFixedUpdate();
+                        yield return wffu;
                         break;
                 }
             }

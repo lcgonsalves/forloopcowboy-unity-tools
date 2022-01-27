@@ -13,6 +13,11 @@ public class HealthTracker : MonoBehaviour
     public GameplayManager unitManager;
     public ProgressBar progressBarPrefab;
 
+    private void Awake()
+    {
+        GetComponent<Canvas>().worldCamera = Camera.main;
+    }
+
     private void Start()
     {
         if (unitManager == null)
@@ -24,19 +29,37 @@ public class HealthTracker : MonoBehaviour
     public ProgressBar playerProgressBar; 
     private Dictionary<int, ProgressBar> progressBars = new Dictionary<int, ProgressBar>();
 
-    private void Update()
-    {
-        foreach (var ally in unitManager.GetAllies())
-        {
-            if (ally.TryGetComponent(out HealthComponent healthComponent))
-            {
-                UpdateAndTrack(healthComponent);
-            }
-        }
-    }
-
     public static SingletonHelper<HealthTracker> singletonHelper = new SingletonHelper<HealthTracker>();
 
+    /// <summary>
+    /// Updates heath bar on damage and death.
+    /// </summary>
+    public static void AssociateReactiveUpdate(HealthComponent healthComponent, bool isPlayer = false)
+    {
+        void DoUpdate() {
+            if (isPlayer)
+                UpdatePlayerProgressBar(healthComponent);
+            else
+                UpdateProgressbar(healthComponent);
+        }
+
+        healthComponent.onDamage += (dmg, _) => DoUpdate();
+        healthComponent.onDeath += DoUpdate;
+
+        // initialize it
+        DoUpdate();
+    }
+
+    /// <summary>
+    /// Updates heath bar on damage and death, and follows it's position.
+    /// </summary>
+    public static void AssociateReactiveUpdateAndTrack(HealthComponent healthComponent, Transform lookAt)
+    {
+        UpdateAndTrackProgressbar(healthComponent, lookAt);
+        AssociateReactiveUpdate(healthComponent);
+    }
+    
+    
     public static void UpdatePlayerProgressBar(HealthComponent playerHealthComponent)
     {
         var ppb = singletonHelper.Singleton.playerProgressBar;
@@ -50,31 +73,46 @@ public class HealthTracker : MonoBehaviour
         singletonHelper.Singleton.UpdateValues(component);
     }
 
+    public static void UpdateAndTrackProgressbar(HealthComponent component, Transform lookAt)
+    {
+        singletonHelper.Singleton.UpdateAndTrack(healthComponent: component, lookAt);
+    }
+
     public void UpdateValues(HealthComponent healthComponent)
     {
-        Update(healthComponent, progressBar => UpdateProgressbarFromHealthComponent(healthComponent, progressBar));
+        GetOrCreateHealthBar(healthComponent, (progressBar, _) => UpdateProgressbarFromHealthComponent(healthComponent, progressBar));
     }
     
-    public void Update(HealthComponent healthComponent, Action<ProgressBar> update)
+    /// <summary>
+    /// Gets or creates healthbar.
+    /// </summary>
+    /// <param name="healthComponent"></param>
+    /// <param name="update">Update closure to be done to the progress bar. First param is the progress bar game object component, second is true if the progress bar is a fresh instance.</param>
+    private void GetOrCreateHealthBar(HealthComponent healthComponent, Action<ProgressBar, bool> update)
     {
         var id = healthComponent.gameObject.GetInstanceID();
+        bool isNewInstance = false;
+        
         if (healthComponent.IsAlive)
         {
             if (!progressBars.ContainsKey(id))
             {
                 progressBars.Add(id, Instantiate(progressBarPrefab, transform));
+                isNewInstance = true;
             }
 
             // update position to follow above head.
             if (progressBars.TryGetValue(id, out var progressBar))
             {
-                update(progressBar);
+                update(progressBar, isNewInstance);
             }
         }
         else if (progressBars.ContainsKey(id)) // && component is dead
         {
+
             if (progressBars.TryGetValue(id, out var progressBar))
             {
+                update(progressBar, false); // expression is always false
                 Destroy(progressBar.gameObject, 5f);
             }
 
@@ -82,48 +120,44 @@ public class HealthTracker : MonoBehaviour
         }
     }
     
-    private void UpdateAndTrack(HealthComponent healthComponent)
+    private void UpdateAndTrack(HealthComponent healthComponent, Transform lookAt)
     {
-        var id = healthComponent.gameObject.GetInstanceID();
-        if (healthComponent.IsAlive)
-        {
-            if (!progressBars.ContainsKey(id))
+        GetOrCreateHealthBar(
+            healthComponent,
+            (progressBar, isNewInstance) =>
             {
-                progressBars.Add(id, Instantiate(progressBarPrefab, transform));
-            }
-
-            // update position to follow above head.
-            if (progressBars.TryGetValue(id, out var progressBar))
-            {
+                // only needs to be done once
+                if (isNewInstance) TrackPosition(lookAt, progressBar);
                 UpdateProgressbarFromHealthComponent(healthComponent, progressBar);
-                TrackPosition(healthComponent, progressBar);
             }
-        }
-        else if (progressBars.ContainsKey(id)) // && component is dead
-        {
-            if (progressBars.TryGetValue(id, out var progressBar))
-            {
-                Destroy(progressBar.gameObject, 5f);
-            }
-
-            progressBars.Remove(id);
-        }
+        );
     }
 
-    private void TrackPosition(HealthComponent healthComponent, ProgressBar progressBar)
+    private void TrackPosition(Transform lookAt, ProgressBar progressBar)
     {
         WorldPositionFollower follower =
             progressBar.gameObject.GetOrElseAddComponent<WorldPositionFollower>();
+        
+        HideBarIfTrackedTargetIsInvisible(progressBar, follower); // Coroutine
 
         if (follower.canvas == null) 
             follower.canvas = GetComponent<Canvas>();
+        
+        follower.lookAt = lookAt;
+    }
 
-        if (follower.lookAt.GetInstanceID() != healthComponent.gameObject.GetInstanceID())
-        {
-            if (healthComponent.TryGetComponent(out Ragdoll ragdoll))
-                follower.lookAt = ragdoll.neck;
-            follower.lookAt = healthComponent.transform;
-        }
+    private static Coroutine HideBarIfTrackedTargetIsInvisible(ProgressBar progressBar, WorldPositionFollower follower)
+    {
+        return follower.RunAsync(
+            () =>
+            {
+                if (follower.lookAtIsNotVisible) progressBar.Hide();
+                else progressBar.Show();
+            },
+            () => progressBar == null,
+            GameObjectHelpers.RoutineTypes.TimeInterval,
+            0.1f // not that often but fast enough to disappear when needed without much delay.
+        );
     }
 
     private static void UpdateProgressbarFromHealthComponent(HealthComponent healthComponent, ProgressBar progressBar)

@@ -45,9 +45,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             )
             {
                 var previewPosition = GetCastPointFor(source);
+                var rb = bulletPreview.GetComponent<Rigidbody>();
+
+                if (rb)
+                    rb.isKinematic = true;
                 
-                bulletPreview.transform.Rotate(Vector3.up * ( previewBulletRotation * Time.deltaTime ));
-                UpdateEffect(bulletPreview, previewPosition, bulletPreview.transform.rotation, "FirstPersonObjects");
+                UpdateEffect(bulletPreview, previewPosition, Quaternion.LookRotation(direction), "FirstPersonObjects");
                 
             }
         }
@@ -79,7 +82,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
             
             var correctedDirection = Quaternion.AngleAxis(throwAngle, caster.transform.TransformDirection(Vector3.left)) * (projectedPoint - castPoint).normalized;
 
-            var b = caster.gameObject.GetOrElseAddComponent<BulletSystem>().SpawnAndFire(bullet, castPoint, correctedDirection, caster.gameObject);
+            var b = BulletSystem.SpawnAndFire(bullet, castPoint, correctedDirection, caster.gameObject);
             b.rb.AddTorque(5f, 3f, 0f);
             b.rb.gameObject.SetLayerRecursively(LayerMask.NameToLayer("Player"));
             b.rb.useGravity = bulletUsesGravity;

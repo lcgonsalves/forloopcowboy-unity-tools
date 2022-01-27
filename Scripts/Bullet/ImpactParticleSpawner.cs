@@ -40,7 +40,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
                 if (healthComponent && limbComponent)
                 {
                     // todo: actually take into account the multiplier
-                    healthComponent.Damage(controller.Settings.GetDamageAmount());
+                    healthComponent.Damage(controller.Settings.GetDamageAmount(), controller);
                 }
 
                 var instance = Instantiate(collisionParticle, impactPoint, Quaternion.LookRotation(Vector3.forward, impactNormal));

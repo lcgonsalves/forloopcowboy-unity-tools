@@ -9,16 +9,19 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         [Header("Tweaks")] 
         public Transform lookAt;
         public Vector3 offset;
-        [Tooltip("Hello")] public Canvas canvas;
+        public Canvas canvas;
 
         // //
 
         private Camera cam;
         private RectTransform rt;
         
+        public bool lookAtIsNotVisible => lookAt && Vector3.Dot(lookAt.position - cam.transform.position, cam.transform.forward) < 0;
+        public bool lookAtIsVisible => !lookAtIsNotVisible;
+
         private void Start()
         {
-            cam = Camera.main;
+            cam = canvas.worldCamera ? canvas.worldCamera : Camera.main;
             rt = GetComponent<RectTransform>();
         }
 
@@ -26,7 +29,10 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
         {
             if (!lookAt) return;
 
-            // fuck you unity and your black magic to perform such a basic op using a built in system
+            var cameraTransform = cam.transform;
+
+            if (lookAtIsNotVisible) return;
+            
             Vector2 adjustedPosition = cam.WorldToScreenPoint(lookAt.position) + offset;
 
             var canvasRT = canvas.GetComponent<RectTransform>();

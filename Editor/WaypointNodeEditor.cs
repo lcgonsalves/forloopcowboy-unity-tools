@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Editor
 {
-    [CustomEditor(typeof(WaypointNode))]
+    [CustomEditor(typeof(WaypointNode)), CanEditMultipleObjects]
     public class WaypointNodeEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()

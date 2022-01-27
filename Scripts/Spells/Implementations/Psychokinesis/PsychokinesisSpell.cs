@@ -38,11 +38,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
         public Force.Settings forceSettings;
         
 
-        /// <summary>
-        /// Hand preview must know which spell it refers to, so it has access to the settings.
-        /// </summary>
-        /// <param name="caster"></param>
-        /// <param name="previewEffectInstance"></param>
         public override void PreprocessHandPreviewFX(SpellUserBehaviour caster, GameObject previewEffectInstance)
         {
             var component = previewEffectInstance.GetOrElseAddComponent<PsychokinesisSpellPreviewComponent>();

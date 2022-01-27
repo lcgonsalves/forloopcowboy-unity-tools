@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Cinemachine;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.Environment;
 using forloopcowboy_unity_tools.Scripts.HUD;
 using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
+using Sirenix.Utilities;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
@@ -84,10 +86,19 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             if (spawnCardsEnabled) ShuffleCards();
         }
 
+        /// <summary>
+        /// From the list of soldier randomizers,
+        /// picks a random randomizer and instantiates a soldier,
+        /// also randomizing his or her equipment.
+        /// </summary>
+        /// <param name="at"></param>
+        /// <returns>A new soldier.</returns>
+        public Soldier GetNewRandomSoldier(Transform at) => soldierRandomizers[Random.Range(0, soldierRandomizers.Count)].Instantiate(at.position, true, this);
+        
         public SoldierCard RandomizeCard()
         {
             // generate character
-            var character = soldierRandomizers[Random.Range(0, soldierRandomizers.Count)].Instantiate(photoBoothAnchor, reparent: true);
+            var character = soldierRandomizers[Random.Range(0, soldierRandomizers.Count)].InstantiateAndReparentAndMaybeRandomize(photoBoothAnchor, reparent: true, this);
             
             // instantiate the card
             var cardContainer = new GameObject("ProfileCardLayoutItem");
@@ -163,10 +174,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var obj = UnitManager.SpawnCopy(side, players[index].gameObject);
             var vcam = virtualCamera[index];
             var playerComponent = obj.gameObject.GetOrElseAddComponent<PlayerComponent>();
-            var playerHealth = playerComponent.healthComponent;
 
-            this.RunAsyncWithDelay(0.1f, () => HealthTracker.UpdatePlayerProgressBar(playerHealth));
-            playerHealth.onDamage += dmg => HealthTracker.UpdatePlayerProgressBar(playerHealth);
+            HealthTracker.AssociateReactiveUpdate(playerComponent.healthComponent, true);
+            
             playerComponent.side = obj.side;
 
             // virtual head is what rotates vertically for the camera
@@ -178,6 +188,25 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
             mainCam.cameraStack.Add(overlayCam);
         }
+
+        [Button(ButtonSizes.Small)]
+        public void SpawnRandomSoldier()
+        {
+            // just find a random waypoint and place them there.
+            var allNodes = UnitManager.GetSpawnPointsFor(side).ToArray();
+
+            if (allNodes.Length == 0)
+            {
+                Debug.LogError("Could not spawn soldier. No WaypointNode is available.");
+                return;
+            }
+            
+            var randomNode = allNodes[Random.Range(0, allNodes.Length)];
+
+            var soldier = GetNewRandomSoldier(randomNode.transform);
+            
+            HealthTracker.AssociateReactiveUpdateAndTrack(soldier.health, soldier.ragdoll.neck.Get);
+        }
         
         /// <summary>
         /// Lerps card and destroys card/associated soldier.
@@ -186,7 +215,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="disposeOfSoldiers"></param>
         public void DisposeCards(IEnumerable<SoldierCard> cardsToDispose, bool disposeOfSoldiers = false)
         {
-            foreach (var card in cardsToDispose)
+            foreach (var card in cardsToDispose.ToImmutableList())
             {
                 if (card != null)
                 {

@@ -80,7 +80,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             prefabsToInstantiate = new Stack<GameObject>(randomized);
         }
 
-        [Button] public Soldier Instantiate(Transform positionAnchor, bool reparent = false)
+        [Button] public Soldier InstantiateAndReparentAndMaybeRandomize(Transform positionAnchor, bool reparent = false, GameplayManager manager = null)
         {
             bool shouldRandomize = Random.Range(0f, 1f) > 0.005f;
             
@@ -100,9 +100,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="randomize">When true, also randomizes character's props.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public Soldier Instantiate(Vector3 position, bool randomize = false)
+        public Soldier Instantiate(Vector3 position, bool randomize = false, GameplayManager manager = null)
         {
-
             if (randomizableCharacters.Count == 0) throw new Exception("No soldier prefabs specified. Please add a prefab.");
             if (weapons.Count == 0) throw new Exception("No weapon definitions specified. Please add at least one.");
 
@@ -138,7 +137,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 ikLerpOutTransition,
                 firstNames,
                 lastNames,
-                npcSettings
+                npcSettings,
+                manager
             )(selectedWeapons, position);
 
             if (!string.IsNullOrEmpty(soldierTag)) soldier.gameObject.tag = soldierTag;
@@ -169,7 +169,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Transition ikLerpOutTransition,
             StringList firstNames,
             StringList lastNames,
-            NPCSettings npcSettings
+            NPCSettings npcSettings,
+            GameplayManager gameplayManager
         )
         {
             return (weapons, position) =>
@@ -182,6 +183,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 // initialize ragdoll component (or remove if prefab doesn't have any rigidbodies)
                 var ragdoll = instance.GetOrElseAddComponent<Ragdoll>();
                 ragdoll.AttachImpactParticleSpawners(bulletImpactSettings);
+                ragdoll.InitializeKeyLimbCache();
 
                 // initialize navigation
                 var navigation = instance.GetOrElseAddComponent<AdvancedNavigation>();
@@ -228,7 +230,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                     instance.transform.Find(
                         "Root/Hips/Spine_01/Spine_02/Spine_03/Clavicle_R/Shoulder_R/Elbow_R/Hand_R");
                 weaponUserComponent.triggerHandTransform = triggerHandTransform;
-                weaponUserComponent.reloadHandTransform = ragdoll.hands.Left;
+                weaponUserComponent.reloadHandTransform = ragdoll.handL.Get;
                 weaponUserComponent.animatorSettings = new WeaponUser.AnimatorIntegrationSettings(true);
 
                 // Set accuracy processor to processor defined for the given number of stars
@@ -338,11 +340,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 ikBehaviourTree.ExternalBehavior = ikControlBehaviorTree;
                 ikBehaviourTree.BehaviorName = "IKController";
                 ikBehaviourTree.SetVariableValue("Self", instance.gameObject);
-                    
+
                 var combatBehavior = instance.AddComponent<BehaviorTree>();
                 combatBehavior.ExternalBehavior = combatBehaviorTree;
                 combatBehavior.BehaviorName = "CombatController";
                 combatBehavior.SetVariableValue("Self", instance.gameObject);
+                combatBehavior.SetVariableValue("GameplayManager", gameplayManager.gameObject);
                 
                 // Change name
                 instance.name = stats.FullName;

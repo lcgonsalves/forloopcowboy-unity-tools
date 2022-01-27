@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
@@ -9,7 +10,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
     
     [RequireComponent(typeof(Rigidbody))]
-    public class BulletController : MonoBehaviour
+    public class BulletController : MonoBehaviour, IDamageProvider
     {
         public Bullet Settings;
 
@@ -44,9 +45,15 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             rb = gameObject.GetOrElseAddComponent<Rigidbody>();
         }
 
+        private void OnDisable()
+        {
+            ResetBullet();
+        }
+
         public void Fire(Vector3 direction)
         {
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.velocity = Vector3.zero;
             rb.AddForce(direction.normalized * Settings.muzzleVelocity, ForceMode.VelocityChange);
         }
 
@@ -111,5 +118,9 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             gameObject.SetActive(false);
         }
 
+        public int GetDamageAmount()
+        {
+            return Settings != null ? Settings.GetDamageAmount() : 0;
+        }
     }
 }
