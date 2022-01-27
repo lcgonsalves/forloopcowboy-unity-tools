@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
-    public class HealthComponent : MonoBehaviour, IHasHealth, IManagedGameObject
+    public class HealthComponent : SerializedMonoBehaviour, IHasHealth, IManagedGameObject
     {
         public event Action? onDeath;
         
@@ -106,12 +106,14 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             if (previousHealth > 0 && amount > 0) OnOnDamage(amount, damageSource);
         }
 
+        [Button]
         public void Damage(int amount)
         {
             // invoked event expects source to be possibly null
             Damage(amount, null!);
         }
 
+        [Button]
         public void Heal(int amount) { Health += amount; }
 
         private bool _shouldDestroy = false;

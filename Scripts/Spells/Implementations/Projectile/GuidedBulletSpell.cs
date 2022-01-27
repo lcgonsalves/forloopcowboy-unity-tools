@@ -14,9 +14,9 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
     public class GuidedBulletSpell : BulletSpell
     {
 
-        public float Radius;
-        public float StopRadius;
-        public float Force;
+        public float radius;
+        public float stopRadius;
+        public float force;
         
         private void OnEnable()
         {
@@ -32,22 +32,25 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
         {
             // no target, no guide
             if (!caster.GetTarget(this, out var target)) return;
-
-            var force = controller.GetOrElseAddComponent<Force>();
-
-            force.enabled = true;
             
-            force.m_Force = Force;
-            force.m_Pivot = target.transform;
-            force.m_Radius = Radius;
-            force.m_StopRadius = StopRadius;
-            force.m_Layers = LayerHelper.LayerMaskFor(controller.gameObject.layer);
-            force.m_Type = GameLogic.Force.ForceType.Attraction;
+            var updater = Force.PhysicsUpdate(
+                                                      force,
+                                                      stopRadius
+                                                  );
+
+            controller.RunAsyncFixed(
+                () =>
+                {
+                    var isWithinRange = Vector3.Distance(target.transform.position, controller.transform.position) < radius;
+                    Vector3 targetPosition = target.TryGetComponent(out Ragdoll ragdoll) ? ragdoll.neck.Get.position : target.transform.position;
+
+                    if (isWithinRange)
+                        updater(controller, targetPosition);
+
+                },
+                () => !controller.gameObject.activeInHierarchy
+            );
             
-            var collider = controller.GetComponentInChildren<Collider>();
-            if (force.m_AffectedObjectIDs == null)
-                force.m_AffectedObjectIDs = new HashSet<int> {collider.GetInstanceID()};
-            else force.m_AffectedObjectIDs.Add(collider.GetInstanceID());
         }
         
         [MenuItem("Spells/New.../GuidedBullet")]
