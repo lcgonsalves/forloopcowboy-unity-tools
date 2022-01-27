@@ -204,6 +204,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var randomNode = allNodes[Random.Range(0, allNodes.Length)];
 
             var soldier = GetNewRandomSoldier(randomNode.transform);
+            UnitManager.Spawn(soldier.gameObject, randomNode, side, instantiateNew: false);
             
             HealthTracker.AssociateReactiveUpdateAndTrack(soldier.health, soldier.ragdoll.neck.Get);
         }

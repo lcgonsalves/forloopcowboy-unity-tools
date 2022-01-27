@@ -75,12 +75,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <param name="stopRadius">Radius at which the force should no longer take effect.</param>
         /// <param name="forceMagnitude">Amount of force to use.</param>
         /// <returns>A physics updater function, that returns true when the given collider had a force applied to itself (ForceType.None always returns false.).</returns>
-        public static Func<Collider, Vector3, bool> PhysicsUpdate(
+        public static Func<Component, Vector3, bool> PhysicsUpdate(
             float forceMagnitude,
             float stopRadius,
             ForceType forceType = ForceType.Attraction
         ) {
-            return (Collider collider, Vector3 pivotPosition) =>
+            return (Component collider, Vector3 pivotPosition) =>
             {
                 
                 float signal = (float) forceType;
