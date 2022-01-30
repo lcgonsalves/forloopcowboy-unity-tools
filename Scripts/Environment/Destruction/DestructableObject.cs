@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
+using RayFire;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization.Utilities;
 using UnityEngine;
@@ -17,14 +18,16 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
     public class DestructableObject : SerializedMonoBehaviour
     {
         [TabGroup("Instance Settings"), SerializeField]
+        [InfoBox("Solid object is displayed by default and each object counts the hits individually. The first object to reach the hit" +
+                 " count will trigger the mesh swap for ALL objects.")]
         private List<InstanceConfiguration> instanceConfigurations = new List<InstanceConfiguration>();
 
         [InfoBox("Shattered element must contain the particles of all other object instances. This is to take" +
                  "advantage of the Rayfire connectivity component.")]
         [SerializeField, TabGroup("Instance Settings")]
-        [ValidateInput("IsActive", "Shattered object needs to be active at initialization -- Performance degradation will happen when swapping objects!")]
+        [ValidateInput("IsInactive", "Shattered object should be inactive at initialization!")]
         private ObjectConfiguration shatteredObject = new ObjectConfiguration();
-        private bool IsActive(ObjectConfiguration config) => config.obj.IsNotNull() && config.obj.activeInHierarchy && !Application.isPlaying;
+        private bool IsInactive(ObjectConfiguration config) => Application.isPlaying || config.obj.IsNotNull() && !config.obj.activeInHierarchy;
         
         [InfoBox("These settings are applied for all sets of objects. They may be tracked differently for different " +
                  "pairs of objects (i.e. the number of hits is counted per solid object) but their settings is global.")]
@@ -49,7 +52,6 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
 
         private void Initialize()
         {
-
             for (int i = 0; i < instanceConfigurations.Count; i++)
             {
                 var instanceConfiguration = instanceConfigurations[i];
@@ -60,18 +62,14 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
                 solidObject.obj.IfNotNull(obj =>
                 {
                     var detector = solidObject.GetCollisionDetector;
-                    detector.onTriggerEnter += (_, __) => OnHitDetectedInSolidObject(_, __, instanceConfiguration);
+                    detector.onTriggerEnter += (__, _) => OnHitDetectedInSolidObject(_, instanceConfiguration);
                 }, "Cannot detect collisions.");
                 
-                shatteredObject.obj.IfNotNull(_ =>
-                {
-                    if (!_.activeInHierarchy) Debug.LogWarning("Shattered not active -- Performance degradation will happen when activating object!");
-                    _.SetActive(false);
-                });
+                shatteredObject.obj.IfNotNull(_ => _.SetActive(false));
             }
         }
 
-        private void OnHitDetectedInSolidObject(CollisionDetector detector, Collider c, InstanceConfiguration configuration)
+        private void OnHitDetectedInSolidObject(Collider c, InstanceConfiguration configuration)
         {
             // ignore certain hits
             if (configuration.ignoreHitPredicate.Apply(c.gameObject)) return;
@@ -79,11 +77,26 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
             configuration.IncrementHitCount();
             if (!Settings.IsReadyToDestroy(configuration.hitsSoFar)) return;
             
+            SwapToShattered();
+        }
+        
+        [Button("Swap to shattered")]
+        private void SwapToShattered()
+        {
+            Toggle(true);
+        }
+
+        [Button("Toggle instances")]
+        private void Toggle(bool enableShattered)
+        {
             // disable ALL solid objects, as shattered objects contain all the particles for a given object group.
             foreach (var instanceConfiguration in instanceConfigurations)
-                instanceConfiguration.SolidObject.obj.IfNotNull(_ => _.SetActive(false));
-            
-            shatteredObject.obj.IfNotNull(_ => _.SetActive(true), "Shattered object cannot be swapped to.");
+                instanceConfiguration.SolidObject.obj.IfNotNull(_ => _.SetActive(!enableShattered));
+
+            shatteredObject.obj.IfNotNull(_ =>
+            {
+                _.SetActive(enableShattered);
+            }, "Shattered object cannot be swapped to.");
         }
 
         [Serializable]
@@ -119,9 +132,7 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         [Serializable]
         public class InstanceConfiguration
         {
-
-            [InfoBox("Solid object is displayed by default and each object counts the hits individually. The first object to reach the hit" +
-                     " count will trigger the mesh swap for ALL objects.")]
+            
             [SerializeField]
             [ValidateInput("HasTriggerAttached",
                 "Solid Object must have a trigger in order to detect an approaching object.", InfoMessageType.Error)]

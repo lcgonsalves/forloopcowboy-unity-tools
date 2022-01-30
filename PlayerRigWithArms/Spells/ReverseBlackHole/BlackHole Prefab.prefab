@@ -77,7 +77,7 @@ MonoBehaviour:
       Data: forloopcowboy_unity_tools.Scripts.GameLogic.Force+Settings, Assembly-CSharp
     - Name: forceMagnitude
       Entry: 4
-      Data: 800
+      Data: 500
     - Name: stopRadius
       Entry: 4
       Data: 0.1
