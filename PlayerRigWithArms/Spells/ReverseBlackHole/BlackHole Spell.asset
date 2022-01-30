@@ -44,6 +44,6 @@ MonoBehaviour:
   bulletUsesGravity: 0
   throwAngle: 0
   previewBulletRotation: 5
-  Radius: 20
-  StopRadius: 0.08
-  Force: 70
+  radius: 13.1
+  stopRadius: 0.58
+  force: 89.5

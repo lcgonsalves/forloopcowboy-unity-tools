@@ -12,13 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8906a5188a8e4f34fa3462f7f3474dd5, type: 3}
   m_Name: BlackHole Bullet
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   prefab: {fileID: 1062729115367844, guid: 0c20f214c1b589c41a9b1e08f2c55805, type: 3}
-  onImpact: {fileID: 1157750739386364, guid: 5ec961a10afa7844fb7286e905b762bd, type: 3}
-  muzzleVelocity: 5
-  maxBounces: 0
+  onImpactPrefab: {fileID: 1157750739386364, guid: 5ec961a10afa7844fb7286e905b762bd, type: 3}
+  spawnOnFirstImpact: 1
+  spawnOnImpact: 0
+  spawnOnFinalImpact: 0
+  muzzleVelocity: 3.5
+  maxBounces: 5
   lifetime: 10
   minDamage: 35
   maxDamage: 67
   defaultDamage: 5
   bias: 0
   damageMode: 0
+  maximumConcurrentSpawnedBullets: 10

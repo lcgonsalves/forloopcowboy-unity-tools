@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using forloopcowboy_unity_tools.Scripts.Core;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -82,6 +83,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         ) {
             return (Component collider, Vector3 pivotPosition) =>
             {
+                // no force is applied to disabled or destroyed objects
+                if (collider.IsNull() || !collider.gameObject.activeInHierarchy) return false;
                 
                 float signal = (float) forceType;
 

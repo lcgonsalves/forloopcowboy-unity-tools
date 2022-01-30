@@ -501,10 +501,34 @@ namespace forloopcowboy_unity_tools.Scripts.Core
                 return (T)formatter.Deserialize(ms);
             }
         }
-        
-        public static bool HasComponent<T> (this GameObject obj)
+
+        public static bool IsNull<T>(this T? obj) where T : class => obj == null;
+        public static bool IsNotNull<T>(this T? obj) where T : class => !obj.IsNull();
+
+        // NOTE: these extensions use generic types, which are considerably more taxing on
+        // unity's performance. Considering using a normal null check as it has lower overhead.
+        public static void IfNotNull<T>(this T? obj, Action<T> doThis, string? elseWarn = null) where T : class
         {
-            return (obj.GetComponent<T>() as Component) != null;
+            if (obj.IsNotNull())
+                doThis(obj!);
+            else if (elseWarn != null)
+                obj.WarnIfIsNull(elseWarn);
+        }
+        
+        public static void IfNull<T>(this T? obj, Action doThis) where T : class
+        {
+            if (obj.IsNull())
+                doThis();
+        }
+
+        public static void WarnIfIsNull<T>(this T? obj, string message = "") where T : class
+        {
+            if (obj == null) Debug.LogWarning($"{nameof(obj)} should not be null! {message}");
+        }
+        
+        public static bool HasComponent<T> (this GameObject obj) where T : Component
+        {
+            return obj.TryGetComponent(typeof(T), out var _);
         }
         
         public static bool HasComponent<T> (this Component obj)
@@ -520,6 +544,60 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             }
         }
 
+        /// <summary>
+        /// Gets collider center, corrected from its transform.
+        /// </summary>
+        /// <returns>Collider's center in world coordinates.</returns>
+        public static Vector3 GetWorldPosition(this Collider collider)
+        {
+            Vector3 colliderCenter;
+            
+            switch (collider)
+            {
+                case BoxCollider boxCollider:
+                    colliderCenter = boxCollider.center;
+                    break;
+                case CapsuleCollider capsuleCollider:
+                    colliderCenter = capsuleCollider.center;
+                    break;
+                case CharacterController characterController:
+                    colliderCenter = characterController.center;
+                    break;
+                case MeshCollider meshCollider:
+                    colliderCenter = meshCollider.bounds.center;
+                    break;
+                case SphereCollider sphereCollider:
+                    colliderCenter = sphereCollider.center;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(collider));
+            }
+
+            return collider.transform.TransformPoint(colliderCenter);
+        }
+
+        public static Coroutine ScaleToTarget(this MonoBehaviour mono, Vector3 targetScale, float duration)
+        {
+            IEnumerator ScaleToTargetCoroutine()
+            {
+                Vector3 startScale = mono.transform.localScale;
+                float timer = 0.0f;
+ 
+                while(timer < duration)
+                {
+                    timer += Time.deltaTime;
+                    float t = timer / duration;
+                    //smoother step algorithm
+                    t = t * t * t * (t * (6f * t - 15f) + 10f);
+                    mono.transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+                    yield return null;
+                }
+ 
+                yield return null;
+            }
+            
+            return mono.StartCoroutine(ScaleToTargetCoroutine());
+        }
 
         public static Component GetOrElseAddComponent<Component> (this GameObject gObj)
             where Component : UnityEngine.Component
@@ -562,6 +640,16 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public static Coroutine RunAsyncFixed(this MonoBehaviour m, Action callback, Func<bool> shouldStop)
         {
             return m.RunAsync(callback, shouldStop, RoutineTypes.FixedUpdate);
+        }
+        
+        /// <summary>
+        /// Runs with only one looper, which returns true if should stop.
+        /// </summary>
+        /// <param name="shouldStop">looper function, which returns true if should stop.</param>
+        /// <returns></returns>
+        public static Coroutine RunAsyncFixed(this MonoBehaviour m, Func<bool> shouldStop)
+        {
+            return m.RunAsync(() => { }, shouldStop, RoutineTypes.FixedUpdate);
         }
 
         // Runs coroutine on fixed update forever
@@ -610,6 +698,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         }
 
     }
+    
 
     /// <summary>
     /// Just exposes a MonoBehaviour to run coroutines from.

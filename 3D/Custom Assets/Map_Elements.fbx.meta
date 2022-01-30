@@ -1,64 +1,9 @@
 fileFormatVersion: 2
-guid: b474c3216a711254c976f7f45f8476fc
+guid: 157399c7d7984594985aa1c951bc6ae5
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Concrete
-    second: {fileID: 2100000, guid: bc53278f78f832041b3e0fde57ca7e0e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Dark Concrete
-    second: {fileID: 2100000, guid: 9064478b1fc7a6046b32dd548a94f7cf, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Dark Ugly Metal
-    second: {fileID: 2100000, guid: 170ea3f6701a5244683eaf1aab507502, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Exposed Aggregate
-    second: {fileID: 2100000, guid: 0bb67e76e7f45b24f8f24336d5087922, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Neon
-    second: {fileID: 2100000, guid: 19eaaa34360a50242a7d969ceac8aa94, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Shiny Metal
-    second: {fileID: 2100000, guid: 15b85dee1ab37494c88d38a35a6870da, type: 2}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Corten-Steel-A-Architextures
-    second: {fileID: 2800000, guid: 9907234baba633640977cd20c3f575bc, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Corten-Steel-B-Architextures
-    second: {fileID: 2800000, guid: beda5d44ece9e494f86cf4ada68f7871, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Exposed-Aggregate-Architextures
-    second: {fileID: 2800000, guid: 20e6c2df821155e40bf8b7b555fd7ee9, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: In-Situ-Concrete-Architextures
-    second: {fileID: 2800000, guid: 691e397c92814814fa57ca873f10cd99, type: 3}
-  - first:
-      type: UnityEngine:Texture2D
-      assembly: UnityEngine.CoreModule
-      name: Polished-Concrete-Architextures
-    second: {fileID: 2800000, guid: 59ba234b8d7f21b43ac6d0d48a6761ec, type: 3}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0

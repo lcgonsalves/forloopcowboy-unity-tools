@@ -9,7 +9,7 @@ using UnityEngine;
 namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
     
-    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(Rigidbody)), SelectionBase]
     public class BulletController : MonoBehaviour, IDamageProvider
     {
         public Bullet Settings;
@@ -37,7 +37,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             bouncesSoFar = -1;
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.collisionDetectionMode = rb.isKinematic ? CollisionDetectionMode.ContinuousSpeculative : CollisionDetectionMode.ContinuousDynamic;
         }
 
         private void OnEnable() {
@@ -52,6 +52,7 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
 
         public void Fire(Vector3 direction)
         {
+            rb.isKinematic = false;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.velocity = Vector3.zero;
             rb.AddForce(direction.normalized * Settings.muzzleVelocity, ForceMode.VelocityChange);
@@ -61,9 +62,8 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             if (countBounces) bouncesSoFar++;
 
             if (bouncesSoFar == 0) OnFirstImpact(other);
-
             // enough bounces, disable object
-            if (bouncesSoFar >= (Settings != null ? Settings.maxBounces : 0)) OnFinalImpact(other);
+            else if (bouncesSoFar >= (Settings != null ? Settings.maxBounces : 0)) OnFinalImpact(other);
             else OnImpact(other); // on impact is called only while bounces is < max
         }
 
@@ -94,33 +94,57 @@ namespace forloopcowboy_unity_tools.Scripts.Bullet
             gameObject.SetActive(false);
         }
 
+        /// <summary> Called on first counted impact. </summary>
         protected virtual void OnFirstImpact(Collision other)
         {
-            // if we collide with anything, and we are a guided bullet, then stop being guided.
-            if (TryGetComponent(out Force force))
-            {
-                force.m_Type = Force.ForceType.None;
-            }
+            if (Settings.spawnOnFirstImpact) SpawnImpactExplosion(other);
+            onFirstImpact?.Invoke(other);
         }
+        public event Action<Collision> onFirstImpact;
 
+        /// <summary> Called on every impact, including first and last. </summary>
         protected virtual void OnImpact(Collision other)
         {
-            if (Settings.onImpact)
-            {
-                var impactExplosion = Instantiate(Settings.onImpact, other.contacts[0].point, Quaternion.identity);
-                Destroy(impactExplosion, 3f);
-            }
+            GameObject impactExplosion = null;
+            if (Settings.spawnOnImpact) impactExplosion = SpawnImpactExplosion(other);
+            
+            onImpact?.Invoke(other, impactExplosion);
         }
 
+        /// <summary> First param is the collision, second is a game object instance of the Impact explosion, if one is defined (null check!). </summary>
+        public event Action<Collision, GameObject> onImpact;
+
+        /// <summary> Called on final counted impact. </summary>
         protected virtual void OnFinalImpact(Collision other)
         {
             OnImpact(other);
             gameObject.SetActive(false);
+            
+            if (Settings.spawnOnFinalImpact)
+                SpawnImpactExplosion(other);
+            
+            onFinalImpact?.Invoke(other);
         }
+        
+        /// <summary> Invoked after onImpact, and after object is disabled. </summary>
+        public event Action<Collision> onFinalImpact;
 
         public int GetDamageAmount()
         {
             return Settings != null ? Settings.GetDamageAmount() : 0;
+        }
+        
+        private GameObject SpawnImpactExplosion(Collision other)
+        {
+            GameObject impactExplosion = null;
+            
+            if (Settings.onImpactPrefab)
+            {
+                impactExplosion = Instantiate(Settings.onImpactPrefab, other.contacts[0].point, Quaternion.identity);
+                Destroy(impactExplosion, 3f);
+            }
+
+            return impactExplosion;
         }
     }
 }

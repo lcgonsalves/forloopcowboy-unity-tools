@@ -48,7 +48,10 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
                 var rb = bulletPreview.GetComponent<Rigidbody>();
 
                 if (rb)
+                {
                     rb.isKinematic = true;
+                    rb.detectCollisions = false;
+                }
                 
                 UpdateEffect(bulletPreview, previewPosition, Quaternion.LookRotation(direction), "FirstPersonObjects");
                 

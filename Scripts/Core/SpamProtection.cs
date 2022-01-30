@@ -52,5 +52,6 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             
             return canExecute;
         }
+        
     }
 }

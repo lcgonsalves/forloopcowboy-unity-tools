@@ -101,7 +101,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 var casterRotation = caster.transform.rotation;
                 
                 UpdateEffect(handPreview, handPreviewPosition, casterRotation, "FirstPersonObjects");
-                UpdateEffect(particles.targetPreview, targetPreviewPosition, casterRotation, "Player", false);
+                UpdateEffect(particles.targetPreview, targetPreviewPosition, casterRotation, "FirstPersonObjects", false);
                 
             } else NoParticleInstantiatedWarning(caster);
         }
