@@ -93,6 +93,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6241301718073286903}
+  - component: {fileID: 3676816909500306146}
+  - component: {fileID: 4272464113166771900}
   m_Layer: 0
   m_Name: Turret_Core
   m_TagString: Untagged
@@ -115,6 +117,46 @@ Transform:
   m_Father: {fileID: 6511165592459803829}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3676816909500306146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3539689077931540946}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 004bb1e7008440f2a4b337565a82261b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  magazine: {fileID: 0}
+  _initialLocalPosition: {x: 0, y: 0, z: 0}
+  _initialLocalRotation: {x: 0, y: 0, z: 0, w: 0}
+  _initialParent: {fileID: 0}
+--- !u!114 &4272464113166771900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3539689077931540946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2026affe9f5076947a427774b249c51a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponSettings: {fileID: 0}
+  bulletsInClip: 0
+  magazinesInInventory: 2
+  currentlyFiring: 0
+  shouldFire: 0
+  burstSettings:
+    enabled: 0
+    maxBurstLength: 0
+    minBurstLength: 0
+    maxBreakLength: 0
+    minBreakLength: 0
+  peripheralEmitters: []
 --- !u!1 &5086978031144249520
 GameObject:
   m_ObjectHideFlags: 0
@@ -206,6 +248,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6511165592459803829}
+  - component: {fileID: 288844950186761005}
   m_Layer: 0
   m_Name: Turret_Short
   m_TagString: Untagged
@@ -229,3 +272,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &288844950186761005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8715915688932737005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8d0463163fefd24888d1738f3e4add8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  easeToAimTransition: {fileID: 11400000, guid: c56099edc73b9124bbbeefe41f7ba5a1, type: 2}
+  weapon: {fileID: 4272464113166771900}
+  bodyTransform: {fileID: 6241301718073286903}
+  _isTracking: 0
+  trackedTarget: {fileID: 0}

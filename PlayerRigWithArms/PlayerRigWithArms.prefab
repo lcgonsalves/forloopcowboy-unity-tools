@@ -1886,7 +1886,7 @@ MonoBehaviour:
     isGrounded: 0
   movementSpeed: 2.5
   StrafeMovementSpeed: 2.2
-  JumpHeight: 1
+  JumpHeight: 2
   sprintMultiplier: 2.45
   GoIdleInSeconds: 2
   inputSettings:
@@ -1985,10 +1985,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spells:
-  - {fileID: 11400000, guid: cfd6ff386e63a564591bafcd7c6ced4d, type: 2}
-  - {fileID: 11400000, guid: 09f9012b1812def41842bfe42c5777d6, type: 2}
   - {fileID: 11400000, guid: 89a24a455f2ad4e4b9d7d59d2c11a9d6, type: 2}
-  - {fileID: 11400000, guid: f68f8d4201e5510468351825e4e84d0d, type: 2}
   gm: {fileID: 0}
   leftHandInput: {fileID: -5740664572096273349, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}
   rightHandInput: {fileID: 1919642555619393717, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}

@@ -4821,7 +4821,7 @@ MonoBehaviour:
   seed: 0
   clusterize: 1
   demolishable: 1
-  startCollapse: 5
+  startCollapse: 3
   collapseByIntegrity: 50
   collapse:
     type: 1
@@ -11620,15 +11620,12 @@ MonoBehaviour:
   instanceConfigurations:
   - solidObject:
       obj: {fileID: 3953068769269595444}
-      ignorePlayerHits: 1
     ignoreHitPredicate: {fileID: 11400000, guid: 0353b87d86995a54781c0448a9565835, type: 2}
   - solidObject:
       obj: {fileID: 2318963948120067835}
-      ignorePlayerHits: 1
     ignoreHitPredicate: {fileID: 11400000, guid: 0353b87d86995a54781c0448a9565835, type: 2}
   shatteredObject:
     obj: {fileID: 206790714966986848}
-    ignorePlayerHits: 1
   settings: {fileID: 0}
   simpleSettings:
     hitsUntilDestruction: 2

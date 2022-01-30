@@ -104,7 +104,6 @@ namespace forloopcowboy_unity_tools.Scripts.Environment
         {
             [HideLabel]
             public GameObject obj;
-            public bool ignorePlayerHits = true;
             private Core.Cache<CollisionDetector> collisionDetector;
 
             public CollisionDetector GetCollisionDetector
