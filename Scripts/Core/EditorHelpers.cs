@@ -345,16 +345,16 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public dynamic Get<T>(Side<T> side)
         {
             if (side is Left<T>) {
-                var l = this.l;
-                if (l != null) return l.content;
+                var left = this.l;
+                if (left != null) return left.content!;
             }
 
             if (side is Right<T>) {
-                var r = this.r;
-                if (r != null) return r.content;
+                var right = this.r;
+                if (right != null) return right.content!;
             }
 
-            return null;
+            return null!;
         }
 
         public void Set(Left<T1> s) => this.leftValue = s.content;
