@@ -9,19 +9,19 @@ namespace forloopcowboy_unity_tools.Scripts.Player
     [RequireComponent(typeof(Animator))]
     public class ArmComponent : SerializedMonoBehaviour
     {
-        [Header("Animator Parameters"), Core.ReadOnly]
+        [Header("Animator Parameters"), ReadOnly]
         public string TwoFingerHoldBool = "TwoFingerHold";
 
-        [Core.ReadOnly]
+        [ReadOnly]
         public string OpenPalmHoldBool = "OpenPalmHold";
     
-        [Core.ReadOnly]
+        [ReadOnly]
         public string ClosedPalmHoldBool = "ClosedPalmHold";
 
-        [Core.ReadOnly]
+        [ReadOnly]
         public string CastThrowTrigger = "CastThrow";
 
-        [Core.ReadOnly]
+        [ReadOnly]
         public string CastForwardBool = "CastForward";
 
         [Header("Configuration")]

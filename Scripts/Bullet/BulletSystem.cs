@@ -5,7 +5,6 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
 // Object recycler or whatever this fuck is called
-// todo: refactor this to use the generic game object pool
 namespace forloopcowboy_unity_tools.Scripts.Bullet
 {
     public class BulletSystem

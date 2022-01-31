@@ -7,7 +7,6 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 using forloopcowboy_unity_tools.Scripts.Weapon;
 using Sirenix.OdinInspector;
-using UnityEditor.Animations;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -23,7 +22,6 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public uint prefabRandomizerSeed = 69;
         
         public Transition aimTransition;
-        public AnimatorController animatorController;
         public ExternalBehaviorTree ikControlBehaviorTree;
         public ExternalBehaviorTree combatBehaviorTree;
         public Transition ikLerpInTransition;
@@ -125,6 +123,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             }
 
             var selectedWeapons = indices.Select(idx => weapons[idx]).ToArray();
+            var animatorController =
+                Resources.Load<RuntimeAnimatorController>("Assets/Resources/Animators/HumanoidWithWeapon");
 
             var soldier = InstantiateCharacter(
                 selectedCharacter,
@@ -160,7 +160,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <returns></returns>
         public static Func<IEnumerable<Weapon.Weapon>, Vector3, Soldier> InstantiateCharacter(
             GameObject characterRigPrefab,
-            AnimatorController animatorController,
+            RuntimeAnimatorController animatorController,
             ExternalBehaviorTree ikControlBehaviorTree,
             ExternalBehaviorTree combatBehaviorTree,
             BulletImpactSettings bulletImpactSettings,

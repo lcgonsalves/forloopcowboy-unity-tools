@@ -6,13 +6,14 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Weapon
 {
     [RequireComponent(typeof(ReloadSystem)), SelectionBase]
-    public class WeaponController : MonoBehaviour
+    public class WeaponController : SerializedMonoBehaviour
     {
         public Weapon weaponSettings;
 
@@ -65,7 +66,7 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
         void Start()
         {
             // begin loaded
-            bulletsInClip = weaponSettings.clipSize;
+            bulletsInClip = weaponSettings != null ? weaponSettings.clipSize : 0;
             
             // initialize settings if available
             burstSettings = weaponSettings ? weaponSettings.defaultBurstSettings : burstSettings;
@@ -80,7 +81,8 @@ namespace forloopcowboy_unity_tools.Scripts.Weapon
             _burstCoroutine = StartCoroutine(BurstCoroutine());
 
             // memory optimization
-            _fireRateWFS = new WaitForSeconds(60f / weaponSettings.bulletsPerMinute);
+            var bpm = weaponSettings != null ? weaponSettings.bulletsPerMinute : 60f;
+            _fireRateWFS = new WaitForSeconds(60f / bpm);
 
         }
 

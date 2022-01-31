@@ -19,7 +19,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// </summary>
         public event Action<int, IDamageProvider?>? onDamage;
         
-        [SerializeField, Core.ReadOnly]
+        [SerializeField, ReadOnly]
         private int health = 100;
 
         [SerializeField]
@@ -159,7 +159,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
 
         private void OnDrawGizmos()
         {
+            #if UNITY_EDITOR
             Handles.Label(transform.position + Vector3.up, $"Health [{Health}]");
+            #endif
         }
 
         [Button]

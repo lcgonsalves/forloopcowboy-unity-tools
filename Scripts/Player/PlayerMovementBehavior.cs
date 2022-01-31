@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using forloopcowboy_unity_tools.Scripts.Core;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,7 +9,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 {
     [RequireComponent(typeof(CharacterController), typeof(Chronos.Chronos))]
     [SelectionBase]
-    public class PlayerMovementBehavior : MonoBehaviour
+    public class PlayerMovementBehavior : SerializedMonoBehaviour
     {
         // debug information
         [SerializeField]

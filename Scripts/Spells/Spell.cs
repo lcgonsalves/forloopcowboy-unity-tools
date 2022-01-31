@@ -240,16 +240,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             bool LatestSpellCastTimeFor(Spell spell, Side<ArmComponent> arm, out System.DateTime time);
         }
 
-        protected static void CreateSpellAsset<S>(string name) where S : Spell
-        {
-            Object s = ScriptableObject.CreateInstance<S>();
-            AssetDatabase.CreateAsset(s, $"Assets/Spells/New{name}.asset");
-            AssetDatabase.SaveAssets();
-            EditorUtility.FocusProjectWindow();
-
-            Selection.activeObject = s;
-        }
-
         protected Vector3 GetCastPointFor(Side<ArmComponent> source)
         {
             return source.content.GetCastPoint(chargeStyle);

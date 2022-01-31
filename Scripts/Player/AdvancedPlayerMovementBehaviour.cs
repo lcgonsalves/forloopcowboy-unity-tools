@@ -1,5 +1,6 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Player

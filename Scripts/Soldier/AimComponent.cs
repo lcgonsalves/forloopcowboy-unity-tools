@@ -5,12 +5,13 @@ using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Weapon;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Soldier
 {
     /// Exposes methods for aiming at points
-    public class AimComponent : MonoBehaviour
+    public class AimComponent : SerializedMonoBehaviour
     {
         public Transition easeToAimTransition;
         public WeaponController weapon;
@@ -60,6 +61,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// If given target is the same as the tracked target, nothing happens.
         /// </summary>
         /// <param name="target"></param>
+        [Button("Track"), ButtonGroup("Aim")]
         public void AimAndTrack(Transform target)
         {
             if (trackedTarget == null || trackedTarget.GetInstanceID() != target.GetInstanceID())
@@ -78,6 +80,7 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         /// <param name="target"></param>
         /// <param name="gradual">When true, plays animation. If an animation is already playing, it interrupts it.</param>
         /// <param name="onAimReady">Callback that runs when aim is ready</param>
+        [Button("Aim"), ButtonGroup("Aim")]
         public void Aim(Transform target, bool gradual, [CanBeNull] Action onAimReady = null)
         {
             if (weaponTransform == null) return;

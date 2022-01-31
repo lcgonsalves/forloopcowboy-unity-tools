@@ -17,6 +17,7 @@ using Random = System.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 {
+    [CreateAssetMenu(fileName = "Spawn Mesh Spell", menuName = "Spells/Spawn Mesh Spell", order = 100)]
     public class SpawnMeshSpell : Spell
     {
         private Camera mainCam = null;
@@ -322,8 +323,5 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
             }
 
         }
-
-        [MenuItem("Spells/New.../Barrier")]
-        static void CreateBulletSpell(){ Spell.CreateSpellAsset<SpawnMeshSpell>("Barrier"); }
     }
 }

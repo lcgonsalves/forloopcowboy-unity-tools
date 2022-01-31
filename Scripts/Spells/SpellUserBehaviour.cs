@@ -7,13 +7,14 @@ using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
 using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using JetBrains.Annotations;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells
 {
-    public class SpellUserBehaviour : MonoBehaviour, Spell.SpellCaster<SpellUserBehaviour.Config>
+    public class SpellUserBehaviour : SerializedMonoBehaviour, Spell.SpellCaster<SpellUserBehaviour.Config>
     {
 
         [UnityEngine.Tooltip("Allowed Spells")]

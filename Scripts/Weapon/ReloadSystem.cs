@@ -1,10 +1,11 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Weapon
 {
-    public class ReloadSystem : MonoBehaviour
+    public class ReloadSystem : SerializedMonoBehaviour
     {
         public GameObject magazine;
 

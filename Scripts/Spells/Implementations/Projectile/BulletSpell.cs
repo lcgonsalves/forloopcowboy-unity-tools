@@ -11,6 +11,7 @@ using VoxelArsenal;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {
+    [CreateAssetMenu(fileName = "Bullet Spell", menuName = "Spells/Bullet Spell", order = 0)]
     public class BulletSpell : Spell
     {
         [InlineEditor(InlineEditorModes.FullEditor)]
@@ -97,9 +98,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
         }
 
         public event Action<SpellUserBehaviour, BulletController> OnBulletFired;
-
-        [MenuItem("Spells/New.../Bullet")]
-        static void CreateBulletSpell(){ Spell.CreateSpellAsset<BulletSpell>("Projectile"); }
 
     }
 }

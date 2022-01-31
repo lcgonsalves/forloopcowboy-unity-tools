@@ -22,7 +22,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
     /// on the Player layer so they avoid being hit by our own projectiles
     /// but also the physics of the core still works in attracting bullets.
     /// </summary>
-    [CreateAssetMenu(fileName = "Psychokinesis Spell", menuName = "Spells/Psychokinesis", order = 0)]
+    [CreateAssetMenu(fileName = "Psychokinesis Spell", menuName = "Spells/Psychokinesis", order = 2)]
     public class PsychokinesisSpell : Spell
     {
         [TabGroup("Psychokinesis")]

@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using BehaviorDesigner.Runtime.Tasks.Unity.UnityCharacterController;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Environment;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using JetBrains.Annotations;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.PlayerLoop;
 using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Soldier
@@ -31,9 +28,9 @@ namespace forloopcowboy_unity_tools.Scripts.Soldier
         public float waypointReachedRadius = 1f;
         [FormerlySerializedAs("waypointConfiguration")] public WaypointSettings waypointSettings;
 
-        [SerializeField, ReadOnly] private Transform _lastVisited = null;
-        [SerializeField, ReadOnly] private Transform _lastWaypointPathStart = null;
-        [SerializeField, ReadOnly] private List<Transform> _lastWaypointPath = new List<Transform>(15);
+        [SerializeField] private Transform _lastVisited = null;
+        [SerializeField] private Transform _lastWaypointPathStart = null;
+        [SerializeField] private List<Transform> _lastWaypointPath = new List<Transform>(15);
 
         public NavMeshAgent NavMeshAgent => _navMeshAgent ? _navMeshAgent : GetComponent<NavMeshAgent>();
         

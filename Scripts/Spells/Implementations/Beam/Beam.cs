@@ -7,6 +7,7 @@ using UnityEngine;
 // Simple beam implementaion
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
 {
+    [CreateAssetMenu(fileName = "Beam Spell", menuName = "Spells/Beam", order = 0)]
     public class Beam : Spell
     {
         public Transition sensitivityTransition;
@@ -78,8 +79,5 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
                 });
             }
         }
-
-        [MenuItem("Spells/New.../Beam")]
-        static void CreateBeamSpell() { Spell.CreateSpellAsset<Beam>("Beam"); }
     }
 }
