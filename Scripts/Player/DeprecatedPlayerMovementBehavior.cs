@@ -9,7 +9,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 {
     [RequireComponent(typeof(CharacterController), typeof(Chronos.Chronos))]
     [SelectionBase]
-    public class PlayerMovementBehavior : SerializedMonoBehaviour
+    public class DeprecatedPlayerMovementBehavior : SerializedMonoBehaviour
     {
         // debug information
         [SerializeField]

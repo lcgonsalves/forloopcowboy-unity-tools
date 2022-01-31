@@ -8,7 +8,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
     /// Builds upon the regular behavior by adding ledge grabbing
     /// And crouching.
     [DisallowMultipleComponent]
-    public class AdvancedPlayerMovementBehaviour : PlayerMovementBehavior
+    public class DeprecatedAdvancedPlayerMovementBehaviour : DeprecatedPlayerMovementBehavior
     {
         [System.Serializable]
         public class LedgeGrabSettings

@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Player
 {
-    [RequireComponent(typeof(AdvancedPlayerMovementBehaviour))]
+    [RequireComponent(typeof(DeprecatedAdvancedPlayerMovementBehaviour))]
     public class PlayerComponent : MonoBehaviour
     {
         public UnitManager.Side side;
         
-        public AdvancedPlayerMovementBehaviour movement => _movement == null ? _movement = GetComponent<AdvancedPlayerMovementBehaviour>() : _movement;
-        private AdvancedPlayerMovementBehaviour _movement;
+        public DeprecatedAdvancedPlayerMovementBehaviour movement => _movement == null ? _movement = GetComponent<DeprecatedAdvancedPlayerMovementBehaviour>() : _movement;
+        private DeprecatedAdvancedPlayerMovementBehaviour _movement;
 
         public HealthComponent healthComponent => _healthComponent == null ? _healthComponent = GetComponent<HealthComponent>() : _healthComponent;
         private HealthComponent _healthComponent;

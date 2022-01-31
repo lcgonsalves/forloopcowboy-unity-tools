@@ -31,7 +31,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
                 Transition.TransitionState transitionInstance = sensitivityTransition.GetPlayableInstance();
 
                 // control sensitivity according to the uhhhh
-                var movementBehaviour = caster.gameObject.GetComponent<AdvancedPlayerMovementBehaviour>();
+                var movementBehaviour = caster.gameObject.GetComponent<DeprecatedAdvancedPlayerMovementBehaviour>();
                 if (movementBehaviour != null)
                 {
                     // tweenTransition should be like a bell curve if you want things to return to normal == retard
