@@ -115,12 +115,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             
             // Apply inputs to the camera
             camera.UpdateWithInput(Time.deltaTime, 0, lookInputVector);
-
-            // Handle toggling zoom level
-            // if (Input.GetMouseButtonDown(1))
-            // {
-            //     camera.TargetDistance = (camera.TargetDistance == 0f) ? camera.DefaultDistance : 0f;
-            // }
+            
         }
         
     }
