@@ -31,7 +31,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         private UnitManager _unitManager;
 
         [TabGroup("Player Settings"), Tooltip("Where player 1 is player uhh 1")]
-        public PlayerComponent[] players;
+        public NetworkedPlayer[] players;
 
         [TabGroup("Player Settings"), Tooltip("Which camera follows each player. 1-1 Match based on index.")] 
         public CinemachineVirtualCamera[] virtualCamera;
@@ -173,7 +173,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
             var obj = UnitManager.SpawnCopy(side, players[index].gameObject);
             var vcam = virtualCamera[index];
-            var playerComponent = obj.gameObject.GetOrElseAddComponent<PlayerComponent>();
+            var playerComponent = obj.gameObject.GetOrElseAddComponent<NetworkedPlayer>();
 
             HealthTracker.AssociateReactiveUpdate(playerComponent.healthComponent, true);
             

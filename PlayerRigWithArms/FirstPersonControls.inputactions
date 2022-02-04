@@ -1,5 +1,5 @@
 {
-    "name": "Controls",
+    "name": "FirstPersonControls",
     "maps": [
         {
             "name": "Default",
@@ -11,7 +11,8 @@
                     "id": "b6d6a33e-bd98-4f19-8025-7b5f3f24e946",
                     "expectedControlType": "Vector2",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Interact",
@@ -19,7 +20,8 @@
                     "id": "961c7293-2463-4e17-80b5-12131c136e0c",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Move",
@@ -27,7 +29,8 @@
                     "id": "c36d1de2-7827-4c0d-ac88-c1d3c27b35bf",
                     "expectedControlType": "Vector2",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Jump",
@@ -35,7 +38,8 @@
                     "id": "61c7b822-0191-4480-bf11-d84990a47dbc",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Look",
@@ -43,7 +47,8 @@
                     "id": "accc7879-c2f1-4e95-8a71-efe08aa55bb7",
                     "expectedControlType": "Vector2",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Sprint",
@@ -51,7 +56,8 @@
                     "id": "67478ba2-0f1d-4672-826c-4e6d2b31463a",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "LeftHandAction",
@@ -59,7 +65,8 @@
                     "id": "b6e9cab4-f9cc-4465-86a8-f23234ec4bf6",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Press(behavior=2)"
+                    "interactions": "Press(behavior=2)",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "RightHandAction",
@@ -67,7 +74,8 @@
                     "id": "b89a8eef-7c0c-4a13-ad19-496930d523f2",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Press(behavior=2)"
+                    "interactions": "Press(behavior=2)",
+                    "initialStateCheck": false
                 },
                 {
                     "name": "SelectAction",
@@ -75,7 +83,8 @@
                     "id": "ec58c117-f8bd-4df6-bd1e-b7a69ff2f276",
                     "expectedControlType": "Axis",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Alternate",
@@ -83,7 +92,17 @@
                     "id": "d83f8e94-a2d5-4808-bd87-8749ad23bc8e",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "Press(behavior=2)"
+                    "interactions": "Press(behavior=2)",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Escape",
+                    "type": "Button",
+                    "id": "aece9abb-53ad-4a36-a9ee-2a8d9026b127",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -240,6 +259,17 @@
                     "action": "Alternate",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "675657ad-c69b-4943-b623-20f93be91158",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Escape",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
@@ -253,7 +283,8 @@
                     "id": "997b0d18-9cdd-4d9e-898c-a8db170bfb76",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [

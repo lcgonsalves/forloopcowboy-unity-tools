@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace forloopcowboy_unity_tools.Scripts.Core
 {
@@ -587,7 +588,30 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         }
 
     }
-    
+
+    public static class InputSystemExtended
+    {
+
+        /// <summary>
+        /// Checks if it's float value is positive. True if it is.
+        /// You can control the tolerance, if this is a soft button (or your floats are behaving weirdly and buttons never unpress).
+        /// </summary>
+        public static bool WasPressedThisFrame(this InputActionReference reference, float tolerance = 0.0f)
+        {
+            if (reference == null) return false;
+            return reference.action.ReadValue<float>() > 0 + tolerance;
+        }
+
+        /// <summary>
+        /// Gets the value this frame.
+        /// </summary>
+        public static T ValueThisFrame<T>(this InputActionReference reference) where T : struct
+        {
+            // always referencing action is cumbersome to me, sorryu
+            return reference.action.ReadValue<T>();
+        }
+
+    }
 
     /// <summary>
     /// Just exposes a MonoBehaviour to run coroutines from.

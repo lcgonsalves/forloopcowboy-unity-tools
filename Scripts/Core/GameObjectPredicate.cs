@@ -60,7 +60,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             switch (op)
             {
                 case Operation.IS_PLAYER:
-                    return gameObject.HasComponent<PlayerComponent>();
+                    return gameObject.HasComponent<NetworkedPlayer>();
                 case Operation.IS_BULLET:
                     return gameObject.HasComponent<BulletController>();
                 default:

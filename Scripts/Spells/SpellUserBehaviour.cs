@@ -24,14 +24,14 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         {
             closestTarget = null;
             gm = gm == null ? FindObjectOfType<GameplayManager>() : gm;
-            playerComponent = playerComponent == null ? GetComponent<PlayerComponent>() : playerComponent;
+            networkedPlayer = networkedPlayer == null ? GetComponent<NetworkedPlayer>() : networkedPlayer;
 
-            if (playerComponent == null) return false;
-            return gm.FindClosestTarget(this.transform.position, spell.range, playerComponent.side.GetOpposing(), out closestTarget);
+            if (networkedPlayer == null) return false;
+            return gm.FindClosestTarget(this.transform.position, spell.range, networkedPlayer.side.GetOpposing(), out closestTarget);
         }
 
         public GameplayManager gm = null;
-        private PlayerComponent playerComponent;
+        private NetworkedPlayer networkedPlayer;
         
         public InputActionReference leftHandInput;
         public InputActionReference rightHandInput;

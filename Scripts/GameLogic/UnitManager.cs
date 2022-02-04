@@ -245,9 +245,9 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             SpawnedGameObjects.Add(new SpawnedGameObject(side, managedGameObj, spawnAt));
         }
 
-        public void SpawnPlayer(PlayerComponent player, Transform location, Side side, bool instantiateNew = true)
+        public void SpawnPlayer(NetworkedPlayer networkedPlayer, Transform location, Side side, bool instantiateNew = true)
         {
-            var i = instantiateNew ? Instantiate(player, location.position, location.rotation) : player;
+            var i = instantiateNew ? Instantiate(networkedPlayer, location.position, location.rotation) : networkedPlayer;
             SpawnedGameObjects.Add(new SpawnedGameObject(side, i.gameObject.GetManaged()));
         }
 
@@ -265,7 +265,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 instance.transform.position = t.position;
                 instance.transform.rotation = t.rotation;
 
-                var isPlayer = instance.TryGetComponent(out PlayerComponent playerComponent);
+                var isPlayer = instance.TryGetComponent(out NetworkedPlayer playerComponent);
                 var managedGameObj = isPlayer ? playerComponent.gameObject.GetManaged() : InitializeSoldier(side, instance, spawnAt);
 
                 if (managedGameObj is HealthComponent healthComponent)
