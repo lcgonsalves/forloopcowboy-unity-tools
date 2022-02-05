@@ -12,7 +12,7 @@ namespace forloopcowboy_unity_tools.Scripts.Movement
     /// This is my interpretation using the "new" InputSystem and
     /// for a networked environment.
     /// </summary>
-    public class NetworkedCharacterController : NetworkBehaviour, ICharacterController
+    public class KinematicCharacterController : NetworkBehaviour, ICharacterController
     {
         public KinematicCharacterMotor Motor;
 

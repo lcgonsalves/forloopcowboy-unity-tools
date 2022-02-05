@@ -1,24 +1,26 @@
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
-using forloopcowboy_unity_tools.Scripts.Movement;
-using KinematicCharacterController.Examples;
 using Sirenix.OdinInspector;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Player
 {
-    public class NetworkedPlayer : MonoBehaviour
+    [RequireComponent(typeof(NetworkObject))]
+    public class NetworkedPlayer : NetworkBehaviour
     {
         public UnitManager.Side side;
-        public new ExampleCharacterCamera camera;
-        public NetworkedCharacterController player;
+        public new PlayerCameraController cameraController;
+        [FormerlySerializedAs("player")]
+        public Movement.KinematicCharacterController characterController;
         public Transform cameraFollowPoint;
 
         [ShowInInspector]
         public HealthComponent healthComponent => _healthComponent == null ? _healthComponent = GetComponent<HealthComponent>() : _healthComponent;
         private HealthComponent _healthComponent;
-        
+
         [System.Serializable]
         public class InputSettings
         {
@@ -53,49 +55,65 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 
         public InputSettings inputSettings;
 
+        private void OnDisable()
+        {
+            if (IsOwner && IsClient)
+            {
+                inputSettings.DisableAll();
+                inputSettings.escape.action.performed -= ToggleCursorLockState;
+            }
+        }
+        
         private void Start()
         {
-            Cursor.lockState = CursorLockMode.Locked;
+            if (IsOwner && IsClient)
+            {
+                inputSettings.EnableAll();
+                inputSettings.escape.action.performed += ToggleCursorLockState;
+                
+                Cursor.lockState = CursorLockMode.Locked;
 
-            // Tell camera to follow transform
-            camera.SetFollowTransform(cameraFollowPoint);
+                // Tell camera to follow transform
+                cameraController.SetFollowTransform(cameraFollowPoint);
 
-            // Ignore the character's collider(s) for camera obstruction checks
-            camera.IgnoredColliders.Clear();
-            camera.IgnoredColliders.AddRange(player.GetComponentsInChildren<Collider>());
-
-            inputSettings.EnableAll();
+                // Ignore the character's collider(s) for camera obstruction checks
+                cameraController.IgnoredColliders.Clear();
+                cameraController.IgnoredColliders.AddRange(characterController.GetComponentsInChildren<Collider>());
+            }
+            else
+            {
+                characterController.Motor.enabled = false;
+            }
         }
         
         private void LateUpdate()
         {
-            HandleCameraInput();
-            player.PostInputUpdate(Time.deltaTime, camera.transform.forward);
+            if (IsOwner && IsClient)
+            {
+                HandleCameraInput();
+                characterController.PostInputUpdate(Time.deltaTime, cameraController.transform.forward);
+            }
         }
         
         private void Update()
         {
-            HandleInputs();
-
-            if (inputSettings.escape.WasPressedThisFrame())
-            {
-                
-            }
+            if (IsOwner && IsClient)
+                HandleInputs();
         }
 
 
         public void HandleInputs()
         {
-            var inputs = new NetworkedCharacterController.PlayerCharacterInputs();
+            var inputs = new Movement.KinematicCharacterController.PlayerCharacterInputs();
             var moveInput = inputSettings.move.ValueThisFrame<Vector2>();
             var pressedJump = inputSettings.jump.WasPressedThisFrame();
 
-            inputs.cameraRotation = camera.Transform.rotation;
+            inputs.cameraRotation = cameraController.Transform.rotation;
             inputs.moveAxisForward = moveInput.y;
             inputs.moveAxisRight = moveInput.x;
             inputs.requestJump = pressedJump;
 
-            player.SetInputs(ref inputs);
+            characterController.SetInputs(ref inputs);
         }
 
         public void HandleCameraInput()
@@ -114,9 +132,17 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             }
             
             // Apply inputs to the camera
-            camera.UpdateWithInput(Time.deltaTime, 0, lookInputVector);
+            cameraController.UpdateWithInput(Time.deltaTime, 0, lookInputVector);
             
         }
         
+        private static void ToggleCursorLockState(InputAction.CallbackContext _)
+        {
+            if (Cursor.lockState == CursorLockMode.Locked)
+                Cursor.lockState = CursorLockMode.None;
+            else if (Cursor.lockState == CursorLockMode.None)
+                Cursor.lockState = CursorLockMode.Locked;
+        }
+
     }
 }

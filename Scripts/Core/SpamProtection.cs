@@ -7,9 +7,9 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public float debounceInSeconds = 0.5f;
         public DateTime lastExecution { get; private set; }
         
-        public SpamProtection(float debounce)
+        public SpamProtection(float debounceSeconds)
         {
-            debounceInSeconds = debounce;
+            debounceInSeconds = debounceSeconds;
         }
 
         /// <summary>
