@@ -40,25 +40,21 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
                 // Keep spells in sync at the start
                 InitializeSpellLocal();
                 InitializeSpellServerRpc();
-                
             }
         }
 
         private void HandleCastReleased(InputAction.CallbackContext _)
         {
             if (castPosition.TryGetComponent(out PreviewComponent previewComponent))
-            {
                 previewComponent.Hide();
-            }
+            
             CastSpellServerRpc();
         }
 
         private void HandleCastPressed(InputAction.CallbackContext _)
         {
             if (activeSpell != null && castPosition.TryGetComponent(out PreviewComponent previewComponent))
-            {
                 previewComponent.SetAndShow(activeSpell.GetPreview(this));
-            }
         }
 
         /// <summary>
