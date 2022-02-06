@@ -349,6 +349,7 @@ MonoBehaviour:
   cameraController: {fileID: 0}
   characterController: {fileID: 4549494603381970193}
   cameraFollowPoint: {fileID: 4549494603733756110}
+  emitterTransform: {fileID: 6872567819063696414}
   inputSettings:
     look: {fileID: 523161132205564069, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}
     move: {fileID: -210314858679537888, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}
@@ -463,7 +464,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8955213256038657238}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.685, y: 2.51, z: 0.52}
+  m_LocalPosition: {x: -0.78, y: 1.43, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4549494603686575075}
@@ -476,7 +477,7 @@ LineRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8955213256038657238}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -519,23 +520,14 @@ LineRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.007671356
-        value: 0.27272415
+        time: 0.027000427
+        value: 0.10758591
         inSlope: 0
         outSlope: 0
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.9782583
-        value: 0.10000053
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4

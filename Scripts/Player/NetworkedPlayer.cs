@@ -1,5 +1,6 @@
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
+using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,7 +17,11 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         [FormerlySerializedAs("player")]
         public Movement.KinematicCharacterController characterController;
         public Transform cameraFollowPoint;
-
+        
+        /// <summary> Can be used for emitting spells, bullets, etc. Its direction is synched with the camera direction.</summary>
+        [Tooltip("Its direction is synced with the camera direction.")]
+        [CanBeNull] public Transform emitterTransform;
+        
         [ShowInInspector]
         public HealthComponent healthComponent => _healthComponent == null ? _healthComponent = GetComponent<HealthComponent>() : _healthComponent;
         private HealthComponent _healthComponent;
@@ -133,6 +138,16 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             // Apply inputs to the camera
             cameraController.UpdateWithInput(Time.deltaTime, 0, lookInputVector);
             
+            // Make sure emitter is positioned in line with camera's aim point
+            if (emitterTransform != null)
+            {
+                // todo: replace projected point with raycast collision for more accurate?
+                var camTransform = cameraController.transform;
+                var projectedPoint = camTransform.position + (camTransform.forward * 55f);
+                var correctedDirection = Quaternion.AngleAxis(10f, transform.TransformDirection(Vector3.left)) * (projectedPoint - emitterTransform.position).normalized;
+                
+                emitterTransform.rotation = Quaternion.LookRotation(correctedDirection);
+            }
         }
         
         private static void ToggleCursorLockState(InputAction.CallbackContext _)

@@ -50,6 +50,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             {
                 previewComponent.Hide();
             }
+            CastSpellServerRpc();
         }
 
         private void HandleCastPressed(InputAction.CallbackContext _)
@@ -58,8 +59,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             {
                 previewComponent.SetAndShow(activeSpell.GetPreview(this));
             }
-            
-            CastSpellServerRpc();
         }
 
         /// <summary>
