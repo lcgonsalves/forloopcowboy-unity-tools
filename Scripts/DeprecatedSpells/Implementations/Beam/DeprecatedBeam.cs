@@ -7,7 +7,7 @@ using UnityEngine;
 // Simple beam implementaion
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Beam
 {
-    [CreateAssetMenu(fileName = "Beam Spell", menuName = "Spells/Beam", order = 0)]
+    [CreateAssetMenu(fileName = "Beam Spell", menuName = "Spells/Deprecated/Beam", order = 0)]
     public class DeprecatedBeam : DeprecatedSpell
     {
         public Transition sensitivityTransition;

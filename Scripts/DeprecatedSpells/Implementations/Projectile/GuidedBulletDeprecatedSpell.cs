@@ -12,7 +12,7 @@ using UnityEngine;
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {
     
-    [CreateAssetMenu(fileName = "Guided Bullet Spell", menuName = "Spells/Guided Bullet Spell", order = 1)]
+    [CreateAssetMenu(fileName = "Guided Bullet Spell", menuName = "Spells/Deprecated/Guided Bullet Spell", order = 1)]
     public class GuidedBulletDeprecatedSpell : BulletDeprecatedSpell
     {
 

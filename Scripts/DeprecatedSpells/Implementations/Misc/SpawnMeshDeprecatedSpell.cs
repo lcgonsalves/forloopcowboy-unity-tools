@@ -17,7 +17,7 @@ using Random = System.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 {
-    [CreateAssetMenu(fileName = "Spawn Mesh Spell", menuName = "Spells/Spawn Mesh Spell", order = 100)]
+    [CreateAssetMenu(fileName = "Spawn Mesh Spell", menuName = "Spells/Deprecated/Spawn Mesh Spell", order = 100)]
     public class SpawnMeshDeprecatedSpell : DeprecatedSpell
     {
         private Camera mainCam = null;

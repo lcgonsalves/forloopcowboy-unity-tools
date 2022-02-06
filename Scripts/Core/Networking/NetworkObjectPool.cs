@@ -86,7 +86,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         {
             return GetNetworkObjectInternal(prefab, position, rotation);
         }
-
+        
         /// <summary>
         /// Return an object to the pool (reset objects before returning).
         /// </summary>
@@ -110,6 +110,16 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             Assert.IsFalse(prefabs.Contains(prefab), $"Prefab {prefab.name} is already registered in the pool.");
 
             RegisterPrefabInternal(prefab, prewarmCount);
+        }
+
+        /// <summary>
+        /// Adds a prefab to the list of spawnable prefabs, if not registered already.
+        /// </summary>
+        /// <param name="prefab">The prefab to add.</param>
+        /// <param name="prewarmCount"></param>
+        public void RegisterPrefab(GameObject prefab, int prewarmCount = 0)
+        {
+            if (!prefabs.Contains(prefab)) AddPrefab(prefab, prewarmCount);
         }
 
         /// <summary>

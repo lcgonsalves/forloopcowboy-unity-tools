@@ -10,6 +10,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         public SpamProtection(float debounceSeconds)
         {
             debounceInSeconds = debounceSeconds;
+            lastExecution = DateTime.MinValue;
         }
 
         /// <summary>
