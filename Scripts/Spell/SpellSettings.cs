@@ -14,7 +14,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
 
         /// <summary>Returns all prefabs that the spell wants to pool.</summary>
         public abstract IEnumerable<GameObject> GetPrefabsToBePooled();
-        
+
         // Validators //
 
         protected bool IsNetworkedObject(GameObject prefab) => prefab && prefab.HasComponent<NetworkObject>();

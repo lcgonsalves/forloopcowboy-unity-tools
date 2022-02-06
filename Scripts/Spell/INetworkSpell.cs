@@ -11,6 +11,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         /// </summary>
         /// <returns>True if spell was cast.</returns>
         bool TryCast(ISpellCaster caster, out NetworkObject locallySpawnedObject);
+
+        /// <summary>
+        /// Gets the preview function for the spell.
+        /// See PreviewComponent on how to use.
+        /// </summary>
+        IPreview GetPreview(ISpellCaster caster);
     }
 
     public interface ISpellCaster

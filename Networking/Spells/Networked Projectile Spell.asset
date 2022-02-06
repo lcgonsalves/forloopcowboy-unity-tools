@@ -22,4 +22,8 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   cooldownInSeconds: 0.5
+  projectileVelocity: 15
+  previewCollidesWithLayers:
+    serializedVersion: 2
+    m_Bits: 129
   projectilePrefab: {fileID: 1138883815503004, guid: 252082969c1dcc44484ec5be4ca4bf71, type: 3}

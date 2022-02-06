@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
+using forloopcowboy_unity_tools.Scripts.Spell.Implementations;
 using JetBrains.Annotations;
 using Sirenix.Serialization;
 using Unity.Netcode;
@@ -34,13 +35,30 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             {
                 inputSettings.cast.action.Enable();
                 inputSettings.cast.action.started += HandleCastPressed;
+                inputSettings.cast.action.canceled += HandleCastReleased;
 
+                // Keep spells in sync at the start
+                InitializeSpellLocal();
                 InitializeSpellServerRpc();
+                
+            }
+        }
+
+        private void HandleCastReleased(InputAction.CallbackContext _)
+        {
+            if (castPosition.TryGetComponent(out PreviewComponent previewComponent))
+            {
+                previewComponent.Hide();
             }
         }
 
         private void HandleCastPressed(InputAction.CallbackContext _)
         {
+            if (activeSpell != null && castPosition.TryGetComponent(out PreviewComponent previewComponent))
+            {
+                previewComponent.SetAndShow(activeSpell.GetPreview(this));
+            }
+            
             CastSpellServerRpc();
         }
 
@@ -54,9 +72,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
                 obj.Spawn(destroyWithScene: true);
             else NetworkLog.LogInfoServer("Could not cast.");
         }
-        
+
         [ServerRpc]
-        private void InitializeSpellServerRpc()
+        private void InitializeSpellServerRpc() => InitializeSpellLocal();
+
+        void InitializeSpellLocal()
         {
             foreach (var spellSetting in spellSettings)
             {

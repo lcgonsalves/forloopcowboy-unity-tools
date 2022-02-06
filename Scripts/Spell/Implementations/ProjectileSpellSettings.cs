@@ -12,7 +12,9 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
     public class ProjectileSpellSettings : SpellSettings
     {
         public float cooldownInSeconds = 0.5f;
-        public float projectileForce = 15f;
+        public float projectileVelocity = 15f;
+
+        public LayerMask previewCollidesWithLayers;
         
         [ValidateInput("IsNetworkedRigidbody", "Prefab should be a network rigidbody.")]
         public GameObject projectilePrefab;
@@ -25,8 +27,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
     public class ProjectileSpell : INetworkSpell
     {
         public ProjectileSpellSettings Settings { get; }
+
         private SpamProtection withCooldown;
         
+        private BallisticTrajectoryPreview preview;
+
         public ProjectileSpell(ProjectileSpellSettings settings)
         {
             this.Settings = settings;
@@ -48,11 +53,28 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
 
                 var rb = obj.GetComponent<Rigidbody>();
             
-                rb.AddForce(direction.normalized * Settings.projectileForce, ForceMode.Impulse);
+                rb.AddForce(GetStartingVelocity(caster), ForceMode.VelocityChange);
 
                 return obj;
                 
             }, out locallySpawnedObject);
+        }
+
+        public Vector3 GetStartingVelocity(ISpellCaster caster) =>
+            caster.GetCastDirection(this) * Settings.projectileVelocity;
+        
+        public IPreview GetPreview(ISpellCaster caster)
+        {
+            if (preview == null)
+            {
+                preview = new BallisticTrajectoryPreview(
+                    GetStartingVelocity(caster),
+                    Settings.previewCollidesWithLayers,
+                    startingVelocityGetter: () => GetStartingVelocity(caster)
+                );
+            }
+            
+            return preview;
         }
     }
 }
