@@ -14,13 +14,13 @@ using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells
 {
-    public class SpellUserBehaviour : SerializedMonoBehaviour, Spell.SpellCaster<SpellUserBehaviour.Config>
+    public class SpellUserBehaviour : SerializedMonoBehaviour, DeprecatedSpell.SpellCaster<SpellUserBehaviour.Config>
     {
 
         [UnityEngine.Tooltip("Allowed Spells")]
-        public List<Spell> spells;
+        public List<DeprecatedSpell> spells;
         
-        public bool GetTarget(Spell spell, out GameObject closestTarget)
+        public bool GetTarget(DeprecatedSpell spell, out GameObject closestTarget)
         {
             closestTarget = null;
             gm = gm == null ? FindObjectOfType<GameplayManager>() : gm;
@@ -46,9 +46,9 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         /// State management
 
         [SerializeField, ReadOnly]
-        private Core.Tuple<Spell, Spell> activeSpell;
+        private Core.Tuple<DeprecatedSpell, DeprecatedSpell> activeSpell;
 
-        public class Config : Spell.InstanceConfiguration
+        public class Config : DeprecatedSpell.InstanceConfiguration
         {
             // cannot be instantiated from outside of this context
             internal Config() { }
@@ -57,8 +57,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             public GameObject main = null;
             public GameObject targetPreview = null;
 
-            GameObject Spell.InstanceConfiguration.handPreview => handPreview;
-            GameObject Spell.InstanceConfiguration.main => main;
+            GameObject DeprecatedSpell.InstanceConfiguration.handPreview => handPreview;
+            GameObject DeprecatedSpell.InstanceConfiguration.main => main;
 
             private Dictionary<string, GameObject> customInstances = new Dictionary<string, GameObject>();
 
@@ -80,29 +80,29 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 return customInstances.TryGetValue(key, out instance);
             }
 
-            GameObject Spell.InstanceConfiguration.targetPreview => targetPreview;
+            GameObject DeprecatedSpell.InstanceConfiguration.targetPreview => targetPreview;
         }
 
 
         // fixme: fuck
         // update: still not fixing this
-        private Core.Tuple<Dictionary<Spell, Config>, Dictionary<Spell, Config>> spellParticles = 
-            new Core.Tuple<Dictionary<Spell, Config>, Dictionary<Spell, Config>>(
-                new Dictionary<Spell, Config>(), new Dictionary<Spell, Config>()
+        private Core.Tuple<Dictionary<DeprecatedSpell, Config>, Dictionary<DeprecatedSpell, Config>> spellParticles = 
+            new Core.Tuple<Dictionary<DeprecatedSpell, Config>, Dictionary<DeprecatedSpell, Config>>(
+                new Dictionary<DeprecatedSpell, Config>(), new Dictionary<DeprecatedSpell, Config>()
             );
 
-        private Core.Tuple<Dictionary<Spell, System.DateTime>, Dictionary<Spell, System.DateTime>> latestSpellCastTime =
-            new Core.Tuple<Dictionary<Spell, System.DateTime>, Dictionary<Spell, System.DateTime>>(
-                new Dictionary<Spell, System.DateTime>(), new Dictionary<Spell, System.DateTime>()
+        private Core.Tuple<Dictionary<DeprecatedSpell, System.DateTime>, Dictionary<DeprecatedSpell, System.DateTime>> latestSpellCastTime =
+            new Core.Tuple<Dictionary<DeprecatedSpell, System.DateTime>, Dictionary<DeprecatedSpell, System.DateTime>>(
+                new Dictionary<DeprecatedSpell, System.DateTime>(), new Dictionary<DeprecatedSpell, System.DateTime>()
             );
 
-        public bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out Config instances)
+        public bool ParticleInstancesFor(DeprecatedSpell spell, Side<ArmComponent> arm, out Config instances)
         {
             // spell particles are shared between both hands
             return spellParticles.Get(arm).TryGetValue(spell, out instances);
         }
 
-        public bool LatestSpellCastTimeFor(Spell spell, Side<ArmComponent> arm, out System.DateTime time)
+        public bool LatestSpellCastTimeFor(DeprecatedSpell spell, Side<ArmComponent> arm, out System.DateTime time)
         {
             return latestSpellCastTime.Get(arm).TryGetValue(spell, out time);
         }
@@ -179,7 +179,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
                 if (selectedArm == null) throw new NullReferenceException("Attempted to select a null arm.");
                 
-                Spell aspell = activeSpell.Get(selectedArm);
+                DeprecatedSpell aspell = activeSpell.Get(selectedArm);
                 ArmComponent.ChargeStyles cs = aspell.chargeStyle;
                 bool wasHolding = selectedArm.content.IsHolding(cs);
                 aspell.ResetPreview(this, selectedArm);
@@ -198,11 +198,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
                 if (selectedArm is Left<ArmComponent>)
                 {
-                    activeSpell.l = new Left<Spell>(spells[selectedSpellIndex]);
+                    activeSpell.l = new Left<DeprecatedSpell>(spells[selectedSpellIndex]);
                 }
                 else
                 {
-                    activeSpell.r = new Right<Spell>(spells[selectedSpellIndex]);
+                    activeSpell.r = new Right<DeprecatedSpell>(spells[selectedSpellIndex]);
                 }
 
                 // always reset hold ready status immediately when switching spells
@@ -213,7 +213,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
                 {
 
                     this.RunAsyncWithDelay(0.08f, () => {
-                        Spell newSpell = activeSpell.Get(selectedArm);
+                        DeprecatedSpell newSpell = activeSpell.Get(selectedArm);
                         selectedArm.content.SetHolder(newSpell.chargeStyle, true);
                     });
                 
@@ -224,12 +224,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
             // press down - activate preview if can cast
             leftHandInput.action.started += ctx => {
-                Spell s = activeSpell.Get(arms.l);
+                DeprecatedSpell s = activeSpell.Get(arms.l);
 
                 if (s.CanHold(this, arms.l)) arms.Left.SetHolder(s.chargeStyle, true);
             };
             rightHandInput.action.started += ctx => { 
-                Spell s = activeSpell.Get(arms.r);
+                DeprecatedSpell s = activeSpell.Get(arms.r);
 
                 if (s.CanHold(this, arms.r)) arms.Right.SetHolder(s.chargeStyle, true);
             };
@@ -237,14 +237,14 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             // lift up - begin cast animation that will trigger spell
             leftHandInput.action.canceled += ctx =>
             {
-                Spell spell = activeSpell.Get(arms.l);
+                DeprecatedSpell spell = activeSpell.Get(arms.l);
                 if (leftArm && spell.CanCast(this, arms.l)) leftArm.InitiateCastIfHolding(spell.castStyle, spell.chargeStyle);
                 else leftArm.DisableHold();
                 chronos.Normalize();
             };
             rightHandInput.action.canceled += ctx =>
             {
-                Spell spell = activeSpell.Get(arms.r);
+                DeprecatedSpell spell = activeSpell.Get(arms.r);
                 if (rightArm && spell.CanCast(this, arms.r)) rightArm.InitiateCastIfHolding(spell.castStyle, spell.chargeStyle);
                 else rightArm.DisableHold();
                 chronos.Normalize();
@@ -255,8 +255,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             if (rightArm) rightArm.OnCast += () => CastSpellWithRightHand();
 
             // initialize active spell
-            activeSpell.l = spells.Count > 0 ? new Left<Spell>(spells[selectedSpellIndex]) : null;
-            activeSpell.r = spells.Count > 0 ? new Right<Spell>(spells[selectedSpellIndex]) : null;
+            activeSpell.l = spells.Count > 0 ? new Left<DeprecatedSpell>(spells[selectedSpellIndex]) : null;
+            activeSpell.r = spells.Count > 0 ? new Right<DeprecatedSpell>(spells[selectedSpellIndex]) : null;
 
             foreach (var spell in spells)
             {
@@ -278,7 +278,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
         }
 
-        private Config InstantiateParticles(Spell spell)
+        private Config InstantiateParticles(DeprecatedSpell spell)
         {
             var spellParticleInstanceContainer = new Config();
             
@@ -325,7 +325,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
 
             if (isHoldingAndReady)
             {
-                Spell active = activeSpell.Get(arm);
+                DeprecatedSpell active = activeSpell.Get(arm);
 
                 var justCasted = active.Cast(this, arm, mainCamera.transform.TransformDirection(Vector3.forward));
                 if (justCasted) latestSpellCastTime.Get(arm)[activeSpell.Get(arm)] = System.DateTime.Now;
@@ -358,12 +358,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
             actionSelect.action.Disable();
             holdToSelectLeftAction.action.Disable();
 
-            void DestroyInstances(Spell spell, Side<ArmComponent> side)
+            void DestroyInstances(DeprecatedSpell spell, Side<ArmComponent> side)
             {
                 try
                 {
 
-                    Dictionary<Spell, Config> particlesForArm = spellParticles.Get(side);
+                    Dictionary<DeprecatedSpell, Config> particlesForArm = spellParticles.Get(side);
 
                     if (particlesForArm.TryGetValue(spell, out var instances))
                     {

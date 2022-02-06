@@ -14,7 +14,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
     {
 
         [OnValueChanged("UpdateCoreColliderRadius")]
-        [CanBeNull] public PsychokinesisSpell spell;
+        [CanBeNull] public PsychokinesisDeprecatedSpell spell;
 
         /// <summary>
         /// The entity who is in charge of this spell preview.

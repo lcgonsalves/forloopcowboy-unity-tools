@@ -23,7 +23,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
     /// but also the physics of the core still works in attracting bullets.
     /// </summary>
     [CreateAssetMenu(fileName = "Psychokinesis Spell", menuName = "Spells/Psychokinesis", order = 2)]
-    public class PsychokinesisSpell : Spell
+    public class PsychokinesisDeprecatedSpell : DeprecatedSpell
     {
         [TabGroup("Psychokinesis")]
         public bool useGravity = false;

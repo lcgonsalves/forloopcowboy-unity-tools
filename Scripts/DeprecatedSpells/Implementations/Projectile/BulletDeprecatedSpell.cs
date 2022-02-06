@@ -12,7 +12,7 @@ using VoxelArsenal;
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {
     [CreateAssetMenu(fileName = "Bullet Spell", menuName = "Spells/Bullet Spell", order = 0)]
-    public class BulletSpell : Spell
+    public class BulletDeprecatedSpell : DeprecatedSpell
     {
         [InlineEditor(InlineEditorModes.FullEditor)]
         public Bullet.Bullet bullet;

@@ -12,11 +12,11 @@ using Object = UnityEngine.Object;
 namespace forloopcowboy_unity_tools.Scripts.Spells
 {
     /// Defines a skill that can be consumed by the SpellUserBehavior
-    public abstract class Spell : SerializedScriptableObject
+    public abstract class DeprecatedSpell : SerializedScriptableObject
     {
 
         [Tooltip("Unique spell identifier."), TabGroup("General")]
-        public string key = nameof(Spell);
+        public string key = nameof(DeprecatedSpell);
 
         [TabGroup("General")]
         public float cooldownTimeInSeconds = 0f;
@@ -234,10 +234,10 @@ namespace forloopcowboy_unity_tools.Scripts.Spells
         public interface SpellCaster<IC> where IC : InstanceConfiguration
         {
             // Getter for fetching instantiated emitters for the given spell
-            bool ParticleInstancesFor(Spell spell, Side<ArmComponent> arm, out IC instances);
+            bool ParticleInstancesFor(DeprecatedSpell spell, Side<ArmComponent> arm, out IC instances);
 
             // Getter for fetching latest cast time to calculate cooldown
-            bool LatestSpellCastTimeFor(Spell spell, Side<ArmComponent> arm, out System.DateTime time);
+            bool LatestSpellCastTimeFor(DeprecatedSpell spell, Side<ArmComponent> arm, out System.DateTime time);
         }
 
         protected Vector3 GetCastPointFor(Side<ArmComponent> source)

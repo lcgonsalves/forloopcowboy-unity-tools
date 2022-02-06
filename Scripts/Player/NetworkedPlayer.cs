@@ -101,7 +101,6 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 HandleInputs();
         }
 
-
         public void HandleInputs()
         {
             var inputs = new Movement.KinematicCharacterController.PlayerCharacterInputs();

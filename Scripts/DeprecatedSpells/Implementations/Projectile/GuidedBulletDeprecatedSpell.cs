@@ -13,7 +13,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {
     
     [CreateAssetMenu(fileName = "Guided Bullet Spell", menuName = "Spells/Guided Bullet Spell", order = 1)]
-    public class GuidedBulletSpell : BulletSpell
+    public class GuidedBulletDeprecatedSpell : BulletDeprecatedSpell
     {
 
         public float radius;
