@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 
 namespace forloopcowboy_unity_tools.Scripts.Spell
 {
-    public class NetworkedSpellUser : NetworkBehaviour, ISpellCaster
+    public class NetworkedSpellCaster : NetworkBehaviour, ISpellCaster
     {
         // Settings
         
