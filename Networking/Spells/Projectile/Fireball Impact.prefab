@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 198409057676998786}
   - component: {fileID: 199650187541594494}
   - component: {fileID: 114448581165508126}
-  - component: {fileID: 4741390021366749189}
-  - component: {fileID: 8531493975087264565}
+  - component: {fileID: 3222510749276282411}
+  - component: {fileID: -1436222486113365941}
   m_Layer: 0
   m_Name: Fireball Impact
   m_TagString: Untagged
@@ -4907,7 +4907,7 @@ MonoBehaviour:
   destroyWhenDone: 1
   soundPrefabIsChild: 0
   pitchRandomMultiplier: 1.1
---- !u!114 &4741390021366749189
+--- !u!114 &3222510749276282411
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4923,7 +4923,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &8531493975087264565
+--- !u!114 &-1436222486113365941
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4935,6 +4935,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6909d83256534fb18b7cbf8a49979507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  despawnDelay: 5
 --- !u!1 &1262604136922858
 GameObject:
   m_ObjectHideFlags: 0

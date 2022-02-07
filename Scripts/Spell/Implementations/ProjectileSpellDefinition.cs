@@ -59,11 +59,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
                     Quaternion.LookRotation(direction)
                 );
                 
-                if (!obj.IsSpawned) obj.Spawn(true);
+                if (!obj.IsSpawned) obj.Spawn( true);
 
                 var projectile = obj.GetComponent<NetworkProjectile>();
                 
-                projectile.Fire(GetStartingVelocity(castSettings));
+                projectile.Fire(GetStartingVelocity(castSettings), caster.NetworkObject);
                 projectile.prefab = Settings.projectilePrefab; // so pool works :)
                 
                 return obj;

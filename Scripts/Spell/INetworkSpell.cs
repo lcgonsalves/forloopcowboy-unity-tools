@@ -27,6 +27,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
 
     public interface ISpellCaster
     {
+        NetworkObject NetworkObject { get; }
+        
         /// <summary>Gets the target Transform for a given spell. </summary>
         /// <returns>True if a cast target exists.</returns>
         bool TryGetCastTarget(INetworkSpell spell, out Transform castTarget);

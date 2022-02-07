@@ -18,7 +18,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
     /// Auto destroys / pools based on a lifetime check that gets reset after every bounce.
     /// Auto destroys / pools immediately once maxBounces is reached.
     /// </summary>
-    [RequireComponent(typeof(Rigidbody)), SelectionBase]
+    [RequireComponent(typeof(NetworkObject)), RequireComponent(typeof(Rigidbody)), SelectionBase]
     public class NetworkProjectile : SimpleDamageProvider
     {
         [InlineEditor(InlineEditorModes.FullEditor)]
@@ -37,7 +37,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         /// If bullet was fired by somebody, it will be set here.
         /// For bullets fired anonymously, this value will be null.
         /// </summary>
-        [CanBeNull, ReadOnly] public GameObject firedBy = null;
+        [CanBeNull, ReadOnly] public NetworkObject firedBy = null;
 
         // start @ -1 because counter is incremented at start.
         int bouncesSoFar = -1;
@@ -73,15 +73,17 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             ResetBullet();
         }
 
-        public void Fire(Vector3 velocity)
+        public void Fire(Vector3 velocity, NetworkObject whoFiredThis)
         {
+            firedBy = whoFiredThis;
+            
             rb.isKinematic = false;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.velocity = Vector3.zero;
             rb.AddForce(velocity, ForceMode.VelocityChange);
         }
         
-        public void Fire(Vector3 direction, float velocity) => Fire(direction.normalized * velocity);
+        public void Fire(Vector3 direction, float velocity, NetworkObject whoFiredThis) => Fire(direction.normalized * velocity, whoFiredThis);
 
         private void OnCollisionEnter(Collision other) {
             if (countBounces) bouncesSoFar++;
@@ -155,7 +157,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             Vector3 collisionContactNormal = other.contacts[0].normal;
             float impactVelocity = other.relativeVelocity.magnitude;
             
-            SpawnImpactParticlesClientRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.First);
+            SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.First);
         }
 
         /// <summary> Called on every impact, including first and last. </summary>
@@ -167,7 +169,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             Vector3 collisionContactNormal = other.contacts[0].normal;
             float impactVelocity = other.relativeVelocity.magnitude;
             
-            SpawnImpactParticlesClientRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Regular);
+            SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Regular);
         }
 
         /// <summary> Called on final counted impact. Immediately returns object to pool. </summary>
@@ -179,7 +181,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             Vector3 collisionContactNormal = other.contacts[0].normal;
             float impactVelocity = other.relativeVelocity.magnitude;
             
-            SpawnImpactParticlesClientRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Last, forceSpawn: true); // always spawn on last impact
+            SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Last, forceSpawn: true); // always spawn on last impact
             ReturnToPool();
         }
 
@@ -191,8 +193,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         /// </summary>
         /// <param name="forceSpawn">If set to true, will not use spam protected spawner.</param>
         /// <returns>Objects spawned.</returns>
-        [ClientRpc]
-        private void SpawnImpactParticlesClientRpc(
+        [ServerRpc]
+        private void SpawnImpactParticlesServerRpc(
             Vector3 collisionContactPoint,
             Vector3 collisionContactNormal,
             float impactVelocity,
@@ -237,7 +239,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
                 }
                 else
                 {
-                    safeSpawner.SafeInstantiate(
+                    hasCreatedInstance = safeSpawner.SafeInstantiate(
                         fx.prefab,
                         collisionContactPoint,
                         fx.orientToCollisionNormal
@@ -249,15 +251,10 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
 
                 if (hasCreatedInstance)
                 {
-                    var netObj = instance.GetComponent<NetworkObject>();
-                    var autoDespawn = instance.GetOrElseAddComponent<AutoDespawn>();
-                    
-                    // spawn, then despawn automatically
-                    netObj.Spawn();
-                    autoDespawn.DespawnIn(fx.despawnSettings.destroyDelay);
+                    var instanceNetObj = instance.GetComponent<NetworkObject>();
+                    instanceNetObj.Spawn();
                 }
             }
         }
-
     }
 }
