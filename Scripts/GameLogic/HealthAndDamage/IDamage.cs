@@ -22,7 +22,5 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public void Heal(int amount);
 
     }
-    
-    public class DamageSystem { public static string tag = "IDamaging"; }
 
 }

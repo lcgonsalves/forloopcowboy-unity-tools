@@ -76,9 +76,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             foreach (var spellSetting in spellSettings)
             {
                 // register poolable objects
-                foreach (var prefab in spellSetting.GetPrefabsToBePooled())
-                    NetworkObjectPool.Singleton.RegisterPrefab(prefab);
-                    
+                spellSetting.RegisterPrefabsInPool();
+                
                 spells.Add(spellSetting.GetNewSpellInstance());
             }
             

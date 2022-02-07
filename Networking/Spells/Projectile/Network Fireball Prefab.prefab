@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1628212799586416545}
   - component: {fileID: 6255808949050315722}
   - component: {fileID: 1897634975929807443}
+  - component: {fileID: 3367040695972521362}
   m_Layer: 16
   m_Name: Network Fireball Prefab
   m_TagString: Untagged
@@ -120,6 +121,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3367040695972521362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138883815503004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a218187a704a464dafe8a14452671e54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DamageSettings: {fileID: 11400000, guid: e04b84e4e3a214f44809ac3e5355fd18, type: 2}
+  fxSettings: {fileID: 11400000, guid: 9ee3e2c511daf1443a42b30c5a715700, type: 2}
+  prefab: {fileID: 1138883815503004}
+  MaxLifetimeAfterBounceSeconds: 1
+  firedBy: {fileID: 0}
+  maxBounces: 10
+  countBounces: 1
 --- !u!1 &1045176475161835927
 GameObject:
   m_ObjectHideFlags: 0

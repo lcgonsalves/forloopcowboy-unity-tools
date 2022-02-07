@@ -1,3 +1,7 @@
+using Sirenix.OdinInspector;
+using Sirenix.Serialization;
+using Unity.Netcode.Components;
+
 namespace forloopcowboy_unity_tools.Scripts.Core.Networking
 {
 using System;
@@ -24,9 +28,9 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
 
         [SerializeField]
         List<PoolConfigObject> PooledPrefabsList;
-
+        
         HashSet<GameObject> prefabs = new HashSet<GameObject>();
-
+        
         Dictionary<GameObject, Queue<NetworkObject>> pooledObjects = new Dictionary<GameObject, Queue<NetworkObject>>();
 
         private bool m_HasInitialized = false;
@@ -170,10 +174,19 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
 
             // Here we must reverse the logic in ReturnNetworkObject.
             var go = networkObject.gameObject;
-            go.SetActive(true);
 
-            go.transform.position = position;
-            go.transform.rotation = rotation;
+            if (networkObject.IsSpawned && go.TryGetComponent(out NetworkTransform networkTransform))
+            {
+                // if object is a network transform use teleport so it doens't look fake as fuck
+                networkTransform.Teleport(position, rotation, go.transform.localScale);
+            }
+            else
+            {
+                go.transform.position = position;
+                go.transform.rotation = rotation;
+            }
+            
+            go.SetActive(true);
 
             return networkObject;
         }

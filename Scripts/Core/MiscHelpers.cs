@@ -507,7 +507,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
         // Executes function using coroutine after given delay
         public static Coroutine RunAsyncWithDelay(this MonoBehaviour m, float delayInSeconds, Action callback)
         {
-            return m.StartCoroutine(Action(delayInSeconds, callback));
+            return m.StartCoroutine(DelayedAction(delayInSeconds, callback));
         }
 
         public static Coroutine RunAsync(
@@ -548,7 +548,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             return m.RunAsync(callback, () => false, RoutineTypes.FixedUpdate);
         }
 
-        private static IEnumerator Action(float delay, Action callback)
+        private static IEnumerator DelayedAction(float delay, Action callback)
         {
                 yield return new WaitForSeconds(delay);
                 callback();

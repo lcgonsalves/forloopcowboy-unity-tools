@@ -12,8 +12,8 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         /// <summary>Returns a new instance of the spell, initialized with the settings.</summary>
         public abstract INetworkSpell GetNewSpellInstance();
 
-        /// <summary>Returns all prefabs that the spell wants to pool.</summary>
-        public abstract IEnumerable<GameObject> GetPrefabsToBePooled();
+        /// <summary>Performs registration of prefabs in pool, if any.</summary>
+        public abstract void RegisterPrefabsInPool();
 
         // Validators //
 

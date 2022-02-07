@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
 using Sirenix.OdinInspector;
 using Unity.Netcode;
@@ -9,7 +10,7 @@ using UnityEngine;
 namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
 {
     [CreateAssetMenu(fileName = "Projectile Spell", menuName = "Spells/Projectile Spell", order = 0)]
-    public class ProjectileSpellSettings : SpellSettings
+    public class ProjectileSpellDefinition : SpellSettings
     {
         public float cooldownInSeconds = 0.5f;
         public float projectileVelocity = 15f;
@@ -20,19 +21,23 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
         public GameObject projectilePrefab;
 
         public override INetworkSpell GetNewSpellInstance() => new ProjectileSpell(this);
-        public override IEnumerable<GameObject> GetPrefabsToBePooled() => new[] {projectilePrefab};
         
+        public override void RegisterPrefabsInPool()
+        {
+            // register in pool with prewarm
+            NetworkObjectPool.Singleton.RegisterPrefab(projectilePrefab);
+        }
     }
 
     public class ProjectileSpell : INetworkSpell
     {
-        public ProjectileSpellSettings Settings { get; }
+        public ProjectileSpellDefinition Settings { get; }
 
         private SpamProtection withCooldown;
         
         private BallisticTrajectoryPreview preview;
 
-        public ProjectileSpell(ProjectileSpellSettings settings)
+        public ProjectileSpell(ProjectileSpellDefinition settings)
         {
             this.Settings = settings;
             withCooldown = new SpamProtection(settings.cooldownInSeconds);
@@ -50,11 +55,14 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
                     position,
                     Quaternion.LookRotation(direction)
                 );
+                
+                obj.Spawn(true);
 
-                var rb = obj.GetComponent<Rigidbody>();
-            
-                rb.AddForce(GetStartingVelocity(caster), ForceMode.VelocityChange);
-
+                var projectile = obj.GetComponent<NetworkProjectile>();
+                
+                projectile.Fire(GetStartingVelocity(caster));
+                projectile.prefab = Settings.projectilePrefab; // so pool works :)
+                
                 return obj;
                 
             }, out locallySpawnedObject);
