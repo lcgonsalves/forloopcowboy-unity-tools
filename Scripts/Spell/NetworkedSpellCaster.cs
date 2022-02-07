@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.Spell.Implementations;
 using JetBrains.Annotations;
@@ -23,10 +25,27 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         [CanBeNull] private INetworkSpell activeSpell = null;
         private List<INetworkSpell> spells = new List<INetworkSpell>();
 
+        private Movement.KinematicCharacterController characterController;
+        private NetworkVariable<Vector3> synchedCharacterVelocity;
+
+        private NetworkStats networkStats;
+
         [Serializable]
         public struct InputSettings
         {
             public InputActionReference cast;
+        }
+
+        [ServerRpc]
+        private void SynchronizeCharacterControllerVelocityServerRpc(Vector3 velocity)
+        {
+            synchedCharacterVelocity.Value = velocity;
+        }
+
+        private void Awake()
+        {
+            characterController = GetComponent<Movement.KinematicCharacterController>();
+            networkStats = GetComponent<NetworkStats>();
         }
 
         public void Start()
@@ -43,29 +62,50 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             }
         }
 
+        private void Update()
+        {
+            if (IsOwner && IsClient)
+                SynchronizeCharacterControllerVelocityServerRpc(characterController.Motor.GetState().BaseVelocity);
+        }
+
         private void HandleCastReleased(InputAction.CallbackContext _)
         {
             if (castPosition.TryGetComponent(out PreviewComponent previewComponent))
                 previewComponent.Hide();
-            
-            CastSpellServerRpc();
+
+            CastSpellServerRpc(
+                GetLagCompCastPosition(activeSpell, IsHost)    
+            );
         }
 
         private void HandleCastPressed(InputAction.CallbackContext _)
         {
             if (activeSpell != null && castPosition.TryGetComponent(out PreviewComponent previewComponent))
-                previewComponent.SetAndShow(activeSpell.GetPreview(this));
+            {
+                var castSettings = new CastSettings();
+                
+                castSettings.direction = GetCastDirection(activeSpell);
+                castSettings.position = GetLagCompCastPosition(activeSpell, true); // we assume host here because the preview is always local
+
+                if (activeSpell != null) // rider wants a null check here.
+                    previewComponent.SetAndShow(activeSpell.GetPreview(this, castSettings));
+            }
         }
 
         /// <summary>
         /// Casts a spell and spawns it.
         /// </summary>
         [ServerRpc]
-        private void CastSpellServerRpc()
+        private void CastSpellServerRpc(Vector3 lagCorrectedPosition)
         {
-            if (activeSpell != null && activeSpell.TryCast(this, out var obj) && !obj.IsSpawned)
+            if (activeSpell == null) return;
+            
+            var castSettings = new CastSettings();
+            castSettings.direction = GetCastDirection(activeSpell);
+            castSettings.position = lagCorrectedPosition;
+
+            if (activeSpell != null && activeSpell.TryCast(this, castSettings, out var obj) && !obj.IsSpawned)
                 obj.Spawn(destroyWithScene: true);
-            else NetworkLog.LogInfoServer("Could not cast.");
         }
 
         [ServerRpc]
@@ -92,12 +132,14 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             }
         }
 
-        public Vector3 GetCastPosition(INetworkSpell spell)
+        public Vector3 GetLagCompCastPosition(INetworkSpell spell, bool isHost)
         {
             switch (spell)
             {
                 default:
-                    return castPosition.position;
+                    float compensationTime = 0;
+                    if (!isHost) compensationTime = networkStats.LastRTT * 1.02f;
+                    return castPosition.position + synchedCharacterVelocity.Value * compensationTime;
             }
         }
 
@@ -114,6 +156,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         {
             castTarget = null;
             return false;
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            inputSettings.cast.action.started -= HandleCastPressed;
+            inputSettings.cast.action.canceled -= HandleCastReleased;
         }
     }
 }

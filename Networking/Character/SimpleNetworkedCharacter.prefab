@@ -178,6 +178,7 @@ GameObject:
   - component: {fileID: 4549494603381970193}
   - component: {fileID: 9069127280735237824}
   - component: {fileID: -4090814465983891631}
+  - component: {fileID: -7935588361557549524}
   m_Layer: 16
   m_Name: SimpleNetworkedCharacter
   m_TagString: Untagged
@@ -312,11 +313,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Motor: {fileID: 4549494603381970204}
-  MaxStableMoveSpeed: 15
-  StableMovementSharpness: 15
+  MaxStableMoveSpeed: 12
+  StableMovementSharpness: 12
   OrientationSharpness: 10
   CrouchedCapsuleHeight: 0.5
-  MaxAirMoveSpeed: 15
+  MaxAirMoveSpeed: 12
   AirAccelerationSpeed: 5
   Drag: 0.001
   AllowJumpingWhenSliding: 1
@@ -349,6 +350,8 @@ MonoBehaviour:
   cameraController: {fileID: 0}
   characterController: {fileID: 4549494603381970193}
   cameraFollowPoint: {fileID: 4549494603733756110}
+  synchedCameraFollowPointRotation:
+    m_InternalValue: {x: 0, y: 0, z: 0, w: 0}
   emitterTransform: {fileID: 6872567819063696414}
   inputSettings:
     look: {fileID: 523161132205564069, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}
@@ -374,6 +377,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: aff161fe0836d8042b8ebdf73db5af5c, type: 2}
   inputSettings:
     cast: {fileID: -5740664572096273349, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}
+--- !u!114 &-7935588361557549524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4549494603381970205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72827862299f49138fd5de76ecd7d964, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PingIntervalSeconds: 0.5
 --- !u!1 &4549494603686575072
 GameObject:
   m_ObjectHideFlags: 0

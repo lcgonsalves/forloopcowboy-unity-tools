@@ -43,12 +43,15 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
             withCooldown = new SpamProtection(settings.cooldownInSeconds);
         }
 
-        public bool TryCast(ISpellCaster caster, out NetworkObject locallySpawnedObject)
-        {
+        public bool TryCast(
+            ISpellCaster caster,
+            CastSettings castSettings,
+            out NetworkObject locallySpawnedObject
+        ) {
             return withCooldown.SafeExecute(() =>
             {
-                var position = caster.GetCastPosition(this);
-                var direction = caster.GetCastDirection(this);
+                var position = castSettings.position;
+                var direction = castSettings.direction;
 
                 var obj = NetworkObjectPool.Singleton.GetNetworkObject(
                     Settings.projectilePrefab,
@@ -56,11 +59,11 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
                     Quaternion.LookRotation(direction)
                 );
                 
-                obj.Spawn(true);
+                if (!obj.IsSpawned) obj.Spawn(true);
 
                 var projectile = obj.GetComponent<NetworkProjectile>();
                 
-                projectile.Fire(GetStartingVelocity(caster));
+                projectile.Fire(GetStartingVelocity(castSettings));
                 projectile.prefab = Settings.projectilePrefab; // so pool works :)
                 
                 return obj;
@@ -68,17 +71,16 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
             }, out locallySpawnedObject);
         }
 
-        public Vector3 GetStartingVelocity(ISpellCaster caster) =>
-            caster.GetCastDirection(this) * Settings.projectileVelocity;
+        public Vector3 GetStartingVelocity(CastSettings cs) => cs.direction * Settings.projectileVelocity;
         
-        public IPreview GetPreview(ISpellCaster caster)
+        public IPreview GetPreview(ISpellCaster caster, CastSettings castSettings)
         {
             if (preview == null)
             {
                 preview = new BallisticTrajectoryPreview(
-                    GetStartingVelocity(caster),
+                    GetStartingVelocity(castSettings),
                     Settings.previewCollidesWithLayers,
-                    startingVelocityGetter: () => GetStartingVelocity(caster)
+                    startingVelocityGetter: () => caster.GetCastDirection(this) * Settings.projectileVelocity
                 );
             }
             

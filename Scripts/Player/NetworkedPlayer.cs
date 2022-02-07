@@ -1,4 +1,5 @@
 using forloopcowboy_unity_tools.Scripts.Core;
+using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
@@ -17,7 +18,9 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         [FormerlySerializedAs("player")]
         public Movement.KinematicCharacterController characterController;
         public Transform cameraFollowPoint;
-        
+
+        public NetworkVariable<Quaternion> synchedCameraFollowPointRotation;
+
         /// <summary> Can be used for emitting spells, bullets, etc. Its direction is synched with the camera direction.</summary>
         [Tooltip("Its direction is synced with the camera direction.")]
         [CanBeNull] public Transform emitterTransform;
@@ -88,6 +91,8 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             else
             {
                 characterController.Motor.enabled = false;
+                if (emitterTransform is { }) 
+                    emitterTransform.rotation = synchedCameraFollowPointRotation.Value;
             }
         }
         
@@ -104,6 +109,8 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         {
             if (IsOwner && IsClient)
                 HandleInputs();
+            else if (emitterTransform is { }) 
+                emitterTransform.rotation = synchedCameraFollowPointRotation.Value;
         }
 
         public void HandleInputs()
@@ -134,22 +141,30 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             {
                 lookInputVector = Vector3.zero;
             }
-            
+
             // Apply inputs to the camera
             cameraController.UpdateWithInput(Time.deltaTime, 0, lookInputVector);
-            
+
             // Make sure emitter is positioned in line with camera's aim point
             if (emitterTransform != null)
             {
                 // todo: replace projected point with raycast collision for more accurate?
                 var camTransform = cameraController.transform;
                 var projectedPoint = camTransform.position + (camTransform.forward * 55f);
-                var correctedDirection = Quaternion.AngleAxis(10f, transform.TransformDirection(Vector3.left)) * (projectedPoint - emitterTransform.position).normalized;
-                
+                var correctedDirection = Quaternion.AngleAxis(10f, transform.TransformDirection(Vector3.left)) *
+                                         (projectedPoint - emitterTransform.position).normalized;
+
                 emitterTransform.rotation = Quaternion.LookRotation(correctedDirection);
+                UpdateEmitterRotationServerRpc(emitterTransform.rotation);
             }
         }
-        
+
+        [ServerRpc]
+        private void UpdateEmitterRotationServerRpc(Quaternion newRotation)
+        {
+            synchedCameraFollowPointRotation.Value = newRotation;
+        }
+
         private static void ToggleCursorLockState(InputAction.CallbackContext _)
         {
             if (Cursor.lockState == CursorLockMode.Locked)

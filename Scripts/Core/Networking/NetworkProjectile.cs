@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SubsystemsImplementation;
 
 namespace forloopcowboy_unity_tools.Scripts.Core.Networking
 {
@@ -50,19 +51,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         public bool countBounces = true;
         
         // Impact event propagators //
-        
-        /// <summary>Invoked on first impact, and first impact only! First param is the collision,
-        /// second are the effects spawned on this impact.</summary>
-        public event Action<Collision, IEnumerable<GameObject>> onFirstImpact;
-        
-        /// <summary>Invoked on all impacts, except first and last. First param is the collision,
-        /// second are the effects spawned on this impact. </summary>
-        public event Action<Collision, IEnumerable<GameObject>> onImpact;
-        
-        /// <summary>Invoked only on last counted impact. Invoked after onImpact, and after object is disabled. First param is the collision,
-        /// second are the effects spawned on this impact.</summary>
-        public event Action<Collision, IEnumerable<GameObject>> onFinalImpact;
-        
+
         public virtual void ResetBullet(int? maxBounces = null)
         {
             bouncesSoFar = -1;
@@ -134,10 +123,13 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         private void ReturnToPoolLocal()
         {
             var netPool = NetworkObjectPool.Singleton;
+            var netObj  = GetComponent<NetworkObject>();
+            
+            netObj.Despawn(false); // do not destroy as object is returning to pool
 
             if (netPool != null)
                 NetworkObjectPool.Singleton.ReturnNetworkObject(
-                    GetComponent<NetworkObject>(),
+                    netObj,
                     prefab
                 );
             else 
@@ -147,41 +139,47 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         [ServerRpc]
         private void ReturnToPoolServerRpc() => ReturnToPoolLocal();
 
+        private enum ImpactType
+        {
+            First,
+            Last,
+            Regular
+        }
+
         /// <summary> Called on first counted impact. </summary>
         protected virtual void OnFirstImpact(Collision other)
         {
             RestartDeathCountdown();
-            var spawnedFx = SpawnImpactParticles(other, fxSettings.FirstImpactFX);
             
-            onFirstImpact?.Invoke(
-                other,
-                spawnedFx
-            );
+            Vector3 collisionContactPoint = other.contacts[0].point;
+            Vector3 collisionContactNormal = other.contacts[0].normal;
+            float impactVelocity = other.relativeVelocity.magnitude;
+            
+            SpawnImpactParticlesClientRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.First);
         }
 
         /// <summary> Called on every impact, including first and last. </summary>
         protected virtual void OnImpact(Collision other)
         {
             RestartDeathCountdown();
-            var spawnedFx = SpawnImpactParticles(other, fxSettings.ImpactFX);
+
+            Vector3 collisionContactPoint = other.contacts[0].point;
+            Vector3 collisionContactNormal = other.contacts[0].normal;
+            float impactVelocity = other.relativeVelocity.magnitude;
             
-            onImpact?.Invoke(
-                other,
-                spawnedFx
-            );
+            SpawnImpactParticlesClientRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Regular);
         }
 
         /// <summary> Called on final counted impact. Immediately returns object to pool. </summary>
         protected virtual void OnFinalImpact(Collision other)
         {
             CancelDeathCountdown();
-            var spawnedFx = SpawnImpactParticles(other, fxSettings.LastImpactFX, forceSpawn: true); // always spawn on last impact
             
-            onFinalImpact?.Invoke(
-                other,
-                spawnedFx
-            );
+            Vector3 collisionContactPoint = other.contacts[0].point;
+            Vector3 collisionContactNormal = other.contacts[0].normal;
+            float impactVelocity = other.relativeVelocity.magnitude;
             
+            SpawnImpactParticlesClientRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Last, forceSpawn: true); // always spawn on last impact
             ReturnToPool();
         }
 
@@ -193,15 +191,36 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         /// </summary>
         /// <param name="forceSpawn">If set to true, will not use spam protected spawner.</param>
         /// <returns>Objects spawned.</returns>
-        private IEnumerable<GameObject> SpawnImpactParticles(Collision other, IEnumerable<ProjectileFX> effects, bool forceSpawn = false)
+        [ClientRpc]
+        private void SpawnImpactParticlesClientRpc(
+            Vector3 collisionContactPoint,
+            Vector3 collisionContactNormal,
+            float impactVelocity,
+            ImpactType impactType,
+            bool forceSpawn = false
+        )
         {
-            var collisionContact = other.contacts[0];
-            var spawned = new List<GameObject>();
-            
+            IEnumerable<ProjectileFX> effects;
+
+            switch (impactType)
+            {
+                case ImpactType.First:
+                    effects = fxSettings.FirstImpactFX;
+                    break;
+                case ImpactType.Last:
+                    effects = fxSettings.LastImpactFX;
+                    break;
+                case ImpactType.Regular:
+                    effects = fxSettings.ImpactFX;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(impactType), impactType, null);
+            }
+
             foreach (ProjectileFX fx in effects)
             {
                 // do not spawn if threshold is not met
-                if (other.relativeVelocity.magnitude < fx.velocitySpawnThreshold) continue;
+                if (impactVelocity < fx.velocitySpawnThreshold) continue;
 
                 bool hasCreatedInstance = forceSpawn;
                 GameObject instance = null;
@@ -210,9 +229,9 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
                 {
                     instance = Instantiate(
                         fx.prefab,
-                        collisionContact.point,
+                        collisionContactPoint,
                         fx.orientToCollisionNormal
-                            ? Quaternion.LookRotation(collisionContact.normal)
+                            ? Quaternion.LookRotation(collisionContactNormal)
                             : Quaternion.identity
                     );
                 }
@@ -220,24 +239,24 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
                 {
                     safeSpawner.SafeInstantiate(
                         fx.prefab,
-                        collisionContact.point,
+                        collisionContactPoint,
                         fx.orientToCollisionNormal
-                            ? Quaternion.LookRotation(collisionContact.normal)
+                            ? Quaternion.LookRotation(collisionContactNormal)
                             : Quaternion.identity,
                         out instance
                     );
                 }
-                
+
                 if (hasCreatedInstance)
                 {
-                    if (fx.despawnSettings.destroyAutomatically)
-                        Destroy(instance, fx.despawnSettings.destroyDelay);
-                
-                    spawned.Add(instance);
+                    var netObj = instance.GetComponent<NetworkObject>();
+                    var autoDespawn = instance.GetOrElseAddComponent<AutoDespawn>();
+                    
+                    // spawn, then despawn automatically
+                    netObj.Spawn();
+                    autoDespawn.DespawnIn(fx.despawnSettings.destroyDelay);
                 }
             }
-
-            return spawned;
         }
 
     }
