@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Soldier
 {
-    [CreateAssetMenu(fileName = "Armor Settings", menuName = "Settings/NPC/New Armor Settings...", order = 0)]
+    [CreateAssetMenu(fileName = "Armor Settings", menuName = "Settings.../NPC.../New Armor Settings", order = 0)]
     public class ArmorSettings : ScriptableObject
     {
         [Serializable]

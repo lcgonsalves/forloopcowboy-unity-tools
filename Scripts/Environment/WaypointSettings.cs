@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment
 {
-    [CreateAssetMenu(fileName = "New Waypoint Configuration", menuName = "Settings/New Waypoint Settings...", order = 0)]
+    [CreateAssetMenu(fileName = "New Waypoint Configuration", menuName = "Settings.../New Waypoint Settings", order = 0)]
     public class WaypointSettings : ScriptableObject, IHasLayer
     {
         private static readonly string lm = "Waypoint";

@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
-    public class HealthComponent : SerializedMonoBehaviour, IHasHealth, IManagedGameObject
+    public class HealthComponent : SerializedMonoBehaviour, IManagedGameObject
     {
         public event Action? onDeath;
         

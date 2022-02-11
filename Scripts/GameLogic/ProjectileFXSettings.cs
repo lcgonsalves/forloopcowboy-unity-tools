@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
-    [CreateAssetMenu(fileName = "Untitled FX Settings", menuName = "Settings/Projectile FX", order = 0)]
+    [CreateAssetMenu(fileName = "Untitled FX Settings", menuName = "Settings.../Projectile FX", order = 0)]
     public class ProjectileFXSettings : ScriptableObject
     {
         public List<ProjectileFX> effects;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
-    [CreateAssetMenu(fileName = "Untitled Damage Settings", menuName = "Settings/Damage Settings...", order = 0)]
+    [CreateAssetMenu(fileName = "Untitled Damage Settings", menuName = "Settings.../Damage Settings", order = 0)]
     public class DamageSettings : SerializedScriptableObject, IDamageProvider
     {
         [SerializeField, LabelText("Damage range"), MinMaxSlider(0, 100)]

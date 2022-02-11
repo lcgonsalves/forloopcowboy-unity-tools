@@ -11,7 +11,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     /// <summary>
     /// Defines methods for scrambling a given position based on the predefined settings.
     /// </summary>
-    [CreateAssetMenu(fileName = "Untitled Accuracy Settings", menuName = "Settings/New Accuracy Settings...", order = 0)]
+    [CreateAssetMenu(fileName = "Untitled Accuracy Settings", menuName = "Settings.../New Accuracy Settings", order = 0)]
     public class AccuracyProcessor : SerializedScriptableObject
     {
         public enum VectorDimensions { X, Y, Z }

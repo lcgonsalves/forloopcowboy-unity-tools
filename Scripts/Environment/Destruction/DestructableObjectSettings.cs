@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment
 {
-    [CreateAssetMenu(fileName = "Destructable Object Setting", menuName = "Settings/Destruction/Destructable Object Settings...", order = 0)]
+    [CreateAssetMenu(fileName = "Destructable Object Setting", menuName = "Settings.../Destruction/Destructable Object Settings", order = 0)]
     public class DestructableObjectSettings : SerializedScriptableObject, IDestructableObjectSettings
     {
         public static readonly int DEFAULT_HITS_UNTIL_DESTRUCTION = 0;

@@ -16,7 +16,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
     /// Picks from a set of character prefabs, a set of weapons
     /// and exposes functions for instantiating variations.
     /// </summary>
-    [CreateAssetMenu(fileName = "Untitled Soldier Randomizer Settings", menuName = "Settings/NPC/New NPC Randomizer Settings...", order = 2)]
+    [CreateAssetMenu(fileName = "Untitled Soldier Randomizer Settings", menuName = "Settings.../NPC.../New NPC Randomizer Settings", order = 2)]
     public class SoldierRandomizer : SerializedScriptableObject
     {
         public uint prefabRandomizerSeed = 69;

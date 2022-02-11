@@ -8,19 +8,5 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         int GetDamageAmount();
         
     }
-    
-    public interface IHasHealth
-    {
-        Transform transform { get; }
-        int MaxHealth { get; }
-        int Health { get; set; }
-        bool IsAlive { get; }
-        
-        bool IsDead { get; }
-        
-        public void Damage(int amount);
-        public void Heal(int amount);
-
-    }
 
 }
