@@ -15,7 +15,8 @@ GameObject:
   - component: {fileID: 6255808949050315722}
   - component: {fileID: 1897634975929807443}
   - component: {fileID: 3367040695972521362}
-  m_Layer: 16
+  - component: {fileID: -7341703877150219611}
+  m_Layer: 0
   m_Name: Network Fireball Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -140,6 +141,19 @@ MonoBehaviour:
   firedBy: {fileID: 0}
   maxBounces: 10
   countBounces: 1
+--- !u!114 &-7341703877150219611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1138883815503004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1723d0875e7946fd8c09d3995d36dd71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DamageSettings: {fileID: 11400000, guid: e04b84e4e3a214f44809ac3e5355fd18, type: 2}
 --- !u!1 &1045176475161835927
 GameObject:
   m_ObjectHideFlags: 0
@@ -152,7 +166,7 @@ GameObject:
   - component: {fileID: 414865762865165848}
   - component: {fileID: 3254950985653260235}
   - component: {fileID: 563275473213317786}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: Fireball Prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5057,7 +5071,7 @@ GameObject:
   - component: {fileID: 7510303107644651614}
   - component: {fileID: 9173563708492069107}
   - component: {fileID: 9091881268274837316}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: SquareTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9931,7 +9945,7 @@ GameObject:
   - component: {fileID: 6648569145642245170}
   - component: {fileID: 9080471499049252482}
   - component: {fileID: 3633110126545763674}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: SmokeTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14823,7 +14837,7 @@ GameObject:
   - component: {fileID: 140623637287796198}
   - component: {fileID: 7158843766345670021}
   - component: {fileID: 8259795262692918136}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: LingerTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19715,7 +19729,7 @@ GameObject:
   - component: {fileID: 4870013420689134909}
   - component: {fileID: 3704411121087479478}
   - component: {fileID: 4868284441086320086}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: Glow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24597,7 +24611,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3139626386883061849}
   - component: {fileID: 1779818491257440199}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24727,7 +24741,7 @@ GameObject:
   - component: {fileID: 6866175385565421628}
   - component: {fileID: 7517370016819297981}
   - component: {fileID: 757742958485746648}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: EmberTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}

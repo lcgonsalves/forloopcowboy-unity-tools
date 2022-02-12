@@ -32,6 +32,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         private Coroutine deathCountdown = null;
         
         private Rigidbody rb;
+        private Collider cldr;
 
         /// <summary>
         /// If bullet was fired by somebody, it will be set here.
@@ -63,8 +64,10 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
                 this.maxBounces = maxBounces.Value;
         }
 
-        private void OnEnable() {
-            if (!GetComponentInChildren<Collider>()) Debug.LogError("Bullet must have a collider");
+        private void OnEnable()
+        {
+            cldr = GetComponentInChildren<Collider>();
+            if (!cldr) Debug.LogError("Bullet must have a collider");
             rb = gameObject.GetOrElseAddComponent<Rigidbody>();
         }
 
@@ -76,11 +79,16 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         public void Fire(Vector3 velocity, NetworkObject whoFiredThis)
         {
             firedBy = whoFiredThis;
+            var firedByCollider = whoFiredThis.GetComponentInChildren<Collider>();
             
             rb.isKinematic = false;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.velocity = Vector3.zero;
             rb.AddForce(velocity, ForceMode.VelocityChange);
+            Physics.IgnoreCollision(cldr, firedByCollider, true);
+
+            // so object can still hit itself, just not as soon as it is launched
+            this.RunAsyncWithDelay(0.2f, () => Physics.IgnoreCollision(cldr, firedByCollider, false));
         }
         
         public void Fire(Vector3 direction, float velocity, NetworkObject whoFiredThis) => Fire(direction.normalized * velocity, whoFiredThis);

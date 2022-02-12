@@ -113,6 +113,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             Damage(amount, null!);
         }
 
+        public void Heal(int amount, bool revive)
+        {
+            if (revive) Heal(amount);
+            else if (Health > 0) Heal(amount);
+        }
+
         [Button]
         public void Heal(int amount) { Health += amount; }
 
@@ -168,7 +174,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public void AttachHitBox()
         {
             var hb = this.GetOrElseAddComponent<HitBox>();
-            hb.healthComponent = this;
+            hb.legacyHealthComponent = this;
         }
 
         protected virtual void OnOnDamage(int dmgAmount, IDamageProvider? damageProvider = null)
