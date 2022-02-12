@@ -25,7 +25,7 @@ namespace forloopcowboy_unity_tools.Scripts.HUD
             rt = GetComponent<RectTransform>();
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (!lookAt) return;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.Spell.Implementations;
@@ -23,7 +24,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         // Internal state
 
         [CanBeNull] private INetworkSpell activeSpell = null;
-        private List<INetworkSpell> spells = new List<INetworkSpell>();
+        private HashSet<INetworkSpell> spells = new HashSet<INetworkSpell>();
 
         private Movement.KinematicCharacterController characterController;
         private NetworkVariable<Vector3> synchedCharacterVelocity;
@@ -58,12 +59,19 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
 
                 // Keep spells in sync at the start
                 InitializeSpellLocal();
-                InitializeSpellServerRpc();
+                if (IsSpawned) InitializeSpellServerRpc();
             }
+        }
+
+        private void OnServerInitialized()
+        {
+            InitializeSpellServerRpc();
         }
 
         private void Update()
         {
+            if (!IsSpawned) return;
+            
             if (IsOwner && IsClient)
                 SynchronizeCharacterControllerVelocityServerRpc(characterController.Motor.GetState().BaseVelocity);
         }
@@ -121,7 +129,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
                 spells.Add(spellSetting.GetNewSpellInstance());
             }
             
-            if (spellSettings.Count > 0) activeSpell = spells[0];
+            if (spellSettings.Count > 0) activeSpell = spells.First();
         }
 
         public void OnDisable()

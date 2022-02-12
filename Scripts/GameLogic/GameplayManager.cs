@@ -175,7 +175,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var vcam = virtualCamera[index];
             var playerComponent = obj.gameObject.GetOrElseAddComponent<NetworkedPlayer>();
 
-            HealthTracker.AssociateReactiveUpdate(playerComponent.healthComponent, true);
+            NetworkHealthTracker.AssociateReactiveUpdate(playerComponent.healthComponent, true);
             
             playerComponent.side = obj.side;
 
@@ -206,7 +206,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var soldier = GetNewRandomSoldier(randomNode.transform);
             UnitManager.Spawn(soldier.gameObject, randomNode, side, instantiateNew: false);
             
-            HealthTracker.AssociateReactiveUpdateAndTrack(soldier.health, soldier.ragdoll.neck.Get);
+            NetworkHealthTracker.AssociateReactiveUpdateAndTrack(soldier.health, soldier.ragdoll.neck.Get);
         }
         
         /// <summary>

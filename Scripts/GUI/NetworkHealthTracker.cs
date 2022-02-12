@@ -5,31 +5,24 @@ using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.HUD;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class HealthTracker : MonoBehaviour
+[RequireComponent(typeof(Canvas), typeof(NetworkObject))]
+public class NetworkHealthTracker : NetworkBehaviour
 {
-    public GameplayManager unitManager;
     public ProgressBar progressBarPrefab;
 
     private void Awake()
     {
         GetComponent<Canvas>().worldCamera = Camera.main;
     }
-
-    private void Start()
-    {
-        if (unitManager == null)
-            unitManager = FindObjectOfType<GameplayManager>();
-
-        if (unitManager == null) throw new NullReferenceException($"[{name}] No Unit Manager set. Please set one.");
-    }
-
+    
     public ProgressBar playerProgressBar; 
-    private Dictionary<int, ProgressBar> progressBars = new Dictionary<int, ProgressBar>();
+    private Dictionary<IHealth, ProgressBar> progressBars = new Dictionary<IHealth, ProgressBar>();
 
-    public static SingletonHelper<HealthTracker> singletonHelper = new SingletonHelper<HealthTracker>();
+    public static SingletonHelper<NetworkHealthTracker> singletonHelper = new SingletonHelper<NetworkHealthTracker>();
 
     /// <summary>
     /// Updates heath bar on damage and death.
@@ -53,34 +46,56 @@ public class HealthTracker : MonoBehaviour
     /// <summary>
     /// Updates heath bar on damage and death, and follows it's position.
     /// </summary>
-    public static void AssociateReactiveUpdateAndTrack(HealthComponent healthComponent, Transform lookAt)
+    public static void AssociateReactiveUpdateAndTrack(IHealth healthComponent, Transform lookAt)
     {
         UpdateAndTrackProgressbar(healthComponent, lookAt);
-        AssociateReactiveUpdate(healthComponent);
+
+        switch (healthComponent)
+        {
+            case HealthComponent legacyHealthComponent:
+                AssociateReactiveUpdate(legacyHealthComponent);
+                break;
+            case NetworkHealthComponent networkHealthComponent:
+                AssociateReactiveNetworkUpdate(networkHealthComponent);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(healthComponent));
+        }
     }
-    
-    
+
+    private static void AssociateReactiveNetworkUpdate(NetworkHealthComponent networkHealthComponent)
+    {
+        networkHealthComponent.NetworkCurrent.OnValueChanged += 
+            (_, newValue) => UpdateProgressbar(networkHealthComponent);
+    }
+
     public static void UpdatePlayerProgressBar(HealthComponent playerHealthComponent)
     {
         var ppb = singletonHelper.Singleton.playerProgressBar;
         Assert.IsNotNull(ppb, "Trying to update player progress bar, but none has been specified.");
         
-        UpdateProgressbarFromHealthComponent(playerHealthComponent, ppb);
+        UpdateProgressbarFromHealth(playerHealthComponent, ppb);
     }
     
-    public static void UpdateProgressbar(HealthComponent component)
+    public static void UpdateProgressbar(IHealth component)
     {
         singletonHelper.Singleton.UpdateValues(component);
     }
 
-    public static void UpdateAndTrackProgressbar(HealthComponent component, Transform lookAt)
+    public static void UpdateAndTrackProgressbar(IHealth component, Transform lookAt)
     {
         singletonHelper.Singleton.UpdateAndTrack(healthComponent: component, lookAt);
     }
 
-    public void UpdateValues(HealthComponent healthComponent)
+    public void UpdateValues(IHealth healthComponent)
     {
-        GetOrCreateHealthBar(healthComponent, (progressBar, _) => UpdateProgressbarFromHealthComponent(healthComponent, progressBar));
+        GetOrCreateHealthBar(healthComponent, (progressBar, _) => UpdateProgressbarFromHealth(healthComponent, progressBar));
+    }
+
+    [ClientRpc]
+    public void UpdateValuesClientRpc(NetworkBehaviourReference networkBehaviourReference)
+    {
+        UpdateValues((NetworkHealthComponent) networkBehaviourReference);
     }
     
     /// <summary>
@@ -88,9 +103,9 @@ public class HealthTracker : MonoBehaviour
     /// </summary>
     /// <param name="healthComponent"></param>
     /// <param name="update">Update closure to be done to the progress bar. First param is the progress bar game object component, second is true if the progress bar is a fresh instance.</param>
-    private void GetOrCreateHealthBar(HealthComponent healthComponent, Action<ProgressBar, bool> update)
+    private void GetOrCreateHealthBar(IHealth healthComponent, Action<ProgressBar, bool> update)
     {
-        var id = healthComponent.gameObject.GetInstanceID();
+        var id = healthComponent;
         bool isNewInstance = false;
         
         if (healthComponent.IsAlive)
@@ -120,7 +135,7 @@ public class HealthTracker : MonoBehaviour
         }
     }
     
-    private void UpdateAndTrack(HealthComponent healthComponent, Transform lookAt)
+    private void UpdateAndTrack(IHealth healthComponent, Transform lookAt)
     {
         GetOrCreateHealthBar(
             healthComponent,
@@ -128,7 +143,7 @@ public class HealthTracker : MonoBehaviour
             {
                 // only needs to be done once
                 if (isNewInstance) TrackPosition(lookAt, progressBar);
-                UpdateProgressbarFromHealthComponent(healthComponent, progressBar);
+                UpdateProgressbarFromHealth(healthComponent, progressBar);
             }
         );
     }
@@ -160,9 +175,9 @@ public class HealthTracker : MonoBehaviour
         );
     }
 
-    private static void UpdateProgressbarFromHealthComponent(HealthComponent healthComponent, ProgressBar progressBar)
+    private static void UpdateProgressbarFromHealth(IHealth healthComponent, ProgressBar progressBar)
     {
-        progressBar.max = healthComponent.MaxHealth;
-        progressBar.current = healthComponent.Health;
+        progressBar.max = healthComponent.Max;
+        progressBar.current = healthComponent.Current;
     }
 }

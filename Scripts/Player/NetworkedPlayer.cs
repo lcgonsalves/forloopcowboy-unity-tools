@@ -155,7 +155,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                                          (projectedPoint - emitterTransform.position).normalized;
 
                 emitterTransform.rotation = Quaternion.LookRotation(correctedDirection);
-                UpdateEmitterRotationServerRpc(emitterTransform.rotation);
+                if (IsSpawned) UpdateEmitterRotationServerRpc(emitterTransform.rotation);
             }
         }
 

@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
-    public class HealthComponent : SerializedMonoBehaviour, IManagedGameObject
+    public class HealthComponent : SerializedMonoBehaviour, IManagedGameObject, IHealth
     {
         public event Action? onDeath;
         
@@ -175,5 +175,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
             onDamage?.Invoke(dmgAmount, damageProvider);
         }
+
+        public int Max => MaxHealth;
+        public int Current => Health;
     }
 }

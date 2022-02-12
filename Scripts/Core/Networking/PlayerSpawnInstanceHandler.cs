@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
 using Unity.Netcode;
@@ -28,9 +29,13 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             var instance = Instantiate(playerPrefab, position, rotation);
             var networkObj = instance.GetComponent<NetworkObject>();
             var player = instance.GetComponent<NetworkedPlayer>();
+            var healthComponent = instance.GetComponent<NetworkHealthComponent>();
 
             // assign camera
             player.cameraController = localPlayerCameraController;
+            
+            // add it to network health tracker
+            NetworkHealthTracker.AssociateReactiveUpdateAndTrack(healthComponent, instance.transform);
 
             return networkObj;
         }

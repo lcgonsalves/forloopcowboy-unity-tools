@@ -179,6 +179,7 @@ GameObject:
   - component: {fileID: 9069127280735237824}
   - component: {fileID: -4090814465983891631}
   - component: {fileID: -7935588361557549524}
+  - component: {fileID: 1714280555764929556}
   m_Layer: 16
   m_Name: SimpleNetworkedCharacter
   m_TagString: Untagged
@@ -390,6 +391,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_PingIntervalSeconds: 0.5
+--- !u!114 &1714280555764929556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4549494603381970205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8dab2577a4b4baba1c5859f30b81c42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NetworkCurrent:
+    m_InternalValue: 100
+  settings: {fileID: 11400000, guid: 312e2244035b9e646b8cf6a7f525787a, type: 2}
 --- !u!1 &4549494603686575072
 GameObject:
   m_ObjectHideFlags: 0
