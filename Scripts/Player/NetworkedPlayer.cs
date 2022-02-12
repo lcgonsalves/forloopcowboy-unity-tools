@@ -1,3 +1,4 @@
+using System;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
@@ -13,6 +14,14 @@ namespace forloopcowboy_unity_tools.Scripts.Player
     [RequireComponent(typeof(NetworkObject))]
     public class NetworkedPlayer : NetworkBehaviour
     {
+        public enum SimulationMode
+        {
+            Kinematic,
+            Physics
+        }
+
+        public SimulationMode simulationMode = SimulationMode.Kinematic;
+        
         public UnitManager.Side side;
         public new PlayerCameraController cameraController;
         [FormerlySerializedAs("player")]
@@ -26,8 +35,10 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         [CanBeNull] public Transform emitterTransform;
         
         [ShowInInspector]
-        public HealthComponent healthComponent => _healthComponent == null ? _healthComponent = GetComponent<HealthComponent>() : _healthComponent;
-        private HealthComponent _healthComponent;
+        public NetworkHealthComponent healthComponent => _healthComponent == null ? _healthComponent = GetComponent<NetworkHealthComponent>() : _healthComponent;
+        private NetworkHealthComponent _healthComponent;
+
+        private Rigidbody rb;
 
         [System.Serializable]
         public class InputSettings
@@ -71,7 +82,12 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 inputSettings.escape.action.performed -= ToggleCursorLockState;
             }
         }
-        
+
+        private void Awake()
+        {
+            rb = GetComponent<Rigidbody>();
+        }
+
         private void Start()
         {
             if (IsOwner && IsClient)
@@ -101,14 +117,38 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             if (IsOwner && IsClient)
             {
                 HandleCameraInput();
-                characterController.PostInputUpdate(Time.deltaTime, cameraController.transform.forward);
+                
+                if (simulationMode == SimulationMode.Kinematic)
+                    characterController.PostInputUpdate(Time.deltaTime, cameraController.transform.forward);
             }
         }
         
         private void Update()
         {
             if (IsOwner && IsClient)
-                HandleInputs();
+            {
+                if (healthComponent.IsDead) simulationMode = SimulationMode.Physics;
+                
+                switch (simulationMode)
+                {
+                    case SimulationMode.Kinematic:
+                        if (!characterController.Motor.enabled) characterController.Motor.enabled = true;
+                        if (!rb.isKinematic) rb.isKinematic = true;
+                        
+                        HandleInputs();
+                        break;
+                    case SimulationMode.Physics:
+                        if (characterController.Motor.enabled) characterController.Motor.enabled = false;
+                        if (rb.isKinematic) rb.isKinematic = false;
+                        
+                        // nothing to do: physics simulation will perform its update
+                        // and the ClientNetworkTransform will update its position.
+                        // I hope.
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
             else if (emitterTransform is { }) 
                 emitterTransform.rotation = synchedCameraFollowPointRotation.Value;
         }

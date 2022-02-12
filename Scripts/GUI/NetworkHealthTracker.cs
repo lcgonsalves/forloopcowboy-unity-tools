@@ -63,7 +63,7 @@ public class NetworkHealthTracker : NetworkBehaviour
         }
     }
 
-    private static void AssociateReactiveNetworkUpdate(NetworkHealthComponent networkHealthComponent)
+    public static void AssociateReactiveNetworkUpdate(NetworkHealthComponent networkHealthComponent)
     {
         networkHealthComponent.NetworkCurrent.OnValueChanged += 
             (_, newValue) => UpdateProgressbar(networkHealthComponent);

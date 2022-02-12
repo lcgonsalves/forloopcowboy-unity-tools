@@ -146,7 +146,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
                 gameObject.SetActive(false);
         }
 
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         private void ReturnToPoolServerRpc() => ReturnToPoolLocal();
 
         private enum ImpactType
@@ -165,7 +165,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             Vector3 collisionContactNormal = other.contacts[0].normal;
             float impactVelocity = other.relativeVelocity.magnitude;
             
-            SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.First);
+            if (IsOwner) SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.First);
         }
 
         /// <summary> Called on every impact, including first and last. </summary>
@@ -177,7 +177,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             Vector3 collisionContactNormal = other.contacts[0].normal;
             float impactVelocity = other.relativeVelocity.magnitude;
             
-            SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Regular);
+            if (IsOwner) SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Regular);
         }
 
         /// <summary> Called on final counted impact. Immediately returns object to pool. </summary>
@@ -189,7 +189,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             Vector3 collisionContactNormal = other.contacts[0].normal;
             float impactVelocity = other.relativeVelocity.magnitude;
             
-            SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Last, forceSpawn: true); // always spawn on last impact
+            if (IsOwner) SpawnImpactParticlesServerRpc(collisionContactPoint, collisionContactNormal, impactVelocity, ImpactType.Last, forceSpawn: true); // always spawn on last impact
             ReturnToPool();
         }
 

@@ -174,8 +174,8 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             var obj = UnitManager.SpawnCopy(side, players[index].gameObject);
             var vcam = virtualCamera[index];
             var playerComponent = obj.gameObject.GetOrElseAddComponent<NetworkedPlayer>();
-
-            NetworkHealthTracker.AssociateReactiveUpdate(playerComponent.healthComponent, true);
+            
+            NetworkHealthTracker.AssociateReactiveNetworkUpdate(playerComponent.healthComponent); 
             
             playerComponent.side = obj.side;
 
