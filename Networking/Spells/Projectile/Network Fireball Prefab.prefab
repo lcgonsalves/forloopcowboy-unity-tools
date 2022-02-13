@@ -134,7 +134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a218187a704a464dafe8a14452671e54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DamageSettings: {fileID: 11400000, guid: e04b84e4e3a214f44809ac3e5355fd18, type: 2}
+  DamageSettings: {fileID: 11400000, guid: 0802ab34785da6846aebf08b4333c065, type: 2}
   fxSettings: {fileID: 11400000, guid: 9ee3e2c511daf1443a42b30c5a715700, type: 2}
   prefab: {fileID: 1138883815503004}
   MaxLifetimeAfterBounceSeconds: 1

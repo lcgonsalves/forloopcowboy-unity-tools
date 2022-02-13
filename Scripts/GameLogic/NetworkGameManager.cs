@@ -17,72 +17,52 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public List<SpawnPoint> spawnPoints = new List<SpawnPoint>();
         public LayerMask playerLayerMask;
 
+        public Dictionary<ulong, NetworkObject> playerCharacters = new Dictionary<ulong, NetworkObject>();
+
         public static SpawnPoint GetRandomSpawnPoint()
         {
             var s = Singleton;
             return s.spawnPoints[Random.Range(0, s.spawnPoints.Count)];
         }
-        
-        public static void TrySpawnWithDelay(ulong ownerClientId, float respawnDelay) =>
-            Singleton.TrySpawnPlayerWithDelayServerRpc(ownerClientId, respawnDelay);
 
-        public static bool TrySpawnPlayer(ulong ownerClientId)
+        /// <summary>
+        /// Gets or creates a new instance of the
+        /// player character prefab, and assigns it to
+        /// the player object.
+        /// </summary>
+        public static void GetOrCreateCharacterForPlayer(NetworkedPlayer playerMaster) =>
+            Singleton.GetOrCreateCharacterForPlayerServerRpc((NetworkBehaviourReference) playerMaster);
+
+        [ServerRpc(RequireOwnership = false)]
+        private void GetOrCreateCharacterForPlayerServerRpc(NetworkBehaviourReference playerMasterRef)
         {
-            if (TryGetFirstAvailableSpawnPoint(out var spawnPoint))
+            if (playerMasterRef.TryGet(out NetworkedPlayer playerMaster))
             {
-                Singleton.SpawnPlayerServerRpc(ownerClientId, spawnPoint.location.position, spawnPoint.location.rotation);
-                return true;
+                var character = GetOrCreateCharacter(playerMaster);
+                character.gameObject.name = "Player " + playerMaster.OwnerClientId + " Character";
+                
+                character.SpawnWithOwnership(playerMaster.OwnerClientId);
+                playerMaster.AssignNewCharacter(character);
+            }
+        }
+
+        /// <summary>
+        /// Gets or creates character, spawning it with ownership to
+        /// the player master.
+        /// </summary>
+        private NetworkObject GetOrCreateCharacter(NetworkedPlayer playerMaster)
+        {
+            var id = playerMaster.OwnerClientId;
+            
+            // instantiate new if previous instance has been destroyed
+            if (!playerCharacters.ContainsKey(id) || playerCharacters[id] == null)
+            {
+                var newInstance = Instantiate(PlayerMasterSpawner.Singleton.playerCharacterPrefab);
+                var newInstanceNetObj = newInstance.GetComponent<NetworkObject>();
+                playerCharacters.Add(id, newInstanceNetObj);
             }
 
-            return false;
-        }
-
-        public static void DespawnPlayerWithDelay(NetworkedPlayer player, float delayInSeconds = 0f)
-        {
-            if (player != null && player.NetworkObject != null)
-                Singleton.DespawnPlayerWithDelayServerRpc(player.NetworkObject, delayInSeconds);
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void DespawnPlayerWithDelayServerRpc(NetworkObjectReference playerNetworkObject, float delayInSeconds)
-        {
-            if (delayInSeconds == 0f && playerNetworkObject.TryGet(out var instance)) PlayerSpawnInstanceHandler.Singleton.Destroy(instance);
-            else
-                this.RunAsyncWithDelay(
-                    delayInSeconds,
-                    () =>
-                    {
-                        if (playerNetworkObject.TryGet(out var instanceAfterDelay))
-                            PlayerSpawnInstanceHandler.Singleton.Destroy(instanceAfterDelay);
-                    }
-                );
-        }
-
-        private HashSet<ulong> tryingToSpawn = new HashSet<ulong>(); 
-
-        [ServerRpc(RequireOwnership = false)]
-        private void TrySpawnPlayerWithDelayServerRpc(ulong ownerClientId, float respawnDelay)
-        {
-            if (tryingToSpawn.Contains(ownerClientId)) return;
-
-            tryingToSpawn.Add(ownerClientId);
-            
-            // waits respawn delay before trying to spawn player
-            this.RunAsyncWithDelay(
-                respawnDelay,
-                () => TrySpawnPlayer(ownerClientId)
-            );
-        }
-        
-
-        [ServerRpc(RequireOwnership = false)]
-        private void SpawnPlayerServerRpc(ulong ownerClientId, Vector3 position, Quaternion rotation)
-        {
-            NetworkObject networkInstance = 
-                PlayerSpawnInstanceHandler.Singleton.Instantiate(ownerClientId, position, rotation);
-
-            networkInstance.SpawnAsPlayerObject(ownerClientId);
-            tryingToSpawn.Remove(ownerClientId);
+            return playerCharacters[id];
         }
 
         public static bool TryGetFirstAvailableSpawnPoint(out SpawnPoint spawnPoint)

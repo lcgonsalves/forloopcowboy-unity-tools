@@ -297,6 +297,9 @@ namespace forloopcowboy_unity_tools.Scripts.Core
 
     public static class TransformHelpers
     {
+        public static Transform? FindWithName(this Transform t, string name) =>
+            t.FindRecursively(_ => _.name == name);
+        
         public static Transform? FindRecursively(this Transform t, Func<Transform, bool> predicate)
         {
             if (t.childCount == 0) return null;

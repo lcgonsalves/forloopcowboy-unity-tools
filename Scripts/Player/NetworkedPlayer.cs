@@ -20,25 +20,59 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             Physics
         }
 
-        public SimulationMode simulationMode = SimulationMode.Kinematic;
+        public NetworkVariable<SimulationMode> simulationMode;
+
+        public NetworkVariable<NetworkObjectReference> characterObjectReference = new NetworkVariable<NetworkObjectReference>();
+        public bool HasCharacter => characterObjectReference.Value.TryGet(out var _) && HealthComponent != null;
         
         public UnitManager.Side side;
-        public new PlayerCameraController cameraController;
-        [FormerlySerializedAs("player")]
+        public PlayerCameraController cameraController;
+
+        public Movement.KinematicCharacterController CharacterController
+        {
+            get
+            {
+                if (characterController == null && characterObjectReference.Value.TryGet(out var reference))
+                    characterController = reference.GetComponent<Movement.KinematicCharacterController>();
+
+                return characterController;
+            }
+        }
         public Movement.KinematicCharacterController characterController;
         public Transform cameraFollowPoint;
+        public float throwAngle;
 
         public NetworkVariable<Quaternion> synchedCameraFollowPointRotation;
 
         /// <summary> Can be used for emitting spells, bullets, etc. Its direction is synched with the camera direction.</summary>
+        [FormerlySerializedAs("emitterTransform")]
         [Tooltip("Its direction is synced with the camera direction.")]
-        [CanBeNull] public Transform emitterTransform;
+        [CanBeNull] public Transform castPoint;
         
         [ShowInInspector]
-        public NetworkHealthComponent healthComponent => _healthComponent == null ? _healthComponent = characterController.GetComponent<NetworkHealthComponent>() : _healthComponent;
+        public NetworkHealthComponent HealthComponent =>
+            _healthComponent == null
+                ? _healthComponent = CharacterController != null
+                    ? CharacterController.GetComponent<NetworkHealthComponent>()
+                    : null
+                : _healthComponent;
+        
         private NetworkHealthComponent _healthComponent;
 
-        private Rigidbody rb;
+        private Rigidbody Rb
+        {
+            get
+            {
+                if (_rb != null) return _rb;
+                
+                if (characterObjectReference.Value.TryGet(out var character))
+                    return _rb = character.GetComponent<Rigidbody>();
+
+                return null;
+            }
+        }
+        
+        private Rigidbody _rb;
 
         [System.Serializable]
         public class InputSettings
@@ -74,6 +108,58 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 
         public InputSettings inputSettings;
 
+        /// <summary>
+        /// Assigns a new puppet to this player controller, if owner.
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void AssignNewCharacterServerRpc(NetworkObjectReference characterReference) =>
+            AssignCharacterInternal(characterReference);
+
+        /// <summary>
+        /// Assigns a new puppet to this player controller, if owner.
+        /// </summary>
+        [ClientRpc]
+        public void AssignNewCharacterClientRpc(NetworkObjectReference characterReference) =>
+            AssignCharacterInternal(characterReference);
+
+        private void AssignCharacterInternal(NetworkObjectReference characterReference)
+        {
+            if (characterReference.TryGet(out var reference) && reference.OwnerClientId == OwnerClientId)
+            {
+                if (IsServer) characterObjectReference.Value = characterReference;
+                
+                characterController = reference.GetComponent<Movement.KinematicCharacterController>();
+                castPoint = reference.transform.FindWithName("CastPoint");
+                cameraFollowPoint = reference.transform.FindWithName("CameraFollowPoint");
+
+                if (IsOwner)
+                {
+                    cameraController.SetFollowTransform(cameraFollowPoint);
+
+                    // Ignore the character's collider(s) for camera obstruction checks
+                    cameraController.IgnoredColliders.Clear();
+                    cameraController.IgnoredColliders.AddRange(characterController.GetComponentsInChildren<Collider>());
+
+                    characterController.Motor.CharacterController = characterController;
+                }
+
+                // track health of this new character
+                // todo: have a special health bar for the owner!
+                NetworkHealthTracker.AssociateReactiveUpdateAndTrack(HealthComponent, reference.transform);
+
+                foreach (var otherHealthComponent in FindObjectsOfType<NetworkHealthComponent>())
+                {
+                    if (otherHealthComponent == HealthComponent) continue;
+                    NetworkHealthTracker.AssociateReactiveUpdateAndTrack(otherHealthComponent, otherHealthComponent.transform);
+                }
+
+                characterController.Motor.enabled = IsOwner;
+            }
+            else
+                NetworkLog.LogErrorServer(
+                    "Attempting to set character reference that is either null, or not owned by the player master. Make sure ownership is set properly.");
+        }
+
         private void OnDisable()
         {
             if (IsOwner && IsClient)
@@ -83,77 +169,90 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             }
         }
 
-        private void Awake()
-        {
-            rb = GetComponent<Rigidbody>();
-        }
-
         private void Start()
         {
+            HandleSimulationModeChange();
+            
             if (IsOwner && IsClient)
             {
+                // server rpc that will update this character reference asynchronously
+                NetworkGameManager.GetOrCreateCharacterForPlayer(this);
+                
                 inputSettings.EnableAll();
                 inputSettings.escape.action.performed += ToggleCursorLockState;
                 
                 Cursor.lockState = CursorLockMode.Locked;
-
-                // Tell camera to follow transform
-                cameraController.SetFollowTransform(cameraFollowPoint);
-
-                // Ignore the character's collider(s) for camera obstruction checks
-                cameraController.IgnoredColliders.Clear();
-                cameraController.IgnoredColliders.AddRange(characterController.GetComponentsInChildren<Collider>());
-                
-                characterController.Motor.enabled = true;
             }
-            else
+            else if (HasCharacter)
             {
                 characterController.Motor.enabled = false;
-                if (emitterTransform is { }) 
-                    emitterTransform.rotation = synchedCameraFollowPointRotation.Value;
+                if (castPoint != null) 
+                    castPoint.rotation = synchedCameraFollowPointRotation.Value;
             }
         }
+
+        [ServerRpc]
+        private void HandleSimulationModeChangeServerRpc() => HandleSimulationModeChange();
         
+        private void HandleSimulationModeChange()
+        {
+            if (!HasCharacter) return;
+
+            var currentSimulationMode = simulationMode.Value;
+            
+            if (HealthComponent.NetworkCurrent.Value <= 0 && IsOwner && currentSimulationMode != SimulationMode.Physics)
+            {
+                SetSimulationModeServerRpc(SimulationMode.Physics);
+                currentSimulationMode = SimulationMode.Physics; // perform change locally to handle change immediately
+            }
+            
+            switch (currentSimulationMode)
+            {
+                // do not touch kinematic rigidbody if this is not the owner
+                case SimulationMode.Kinematic:
+                    if (!characterController.Motor.enabled) characterController.Motor.enabled = true;
+                    if (IsOwner && !Rb.isKinematic) Rb.isKinematic = true;
+                    break;
+                
+                case SimulationMode.Physics:
+                    if (characterController.Motor.enabled) characterController.Motor.enabled = false;
+                    if (IsOwner && Rb.isKinematic) Rb.isKinematic = false;
+                    break;
+            } ;
+        }
+
+        [ServerRpc]
+        private void SetSimulationModeServerRpc(SimulationMode newSimulationMove) => 
+            simulationMode.Value = newSimulationMove;
+
         private void LateUpdate()
         {
             if (IsOwner && IsClient)
             {
                 HandleCameraInput();
                 
-                if (simulationMode == SimulationMode.Kinematic)
+                if (HasCharacter && simulationMode.Value == SimulationMode.Kinematic)
                     characterController.PostInputUpdate(Time.deltaTime, cameraController.transform.forward);
             }
         }
         
         private void Update()
         {
-            if (IsOwner && IsClient)
+            HandleSimulationModeChange();
+            
+            if (IsOwner && IsClient && HasCharacter)
             {
-                if (healthComponent.IsDead) simulationMode = SimulationMode.Physics;
                 
-                switch (simulationMode)
-                {
-                    case SimulationMode.Kinematic:
-                        if (!characterController.Motor.enabled) characterController.Motor.enabled = true;
-                        if (!rb.isKinematic) rb.isKinematic = true;
-                        
-                        HandleInputs();
-                        break;
-                    case SimulationMode.Physics:
-                        if (characterController.Motor.enabled) characterController.Motor.enabled = false;
-                        if (rb.isKinematic) rb.isKinematic = false;
-                        
-                        // nothing to do: physics simulation will perform its update
-                        // and the ClientNetworkTransform will update its position.
-                        // I hope.
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                if (simulationMode.Value == SimulationMode.Kinematic)
+                    HandleInputs();
             }
-            else if (emitterTransform is { }) 
-                emitterTransform.rotation = synchedCameraFollowPointRotation.Value;
+            else if (castPoint != null)
+            {
+                characterController.Motor.enabled = false;
+                castPoint.rotation = synchedCameraFollowPointRotation.Value;
+            }
         }
+        
 
         public void HandleInputs()
         {
@@ -166,7 +265,8 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             inputs.moveAxisRight = moveInput.x;
             inputs.requestJump = pressedJump;
 
-            characterController.SetInputs(ref inputs);
+            if (HasCharacter)
+                characterController.SetInputs(ref inputs);
         }
 
         public void HandleCameraInput()
@@ -188,16 +288,16 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             cameraController.UpdateWithInput(Time.deltaTime, 0, lookInputVector);
 
             // Make sure emitter is positioned in line with camera's aim point
-            if (emitterTransform != null)
+            if (castPoint != null)
             {
                 // todo: replace projected point with raycast collision for more accurate?
                 var camTransform = cameraController.transform;
                 var projectedPoint = camTransform.position + (camTransform.forward * 55f);
-                var correctedDirection = Quaternion.AngleAxis(10f, transform.TransformDirection(Vector3.left)) *
-                                         (projectedPoint - emitterTransform.position).normalized;
+                var correctedDirection = Quaternion.AngleAxis(throwAngle, transform.TransformDirection(Vector3.right)) *
+                                         (projectedPoint - castPoint.position).normalized;
 
-                emitterTransform.rotation = Quaternion.LookRotation(correctedDirection);
-                if (IsSpawned) UpdateEmitterRotationServerRpc(emitterTransform.rotation);
+                castPoint.rotation = Quaternion.LookRotation(correctedDirection);
+                if (IsSpawned) UpdateEmitterRotationServerRpc(castPoint.rotation);
             }
         }
 
@@ -215,5 +315,10 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 Cursor.lockState = CursorLockMode.Locked;
         }
 
+        public void AssignNewCharacter(NetworkObject character)
+        {
+            AssignNewCharacterServerRpc(character);
+            AssignNewCharacterClientRpc(character);
+        }
     }
 }
