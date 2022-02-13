@@ -526,9 +526,9 @@ namespace forloopcowboy_unity_tools.Scripts.Core
             return m.RunAsync(callback, () => false);
         }
         
-        public static Coroutine RunAsync(this MonoBehaviour m, Func<bool> returnTrueToStop)
+        public static Coroutine RunAsync(this MonoBehaviour m, Func<bool> returnTrueToStop, float delay = 0f)
         {
-            return m.RunAsync(() => { }, returnTrueToStop);
+            return m.RunAsync(() => { }, returnTrueToStop, RoutineTypes.TimeInterval, delay);
         }
 
         // Runs coroutine on fixed update

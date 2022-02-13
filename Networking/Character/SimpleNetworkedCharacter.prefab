@@ -365,6 +365,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e13b15ef06ee4113970cd317e0c5ba6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  simulationMode: 0
   side: 0
   cameraController: {fileID: 0}
   characterController: {fileID: 4549494603381970193}

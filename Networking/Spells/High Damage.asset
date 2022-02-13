@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b5e5577396847d1b590f212e30dbdac, type: 3}
-  m_Name: Networked Projectile Spell
+  m_Script: {fileID: 11500000, guid: 38c829a738274c09993f74310dc2f1b2, type: 3}
+  m_Name: High Damage
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -21,9 +21,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  cooldownInSeconds: 0.5
-  projectileVelocity: 25
-  previewCollidesWithLayers:
-    serializedVersion: 2
-    m_Bits: 129
-  projectilePrefab: {fileID: 1138883815503004, guid: 252082969c1dcc44484ec5be4ca4bf71, type: 3}
+  minMaxValueSlider: {x: 29.459936, y: 61.58085}
+  useStaticDamageAmount: 0
+  staticDamageAmount: 0

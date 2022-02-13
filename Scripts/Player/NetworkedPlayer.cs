@@ -35,7 +35,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         [CanBeNull] public Transform emitterTransform;
         
         [ShowInInspector]
-        public NetworkHealthComponent healthComponent => _healthComponent == null ? _healthComponent = GetComponent<NetworkHealthComponent>() : _healthComponent;
+        public NetworkHealthComponent healthComponent => _healthComponent == null ? _healthComponent = characterController.GetComponent<NetworkHealthComponent>() : _healthComponent;
         private NetworkHealthComponent _healthComponent;
 
         private Rigidbody rb;
@@ -103,6 +103,8 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 // Ignore the character's collider(s) for camera obstruction checks
                 cameraController.IgnoredColliders.Clear();
                 cameraController.IgnoredColliders.AddRange(characterController.GetComponentsInChildren<Collider>());
+                
+                characterController.Motor.enabled = true;
             }
             else
             {
