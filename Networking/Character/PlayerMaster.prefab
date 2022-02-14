@@ -60,11 +60,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e13b15ef06ee4113970cd317e0c5ba6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  simulationMode: 0
+  simulationMode:
+    m_InternalValue: 0
   side: 0
   cameraController: {fileID: 0}
+  autoDespawnPreviousCharacterDelay: 3
   characterController: {fileID: 0}
   cameraFollowPoint: {fileID: 0}
+  throwAngle: 0
   synchedCameraFollowPointRotation:
     m_InternalValue: {x: 0, y: 0, z: 0, w: 0}
   castPoint: {fileID: 0}
@@ -75,3 +78,4 @@ MonoBehaviour:
     sprint: {fileID: 0}
     reset: {fileID: 0}
     escape: {fileID: 7593577818220512516, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}
+    respawn: {fileID: 4968455649929346641, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}

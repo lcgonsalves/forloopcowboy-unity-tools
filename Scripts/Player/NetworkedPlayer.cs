@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
@@ -27,6 +28,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         
         public UnitManager.Side side;
         public PlayerCameraController cameraController;
+        public float autoDespawnPreviousCharacterDelay = 3f;
 
         public Movement.KinematicCharacterController CharacterController
         {
@@ -48,16 +50,9 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         [FormerlySerializedAs("emitterTransform")]
         [Tooltip("Its direction is synced with the camera direction.")]
         [CanBeNull] public Transform castPoint;
-        
+
         [ShowInInspector]
-        public NetworkHealthComponent HealthComponent =>
-            _healthComponent == null
-                ? _healthComponent = CharacterController != null
-                    ? CharacterController.GetComponent<NetworkHealthComponent>()
-                    : null
-                : _healthComponent;
-        
-        private NetworkHealthComponent _healthComponent;
+        public NetworkHealthComponent HealthComponent => CharacterController.GetComponent<NetworkHealthComponent>();
 
         private Rigidbody Rb
         {
@@ -83,6 +78,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             public InputActionReference sprint;
             public InputActionReference reset;
             public InputActionReference escape;
+            public InputActionReference respawn;
 
             public void EnableAll()
             {
@@ -92,6 +88,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 if (sprint != null) sprint.action.Enable();
                 if (reset != null) reset.action.Enable();
                 if (escape != null) escape.action.Enable();
+                if (respawn != null) respawn.action.Enable();
             }
             
             public void DisableAll()
@@ -102,6 +99,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 if (sprint != null) sprint.action.Disable();
                 if (reset != null) reset.action.Disable();
                 if (escape != null) escape.action.Disable();
+                if (respawn != null) respawn.action.Disable();
             }
             
         }
@@ -126,7 +124,10 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         {
             if (characterReference.TryGet(out var reference) && reference.OwnerClientId == OwnerClientId)
             {
-                if (IsServer) characterObjectReference.Value = characterReference;
+                if (IsServer)
+                {
+                    characterObjectReference.Value = characterReference;
+                }
                 
                 characterController = reference.GetComponent<Movement.KinematicCharacterController>();
                 castPoint = reference.transform.FindWithName("CastPoint");
@@ -154,6 +155,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 }
 
                 characterController.Motor.enabled = IsOwner;
+
             }
             else
                 NetworkLog.LogErrorServer(
@@ -166,6 +168,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             {
                 inputSettings.DisableAll();
                 inputSettings.escape.action.performed -= ToggleCursorLockState;
+                inputSettings.respawn.action.performed -= HandleRespawnButtonPress;
             }
         }
 
@@ -180,6 +183,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 
                 inputSettings.EnableAll();
                 inputSettings.escape.action.performed += ToggleCursorLockState;
+                inputSettings.respawn.action.performed += HandleRespawnButtonPress;
                 
                 Cursor.lockState = CursorLockMode.Locked;
             }
@@ -191,9 +195,26 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             }
         }
 
+        public void HandleRespawnButtonPress(InputAction.CallbackContext ctx)
+        {
+            if (!HasCharacter || HealthComponent.IsDead)
+            {
+                DestroyPreviousCharacterServerRpc();
+                
+                // server rpc that will update this character reference asynchronously
+                NetworkGameManager.CreateNewCharacterForPlayer(this);
+            }
+        }
+
         [ServerRpc]
-        private void HandleSimulationModeChangeServerRpc() => HandleSimulationModeChange();
-        
+        private void DestroyPreviousCharacterServerRpc()
+        {
+            if (characterObjectReference.Value.TryGet(out var characterObj))
+            {
+                Destroy(characterObj.gameObject, autoDespawnPreviousCharacterDelay);
+            }
+        }
+
         private void HandleSimulationModeChange()
         {
             if (!HasCharacter) return;

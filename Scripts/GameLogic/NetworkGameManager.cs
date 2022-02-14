@@ -49,6 +49,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         /// <summary>
         /// Gets or creates character, spawning it with ownership to
         /// the player master.
+        /// Object is spawned in the first available spawn point, if one is available.
         /// </summary>
         private NetworkObject GetOrCreateCharacter(NetworkedPlayer playerMaster)
         {
@@ -56,13 +57,45 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
             
             // instantiate new if previous instance has been destroyed
             if (!playerCharacters.ContainsKey(id) || playerCharacters[id] == null)
-            {
-                var newInstance = Instantiate(PlayerMasterSpawner.Singleton.playerCharacterPrefab);
-                var newInstanceNetObj = newInstance.GetComponent<NetworkObject>();
-                playerCharacters.Add(id, newInstanceNetObj);
-            }
-
+                InstantiateAndCacheNewCharacter(id);
+            
             return playerCharacters[id];
+        }
+
+        public static void CreateNewCharacterForPlayer(NetworkedPlayer playerMaster) =>
+            Singleton.CreateFreshCharacterForPlayerServerRpc((NetworkBehaviourReference) playerMaster);
+
+        [ServerRpc]
+        private void CreateFreshCharacterForPlayerServerRpc(NetworkBehaviourReference playerMasterRef)
+        {
+            if (playerMasterRef.TryGet(out NetworkedPlayer playerMaster))
+            {
+                InstantiateAndCacheNewCharacter(playerMaster.OwnerClientId);
+
+                var character = playerCharacters[playerMaster.OwnerClientId];
+                
+                character.gameObject.name = "Player " + playerMaster.OwnerClientId + " Character";
+                character.SpawnWithOwnership(playerMaster.OwnerClientId);
+                
+                playerMaster.AssignNewCharacter(character);
+                
+            }
+        }
+
+        private void InstantiateAndCacheNewCharacter(ulong id)
+        {
+            GameObject newInstance = TryGetFirstAvailableSpawnPoint(out var spawnPoint)
+                ? Instantiate(
+                    PlayerMasterSpawner.Singleton.playerCharacterPrefab,
+                    spawnPoint.location.position,
+                    spawnPoint.location.rotation
+                )
+                : Instantiate(PlayerMasterSpawner.Singleton.playerCharacterPrefab);
+
+            var newInstanceNetObj = newInstance.GetComponent<NetworkObject>();
+
+            if (!playerCharacters.ContainsKey(id)) playerCharacters.Add(id, newInstanceNetObj);
+            else playerCharacters[id] = newInstanceNetObj;
         }
 
         public static bool TryGetFirstAvailableSpawnPoint(out SpawnPoint spawnPoint)
