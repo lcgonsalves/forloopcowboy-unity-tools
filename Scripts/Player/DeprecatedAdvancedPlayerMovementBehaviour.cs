@@ -299,7 +299,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             const int space = 4;
             const int height = 40;
 
-            GUI.Label(new Rect(h_margin, 10 * margin + 9 * space, 600, height), $"Grab anim length [ {grabAnim.duration} ]  Grab anim length [ {horizontalLerpAnimation.duration} ]");
+            UnityEngine.GUI.Label(new Rect(h_margin, 10 * margin + 9 * space, 600, height), $"Grab anim length [ {grabAnim.duration} ]  Grab anim length [ {horizontalLerpAnimation.duration} ]");
 
         }
 

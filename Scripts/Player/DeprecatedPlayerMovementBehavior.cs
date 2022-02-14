@@ -505,15 +505,15 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             const int space = 4;
             const int height = 40;
 
-            GUI.Label(new Rect(h_margin, margin, 200, height), $"Look input [ {lookInput.x}, {lookInput.y} ] ");
-            GUI.Label(new Rect(h_margin, 2 * margin + space, 200, height), $"Move input [ {moveInput.x}, {moveInput.y} ] ");
-            GUI.Label(new Rect(h_margin, 3 * margin + 2 * space, 600, height), $"Head rotation [ {headRotation.eulerAngles.x}, {headRotation.eulerAngles.y}, {headRotation.eulerAngles.z} ] ");
-            GUI.Label(new Rect(h_margin, 4 * margin + 3 * space, 600, height), $"Grounded? [ {controller.isGrounded} ], Player Velocity: {playerVelocity} ");
-            GUI.Label(new Rect(h_margin, 5 * margin + 4 * space, 600, height), $"Momentum dropoff value [ g: {g_dropoff} a: {a_dropoff} ]");
-            GUI.Label(new Rect(h_margin, 6 * margin + 5 * space, 600, height), $"Momentum buildup value [ g: {g_buildup} a: {a_buildup} ]");
-            GUI.Label(new Rect(h_margin, 7 * margin + 6 * space, 600, height), $"Sprinting [ {isSprinting} ]");
-            GUI.Label(new Rect(h_margin, 8 * margin + 7 * space, 600, height), $"Moving [ {isMoving} ]");
-            GUI.Label(new Rect(h_margin, 9 * margin + 8 * space, 600, height), $"Idle [ {isIdle} ]");
+            UnityEngine.GUI.Label(new Rect(h_margin, margin, 200, height), $"Look input [ {lookInput.x}, {lookInput.y} ] ");
+            UnityEngine.GUI.Label(new Rect(h_margin, 2 * margin + space, 200, height), $"Move input [ {moveInput.x}, {moveInput.y} ] ");
+            UnityEngine.GUI.Label(new Rect(h_margin, 3 * margin + 2 * space, 600, height), $"Head rotation [ {headRotation.eulerAngles.x}, {headRotation.eulerAngles.y}, {headRotation.eulerAngles.z} ] ");
+            UnityEngine.GUI.Label(new Rect(h_margin, 4 * margin + 3 * space, 600, height), $"Grounded? [ {controller.isGrounded} ], Player Velocity: {playerVelocity} ");
+            UnityEngine.GUI.Label(new Rect(h_margin, 5 * margin + 4 * space, 600, height), $"Momentum dropoff value [ g: {g_dropoff} a: {a_dropoff} ]");
+            UnityEngine.GUI.Label(new Rect(h_margin, 6 * margin + 5 * space, 600, height), $"Momentum buildup value [ g: {g_buildup} a: {a_buildup} ]");
+            UnityEngine.GUI.Label(new Rect(h_margin, 7 * margin + 6 * space, 600, height), $"Sprinting [ {isSprinting} ]");
+            UnityEngine.GUI.Label(new Rect(h_margin, 8 * margin + 7 * space, 600, height), $"Moving [ {isMoving} ]");
+            UnityEngine.GUI.Label(new Rect(h_margin, 9 * margin + 8 * space, 600, height), $"Idle [ {isIdle} ]");
 
         }
     }

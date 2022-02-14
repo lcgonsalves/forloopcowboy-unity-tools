@@ -1,5 +1,6 @@
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
+using forloopcowboy_unity_tools.Scripts.GUI;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using Unity.Netcode;
