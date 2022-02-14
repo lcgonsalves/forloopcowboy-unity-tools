@@ -1,10 +1,5 @@
-using System;
-using JetBrains.Annotations;
 using Unity.Netcode;
-using UnityEngine;
 using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {

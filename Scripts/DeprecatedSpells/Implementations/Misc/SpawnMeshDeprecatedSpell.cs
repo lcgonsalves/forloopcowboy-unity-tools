@@ -1,19 +1,14 @@
 using System;
 using System.Collections.Generic;
-using BehaviorDesigner.Runtime.Tasks;
-using BehaviorDesigner.Runtime.Tasks.Unity.UnityString;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
-using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using RayFire;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
-using Random = System.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Misc
 {

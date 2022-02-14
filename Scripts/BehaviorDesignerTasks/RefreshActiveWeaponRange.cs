@@ -1,5 +1,4 @@
 using BehaviorDesigner.Runtime;
-using UnityEngine;
 using BehaviorDesigner.Runtime.Tasks;
 using forloopcowboy_unity_tools.Scripts.Soldier;
 

@@ -1,5 +1,3 @@
-using Sirenix.OdinInspector;
-using Sirenix.Serialization;
 using Unity.Netcode.Components;
 
 namespace forloopcowboy_unity_tools.Scripts.Core.Networking

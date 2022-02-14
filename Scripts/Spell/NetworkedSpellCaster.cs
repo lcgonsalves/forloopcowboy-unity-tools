@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core.Networking;
-using forloopcowboy_unity_tools.Scripts.Core.Networking.forloopcowboy_unity_tools.Scripts.Core.Networking;
-using forloopcowboy_unity_tools.Scripts.Spell.Implementations;
 using JetBrains.Annotations;
-using Sirenix.Serialization;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;

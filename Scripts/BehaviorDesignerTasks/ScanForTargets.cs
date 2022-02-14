@@ -1,10 +1,7 @@
-using System;
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
-using BehaviorDesigner.Runtime.Tasks.Unity.Timeline;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
-using forloopcowboy_unity_tools.Scripts.Soldier;
 using UnityEngine;
 using Action = BehaviorDesigner.Runtime.Tasks.Action;
 

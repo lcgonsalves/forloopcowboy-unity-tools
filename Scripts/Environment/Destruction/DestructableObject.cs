@@ -2,10 +2,7 @@ using System;
 using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
-using forloopcowboy_unity_tools.Scripts.Player;
-using RayFire;
 using Sirenix.OdinInspector;
-using Sirenix.Serialization.Utilities;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment

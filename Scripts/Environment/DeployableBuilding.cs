@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
-using forloopcowboy_unity_tools.Scripts.Soldier;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using Object = System.Object;
 
 namespace forloopcowboy_unity_tools.Scripts.Environment
 {

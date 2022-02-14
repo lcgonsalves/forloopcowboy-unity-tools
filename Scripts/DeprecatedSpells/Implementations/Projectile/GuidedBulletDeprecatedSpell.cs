@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using BehaviorDesigner.Runtime.Tasks.Unity.Timeline;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
-using forloopcowboy_unity_tools.Scripts.Player;
-using JetBrains.Annotations;
-using UnityEditor;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile

@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
-using BehaviorDesigner.Runtime.Tasks;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
-using UnityEditor;
 using UnityEngine;
-using VoxelArsenal;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile
 {

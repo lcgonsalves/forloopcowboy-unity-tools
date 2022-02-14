@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using BehaviorDesigner.Runtime.Tasks.Unity.UnityRigidbody;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Weapon;
 using JetBrains.Annotations;

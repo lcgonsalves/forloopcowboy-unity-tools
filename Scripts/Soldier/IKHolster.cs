@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Soldier

@@ -1,6 +1,3 @@
-using System;
-using System.Net;
-using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;
 using Unity.Netcode;

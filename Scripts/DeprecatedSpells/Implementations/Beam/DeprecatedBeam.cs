@@ -1,7 +1,6 @@
 using System;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Player;
-using UnityEditor;
 using UnityEngine;
 
 // Simple beam implementaion

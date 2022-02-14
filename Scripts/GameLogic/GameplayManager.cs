@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cinemachine;
 using forloopcowboy_unity_tools.Scripts.Core;
-using forloopcowboy_unity_tools.Scripts.Environment;
 using forloopcowboy_unity_tools.Scripts.HUD;
 using forloopcowboy_unity_tools.Scripts.Player;
 using Sirenix.OdinInspector;

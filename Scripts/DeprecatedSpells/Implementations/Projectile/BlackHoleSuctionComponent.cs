@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using forloopcowboy_unity_tools.Scripts.Bullet;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using RayFire;
 using Sirenix.OdinInspector;
-using Sirenix.Utilities;
-using UnityEditor.UIElements;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile

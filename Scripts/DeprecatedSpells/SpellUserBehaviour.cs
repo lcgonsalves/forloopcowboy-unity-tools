@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using BehaviorDesigner.Runtime.Tasks;
 using forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.Player;
-using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
-using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;

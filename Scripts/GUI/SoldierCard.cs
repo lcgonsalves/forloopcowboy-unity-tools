@@ -1,5 +1,4 @@
 using System;
-using System.Security.Cryptography;
 using forloopcowboy_unity_tools.Scripts.Core;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;

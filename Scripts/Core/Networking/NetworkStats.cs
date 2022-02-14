@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 namespace forloopcowboy_unity_tools.Scripts.Core.Networking

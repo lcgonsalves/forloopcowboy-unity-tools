@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using UnityEngine;
 

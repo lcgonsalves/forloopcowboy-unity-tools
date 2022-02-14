@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using forloopcowboy_unity_tools.Scripts.Core;
 using Sirenix.OdinInspector;
 using Unity.Netcode;

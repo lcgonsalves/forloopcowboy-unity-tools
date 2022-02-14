@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {
     public interface IDamageProvider

@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using forloopcowboy_unity_tools.Scripts.Environment;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
-using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic

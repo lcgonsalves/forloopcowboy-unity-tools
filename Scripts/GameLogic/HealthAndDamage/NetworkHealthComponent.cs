@@ -1,13 +1,7 @@
-using System;
-using BehaviorDesigner.Runtime;
-using forloopcowboy_unity_tools.Scripts.Core;
-using forloopcowboy_unity_tools.Scripts.Soldier;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using Unity.Netcode;
-using UnityEditor;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace forloopcowboy_unity_tools.Scripts.GameLogic
 {

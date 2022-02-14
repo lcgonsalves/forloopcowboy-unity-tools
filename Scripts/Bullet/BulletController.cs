@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
-using forloopcowboy_unity_tools.Scripts.Spells.Implementations.Projectile;
 using JetBrains.Annotations;
 using UnityEngine;
 
