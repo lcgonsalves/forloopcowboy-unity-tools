@@ -113,11 +113,12 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         {
         }
 
+        #if UNITY_EDITOR
         [HideInTables]
         [OnInspectorGUI]
         [PropertyOrder(-2.147484E+09f)]
         private void InternalOnInspectorGUI() => EditorOnlyModeConfigUtility.InternalOnInspectorGUI((UnityEngine.Object) this);
-        
+        #endif
     }
 
 

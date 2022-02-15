@@ -380,8 +380,6 @@ MonoBehaviour:
   castPosition: {fileID: 6872567819063696414}
   spellSettings:
   - {fileID: 11400000, guid: aff161fe0836d8042b8ebdf73db5af5c, type: 2}
-  inputSettings:
-    cast: {fileID: -5740664572096273349, guid: 28d7567a70e6f264fba1ca3103e7a500, type: 3}
 --- !u!114 &-7935588361557549524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -523,7 +521,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8955213256038657238}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.78, y: 1.43, z: 0}
+  m_LocalPosition: {x: -0.765, y: 1.1, z: 0.41}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4549494603686575075}

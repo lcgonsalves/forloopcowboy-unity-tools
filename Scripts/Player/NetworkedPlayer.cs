@@ -1,9 +1,11 @@
 using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.GUI;
+using forloopcowboy_unity_tools.Scripts.Spell;
 using JetBrains.Annotations;
 using Sirenix.OdinInspector;
 using Unity.Netcode;
+using Unity.Netcode.Samples;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -21,51 +23,82 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 
         public NetworkVariable<SimulationMode> simulationMode;
 
-        public NetworkVariable<NetworkObjectReference> characterObjectReference = new NetworkVariable<NetworkObjectReference>();
-        public bool HasCharacter => characterObjectReference.Value.TryGet(out var _) && HealthComponent != null;
-        
         public UnitManager.Side side;
         public PlayerCameraController cameraController;
         public float autoDespawnPreviousCharacterDelay = 3f;
 
-        public Movement.KinematicCharacterController CharacterController
+        // synchronized reference
+        public NetworkVariable<NetworkObjectReference> syncedCharacterReference;
+
+        [CanBeNull]
+        public NetworkObject CharacterReference
         {
             get
             {
-                if (characterController == null && characterObjectReference.Value.TryGet(out var reference))
-                    characterController = reference.GetComponent<Movement.KinematicCharacterController>();
+                if (syncedCharacterReference.Value.TryGet(out var reference))
+                {
+                    if (
+                        CharacterController == null ||
+                        CharacterRigidbody == null ||
+                        HealthComponent == null ||
+                        SpellCaster == null ||
+                        CharacterNetworkTransform == null
+                    )
+                    {
+                        CharacterController = reference.GetComponent<Movement.KinematicCharacterController>();
+                        CharacterRigidbody = reference.GetComponent<Rigidbody>();
+                        HealthComponent = reference.GetComponent<NetworkHealthComponent>();
+                        SpellCaster = reference.GetComponent<NetworkedSpellCaster>();
+                        CharacterNetworkTransform = reference.GetComponent<ClientNetworkTransform>();
+                    }
+                    
+                    return reference;
+                }
+                
+                return null;
+            }
+            private set
+            {
+                if (value != null)
+                {
+                    CharacterController = value.GetComponent<Movement.KinematicCharacterController>();
+                    CharacterRigidbody = value.GetComponent<Rigidbody>();
+                    HealthComponent = value.GetComponent<NetworkHealthComponent>();
+                    SpellCaster = value.GetComponent<NetworkedSpellCaster>();
+                    CharacterNetworkTransform = value.GetComponent<ClientNetworkTransform>();
+                }
+                else
+                {
+                    CharacterController = null;
+                    CharacterRigidbody = null;
+                    HealthComponent = null;
+                    SpellCaster = null;
+                    CharacterNetworkTransform = null;
+                }
 
-                return characterController;
+                if (IsServer)
+                    syncedCharacterReference.Value = value;
             }
         }
-        public Movement.KinematicCharacterController characterController;
+
+        public bool HasCharacter => CharacterReference != null;
+        
+        public Movement.KinematicCharacterController CharacterController { get; private set; }
+        public Rigidbody CharacterRigidbody { get; private set; }
+        public NetworkHealthComponent HealthComponent { get; private set; }
+        public NetworkedSpellCaster SpellCaster { get; private set; }
+        
+        public ClientNetworkTransform CharacterNetworkTransform { get; private set; }
+        
         public Transform cameraFollowPoint;
         public float throwAngle;
 
-        public NetworkVariable<Quaternion> synchedCameraFollowPointRotation;
+        // public NetworkVariable<Quaternion> synchedCameraFollowPointRotation;
 
         /// <summary> Can be used for emitting spells, bullets, etc. Its direction is synched with the camera direction.</summary>
         [FormerlySerializedAs("emitterTransform")]
         [Tooltip("Its direction is synced with the camera direction.")]
         [CanBeNull] public Transform castPoint;
-
-        [ShowInInspector]
-        public NetworkHealthComponent HealthComponent => CharacterController.GetComponent<NetworkHealthComponent>();
-
-        private Rigidbody Rb
-        {
-            get
-            {
-                if (_rb != null) return _rb;
-                
-                if (characterObjectReference.Value.TryGet(out var character))
-                    return _rb = character.GetComponent<Rigidbody>();
-
-                return null;
-            }
-        }
-        
-        private Rigidbody _rb;
 
         [System.Serializable]
         public class InputSettings
@@ -77,6 +110,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             public InputActionReference reset;
             public InputActionReference escape;
             public InputActionReference respawn;
+            public InputActionReference castSpell;
 
             public void EnableAll()
             {
@@ -87,6 +121,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 if (reset != null) reset.action.Enable();
                 if (escape != null) escape.action.Enable();
                 if (respawn != null) respawn.action.Enable();
+                if (castSpell != null) castSpell.action.Enable();
             }
             
             public void DisableAll()
@@ -98,6 +133,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 if (reset != null) reset.action.Disable();
                 if (escape != null) escape.action.Disable();
                 if (respawn != null) respawn.action.Disable();
+                if (castSpell != null) castSpell.action.Disable();
             }
             
         }
@@ -122,17 +158,29 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         {
             if (characterReference.TryGet(out var reference) && reference.OwnerClientId == OwnerClientId)
             {
-                if (IsServer)
-                {
-                    characterObjectReference.Value = characterReference;
-                }
-                
-                characterController = reference.GetComponent<Movement.KinematicCharacterController>();
+                var previousCharacterReference = CharacterReference;
+                CharacterReference = reference;
+
                 castPoint = reference.transform.FindWithName("CastPoint");
                 cameraFollowPoint = reference.transform.FindWithName("CameraFollowPoint");
 
+                var characterController = CharacterController;
+                
                 if (IsOwner)
                 {
+                    if (previousCharacterReference != null)
+                    {
+                        // clear previous character's spell casting event
+                        var prevSpellCaster = previousCharacterReference.GetComponent<NetworkedSpellCaster>();
+
+                        inputSettings.castSpell.action.started -= prevSpellCaster.HandleCastPressed;
+                        inputSettings.castSpell.action.canceled -= prevSpellCaster.HandleCastReleased;
+                    }
+                    
+                    // assign cast actions to new spell caster
+                    inputSettings.castSpell.action.started += SpellCaster.HandleCastPressed;
+                    inputSettings.castSpell.action.canceled += SpellCaster.HandleCastReleased;
+
                     cameraController.SetFollowTransform(cameraFollowPoint);
 
                     // Ignore the character's collider(s) for camera obstruction checks
@@ -153,7 +201,6 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 }
 
                 characterController.Motor.enabled = IsOwner;
-
             }
             else
                 NetworkLog.LogErrorServer(
@@ -173,12 +220,15 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         private void Start()
         {
             HandleSimulationModeChange();
-            
-            if (IsOwner && IsClient)
+
+            if (!HasCharacter)
             {
                 // server rpc that will update this character reference asynchronously
                 NetworkGameManager.GetOrCreateCharacterForPlayer(this);
-                
+            }
+            
+            if (IsOwner && IsClient)
+            {
                 inputSettings.EnableAll();
                 inputSettings.escape.action.performed += ToggleCursorLockState;
                 inputSettings.respawn.action.performed += HandleRespawnButtonPress;
@@ -187,9 +237,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             }
             else if (HasCharacter)
             {
-                characterController.Motor.enabled = false;
-                if (castPoint != null) 
-                    castPoint.rotation = synchedCameraFollowPointRotation.Value;
+                CharacterController.Motor.enabled = false;
             }
         }
 
@@ -207,9 +255,9 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         [ServerRpc]
         private void DestroyPreviousCharacterServerRpc()
         {
-            if (characterObjectReference.Value.TryGet(out var characterObj))
+            if (HasCharacter)
             {
-                Destroy(characterObj.gameObject, autoDespawnPreviousCharacterDelay);
+                Destroy(CharacterReference!.gameObject, autoDespawnPreviousCharacterDelay);
             }
         }
 
@@ -219,25 +267,37 @@ namespace forloopcowboy_unity_tools.Scripts.Player
 
             var currentSimulationMode = simulationMode.Value;
             
-            if (HealthComponent.NetworkCurrent.Value <= 0 && IsOwner && currentSimulationMode != SimulationMode.Physics)
+            if (HealthComponent.IsDead && IsOwner && currentSimulationMode != SimulationMode.Physics)
             {
                 SetSimulationModeServerRpc(SimulationMode.Physics);
                 currentSimulationMode = SimulationMode.Physics; // perform change locally to handle change immediately
             }
+            else if (HealthComponent.IsAlive && IsOwner && currentSimulationMode != SimulationMode.Kinematic)
+            {
+                SetSimulationModeServerRpc(SimulationMode.Kinematic);
+                currentSimulationMode = SimulationMode.Kinematic; // perform change locally to handle change immediately
+            }
             
             switch (currentSimulationMode)
             {
-                // do not touch kinematic rigidbody if this is not the owner
                 case SimulationMode.Kinematic:
-                    if (!characterController.Motor.enabled) characterController.Motor.enabled = true;
-                    if (IsOwner && !Rb.isKinematic) Rb.isKinematic = true;
+                    CharacterController.Motor.enabled = true;
+                    // do not touch kinematic rigidbody if this is not the owner
+                    if (IsServer && !CharacterRigidbody.isKinematic) CharacterRigidbody.isKinematic = true;
+                    // switch to client-authoritative model if owner
+                    CharacterNetworkTransform.CanCommitToTransform = IsOwner;
+
                     break;
                 
                 case SimulationMode.Physics:
-                    if (characterController.Motor.enabled) characterController.Motor.enabled = false;
-                    if (IsOwner && Rb.isKinematic) Rb.isKinematic = false;
+                    CharacterController.Motor.enabled = false;
+                    // do not touch kinematic rigidbody if this is not the owner
+                    if (IsServer && CharacterRigidbody.isKinematic) CharacterRigidbody.isKinematic = false;
+                    // switch to server-authoritative model to simulate physics
+                    CharacterNetworkTransform.CanCommitToTransform = IsServer;
+                    
                     break;
-            } ;
+            }
         }
 
         [ServerRpc]
@@ -251,24 +311,25 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 HandleCameraInput();
                 
                 if (HasCharacter && simulationMode.Value == SimulationMode.Kinematic)
-                    characterController.PostInputUpdate(Time.deltaTime, cameraController.transform.forward);
+                    CharacterController.PostInputUpdate(Time.deltaTime, cameraController.transform.forward);
             }
         }
         
         private void Update()
         {
             HandleSimulationModeChange();
-            
-            if (IsOwner && IsClient && HasCharacter)
+
+            if (!HasCharacter) return;
+
+            if (IsOwner && IsClient)
             {
                 
                 if (simulationMode.Value == SimulationMode.Kinematic)
                     HandleInputs();
             }
-            else if (castPoint != null)
+            else
             {
-                characterController.Motor.enabled = false;
-                castPoint.rotation = synchedCameraFollowPointRotation.Value;
+                CharacterController.Motor.enabled = false;
             }
         }
         
@@ -285,7 +346,7 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             inputs.requestJump = pressedJump;
 
             if (HasCharacter)
-                characterController.SetInputs(ref inputs);
+                CharacterController.SetInputs(ref inputs);
         }
 
         public void HandleCameraInput()
@@ -316,15 +377,9 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                                          (projectedPoint - castPoint.position).normalized;
 
                 castPoint.rotation = Quaternion.LookRotation(correctedDirection);
-                if (IsSpawned) UpdateEmitterRotationServerRpc(castPoint.rotation);
             }
         }
 
-        [ServerRpc]
-        private void UpdateEmitterRotationServerRpc(Quaternion newRotation)
-        {
-            synchedCameraFollowPointRotation.Value = newRotation;
-        }
 
         private static void ToggleCursorLockState(InputAction.CallbackContext _)
         {

@@ -184,6 +184,10 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
                 go.transform.rotation = rotation;
             }
             
+            // // if object has a collider, we disable it to avoid unintended collisions before it's appropriate
+            // if (go.TryGetComponent(out Collider rb))
+            //     rb.enabled = false;
+            
             go.SetActive(true);
 
             return networkObject;

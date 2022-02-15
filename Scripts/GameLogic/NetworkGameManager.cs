@@ -31,6 +31,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public static void GetOrCreateCharacterForPlayer(NetworkedPlayer playerMaster) =>
             Singleton.GetOrCreateCharacterForPlayerServerRpc((NetworkBehaviourReference) playerMaster);
 
+
         [ServerRpc(RequireOwnership = false)]
         private void GetOrCreateCharacterForPlayerServerRpc(NetworkBehaviourReference playerMasterRef)
         {
@@ -39,7 +40,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
                 var character = GetOrCreateCharacter(playerMaster);
                 character.gameObject.name = "Player " + playerMaster.OwnerClientId + " Character";
                 
-                character.SpawnWithOwnership(playerMaster.OwnerClientId);
+                if (!character.IsSpawned) character.SpawnWithOwnership(playerMaster.OwnerClientId);
                 playerMaster.AssignNewCharacter(character);
             }
         }
@@ -63,7 +64,7 @@ namespace forloopcowboy_unity_tools.Scripts.GameLogic
         public static void CreateNewCharacterForPlayer(NetworkedPlayer playerMaster) =>
             Singleton.CreateFreshCharacterForPlayerServerRpc((NetworkBehaviourReference) playerMaster);
 
-        [ServerRpc]
+        [ServerRpc(RequireOwnership = false)]
         private void CreateFreshCharacterForPlayerServerRpc(NetworkBehaviourReference playerMasterRef)
         {
             if (playerMasterRef.TryGet(out NetworkedPlayer playerMaster))

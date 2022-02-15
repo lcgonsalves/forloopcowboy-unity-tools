@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="Stylesheets/basic-button.uss" />
+    <ui:VisualElement style="flex-grow: 1; margin-left: 38px; margin-right: 38px; margin-top: 38px; margin-bottom: 38px;">
+        <ui:Label text="Prototype" display-tooltip-when-elided="true" style="-unity-text-align: lower-left; height: 73px; padding-left: 24px; padding-right: 12px; padding-top: 12px; padding-bottom: 12px; font-size: 40px;" />
+        <ui:VisualElement name="main-menu" style="height: auto; width: 30%; align-items: center; justify-content: flex-end; padding-left: 30px; padding-right: 30px; padding-top: 30px; padding-bottom: 30px; flex-grow: 1; left: 0; display: flex; max-width: 300px;">
+            <ui:Button text="Tutorial" display-tooltip-when-elided="true" name="tutorial-btn" class="basic-button" />
+            <ui:Button text="Multiplayer" display-tooltip-when-elided="true" name="multiplayer-btn" class="basic-button" />
+            <ui:Button text="Quit" display-tooltip-when-elided="true" name="quit-btn" class="basic-button" />
+        </ui:VisualElement>
+        <ui:VisualElement name="multiplayer-menu" style="height: auto; width: 30%; align-items: center; justify-content: flex-end; padding-left: 30px; padding-right: 30px; padding-top: 30px; padding-bottom: 30px; flex-grow: 1; left: 0; display: none; max-width: 300px; visibility: visible;">
+            <ui:Button text="Host" display-tooltip-when-elided="true" name="host-btn" class="basic-button" />
+            <ui:Button text="Join" display-tooltip-when-elided="true" name="join-btn" class="basic-button" />
+            <ui:Button text="&lt;" display-tooltip-when-elided="true" name="return-to-main-menu-btn" class="basic-button" style="width: 15%; min-width: 70px; align-items: none; justify-content: center; white-space: nowrap;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

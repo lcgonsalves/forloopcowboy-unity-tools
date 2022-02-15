@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using forloopcowboy_unity_tools.Scripts.Core.Networking;
+using forloopcowboy_unity_tools.Scripts.GameLogic;
 using JetBrains.Annotations;
 using Unity.Netcode;
 using UnityEngine;
@@ -15,8 +16,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         
         [Tooltip("Where the spell is cast from.")] public Transform castPosition;
         [Tooltip("The spells the player starts with.")] public List<SpellSettings> spellSettings;
-        public InputSettings inputSettings;
-        
+
         // Internal state
 
         [CanBeNull] private INetworkSpell activeSpell = null;
@@ -26,12 +26,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         private NetworkVariable<Vector3> synchedCharacterVelocity;
 
         private NetworkStats networkStats;
-
-        [Serializable]
-        public struct InputSettings
-        {
-            public InputActionReference cast;
-        }
+        private NetworkHealthComponent healthComponent;
 
         [ServerRpc]
         private void SynchronizeCharacterControllerVelocityServerRpc(Vector3 velocity)
@@ -43,16 +38,13 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         {
             characterController = GetComponent<Movement.KinematicCharacterController>();
             networkStats = GetComponent<NetworkStats>();
+            healthComponent = GetComponent<NetworkHealthComponent>();
         }
 
         public void Start()
         {
             if (IsOwner && IsClient)
             {
-                inputSettings.cast.action.Enable();
-                inputSettings.cast.action.started += HandleCastPressed;
-                inputSettings.cast.action.canceled += HandleCastReleased;
-
                 // Keep spells in sync at the start
                 InitializeSpellLocal();
                 if (IsSpawned) InitializeSpellServerRpc();
@@ -72,19 +64,22 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
                 SynchronizeCharacterControllerVelocityServerRpc(characterController.Motor.GetState().BaseVelocity);
         }
 
-        private void HandleCastReleased(InputAction.CallbackContext _)
+        public void HandleCastReleased(InputAction.CallbackContext _)
         {
-            if (castPosition.TryGetComponent(out PreviewComponent previewComponent))
-                previewComponent.Hide();
+            if (healthComponent.IsDead) return;
+            
+            // if (castPosition.TryGetComponent(out PreviewComponent previewComponent))
+            //     previewComponent.Hide();
 
             CastSpellServerRpc(
-                GetLagCompCastPosition(activeSpell, IsHost)    
+                GetLagCompCastPosition(activeSpell, IsHost),
+                GetCastDirection(activeSpell)
             );
         }
 
-        private void HandleCastPressed(InputAction.CallbackContext _)
+        public void HandleCastPressed(InputAction.CallbackContext _)
         {
-            if (activeSpell != null && castPosition.TryGetComponent(out PreviewComponent previewComponent))
+            if (healthComponent.IsAlive && activeSpell != null && castPosition.TryGetComponent(out PreviewComponent previewComponent))
             {
                 var castSettings = new CastSettings();
                 
@@ -100,16 +95,18 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
         /// Casts a spell and spawns it.
         /// </summary>
         [ServerRpc]
-        private void CastSpellServerRpc(Vector3 lagCorrectedPosition)
+        private void CastSpellServerRpc(Vector3 lagCorrectedPosition, Vector3 direction)
         {
             if (activeSpell == null) return;
             
-            var castSettings = new CastSettings();
-            castSettings.direction = GetCastDirection(activeSpell);
-            castSettings.position = lagCorrectedPosition;
+            var castSettings = new CastSettings
+            {
+                direction = direction,
+                position = lagCorrectedPosition
+            };
 
-            if (activeSpell != null && activeSpell.TryCast(this, castSettings, out var obj) && !obj.IsSpawned)
-                obj.Spawn(destroyWithScene: true);
+            if (activeSpell != null && activeSpell.TryCast(this, castSettings, out var spellInstance) && !spellInstance.IsSpawned)
+                spellInstance.Spawn(destroyWithScene: true);
         }
 
         [ServerRpc]
@@ -127,15 +124,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             
             if (spellSettings.Count > 0) activeSpell = spells.First();
         }
-
-        public void OnDisable()
-        {
-            if (IsOwner && IsClient)
-            {
-                inputSettings.cast.action.Disable();
-            }
-        }
-
+        
         public Vector3 GetLagCompCastPosition(INetworkSpell spell, bool isHost)
         {
             switch (spell)
@@ -161,12 +150,6 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             castTarget = null;
             return false;
         }
-
-        public override void OnDestroy()
-        {
-            base.OnDestroy();
-            inputSettings.cast.action.started -= HandleCastPressed;
-            inputSettings.cast.action.canceled -= HandleCastReleased;
-        }
+        
     }
 }

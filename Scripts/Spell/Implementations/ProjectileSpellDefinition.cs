@@ -56,20 +56,20 @@ namespace forloopcowboy_unity_tools.Scripts.Spell.Implementations
                     position,
                     Quaternion.LookRotation(direction)
                 );
-                
-                if (!obj.IsSpawned) obj.Spawn( true);
 
                 var projectile = obj.GetComponent<NetworkProjectile>();
-                
+
                 projectile.Fire(GetStartingVelocity(castSettings), caster.NetworkObject);
                 projectile.prefab = Settings.projectilePrefab; // so pool works :)
+
+                if (!obj.IsSpawned) obj.Spawn(true);
                 
                 return obj;
                 
             }, out locallySpawnedObject);
         }
 
-        public Vector3 GetStartingVelocity(CastSettings cs) => cs.direction * Settings.projectileVelocity;
+        public Vector3 GetStartingVelocity(CastSettings cs) => cs.direction.normalized * Settings.projectileVelocity;
         
         public IPreview GetPreview(ISpellCaster caster, CastSettings castSettings)
         {
