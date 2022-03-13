@@ -175,8 +175,8 @@ GameObject:
   - component: {fileID: 33253075773435136}
   - component: {fileID: 23753430484916344}
   - component: {fileID: 64321301701863790}
-  - component: {fileID: -5914273527948596658}
   - component: {fileID: 6670252054740146568}
+  - component: {fileID: 7104721990000463930}
   m_Layer: 0
   m_Name: SM_Wep_Preset_B_SMG_01
   m_TagString: Untagged
@@ -265,20 +265,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43234705541961954, guid: 80522bcae70a4b4429f9116c00a16cd8, type: 2}
---- !u!114 &-5914273527948596658
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1344463760805258}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8eb75e63668b65f4e97677748c610f89, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maximum: 100
-  bullets: []
 --- !u!114 &6670252054740146568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -291,8 +277,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2026affe9f5076947a427774b249c51a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   weaponSettings: {fileID: 11400000, guid: 966f9ec3acfe5cc4fb26924ca9c9dfc4, type: 2}
   bulletsInClip: 0
+  magazinesInInventory: 2
   currentlyFiring: 0
   shouldFire: 0
   burstSettings:
@@ -302,6 +298,31 @@ MonoBehaviour:
     maxBreakLength: 0
     minBreakLength: 0
   peripheralEmitters: []
+--- !u!114 &7104721990000463930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344463760805258}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 004bb1e7008440f2a4b337565a82261b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  magazine: {fileID: 0}
+  _initialLocalPosition: {x: 0, y: 0, z: 0}
+  _initialLocalRotation: {x: 0, y: 0, z: 0, w: 0}
+  _initialParent: {fileID: 0}
 --- !u!1 &1432301372528416
 GameObject:
   m_ObjectHideFlags: 0

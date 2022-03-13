@@ -90,7 +90,9 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
             // so object can still hit itself, just not as soon as it is launched
             this.RunAsyncWithDelay(0.8f, () =>
             {
-                Physics.IgnoreCollision(cldr, firedByCollider, false);
+                if (firedByCollider != null)
+                    Physics.IgnoreCollision(cldr, firedByCollider, false);
+                
                 kcc.IgnoredColliders.Remove(cldr);
             });
         }

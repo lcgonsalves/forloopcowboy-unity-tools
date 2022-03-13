@@ -1,12 +1,15 @@
 using System;
+using LobbyRelaySample;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace forloopcowboy_unity_tools.Scripts.GUI
+namespace forloopcowboy_unity_tools.Scripts.GUI.Docs
 {
     public class MainMenuUIController : MonoBehaviour
     {
+        public GameObject lobbyUI;
+        
         private UIDocument document;
         
         private VisualElement mainMenu;
@@ -45,13 +48,19 @@ namespace forloopcowboy_unity_tools.Scripts.GUI
         private void OpenMultiplayerMenu()
         {
             mainMenu.style.display = DisplayStyle.None;
-            multiplayerMenu.style.display = DisplayStyle.Flex;
+            // multiplayerMenu.style.display = DisplayStyle.Flex;
+            
+            lobbyUI.SetActive(true);
+            Locator.Get.Messenger.OnReceiveMessage(MessageType.ChangeGameState, GameState.JoinMenu);
         }
 
         private void ReturnToMainMenu()
         {
             mainMenu.style.display = DisplayStyle.Flex;
-            multiplayerMenu.style.display = DisplayStyle.None;
+            // multiplayerMenu.style.display = DisplayStyle.None;
+            
+            lobbyUI.SetActive(false);
+            Locator.Get.Messenger.OnReceiveMessage(MessageType.ChangeGameState, GameState.Menu);
         }
 
         private void HostSession()

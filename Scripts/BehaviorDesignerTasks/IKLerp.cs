@@ -1,7 +1,7 @@
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
-using forloopcowboy_unity_tools.Scripts.Core;
 using forloopcowboy_unity_tools.Scripts.Soldier;
+using forloopcowboy_unity_tools.Scripts.Core;
 using UnityEngine;
 
 namespace forloopcowboy_unity_tools.Scripts.BehaviorDesignerTasks

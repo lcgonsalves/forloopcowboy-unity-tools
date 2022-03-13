@@ -93,7 +93,10 @@ namespace forloopcowboy_unity_tools.Scripts.GUI
         [ClientRpc]
         public void UpdateValuesClientRpc(NetworkBehaviourReference networkBehaviourReference)
         {
-            UpdateValues((NetworkHealthComponent) networkBehaviourReference);
+            if (networkBehaviourReference.TryGet(out NetworkBehaviour nb))
+            {
+                UpdateValues((NetworkHealthComponent) nb);
+            }
         }
     
         /// <summary>

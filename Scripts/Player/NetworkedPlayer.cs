@@ -3,7 +3,6 @@ using forloopcowboy_unity_tools.Scripts.GameLogic;
 using forloopcowboy_unity_tools.Scripts.GUI;
 using forloopcowboy_unity_tools.Scripts.Spell;
 using JetBrains.Annotations;
-using Sirenix.OdinInspector;
 using Unity.Netcode;
 using Unity.Netcode.Samples;
 using UnityEngine;

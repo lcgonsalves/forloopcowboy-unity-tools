@@ -57,6 +57,8 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
 
         public void OnValidate()
         {
+            if (PooledPrefabsList == null) return;
+            
             for (var i = 0; i < PooledPrefabsList.Count; i++)
             {
                 var prefab = PooledPrefabsList[i].Prefab;
