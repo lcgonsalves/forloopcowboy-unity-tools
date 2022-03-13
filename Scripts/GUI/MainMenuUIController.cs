@@ -48,19 +48,18 @@ namespace forloopcowboy_unity_tools.Scripts.GUI.Docs
         private void OpenMultiplayerMenu()
         {
             mainMenu.style.display = DisplayStyle.None;
-            // multiplayerMenu.style.display = DisplayStyle.Flex;
-            
-            lobbyUI.SetActive(true);
             Locator.Get.Messenger.OnReceiveMessage(MessageType.ChangeGameState, GameState.JoinMenu);
         }
 
         private void ReturnToMainMenu()
         {
             mainMenu.style.display = DisplayStyle.Flex;
-            // multiplayerMenu.style.display = DisplayStyle.None;
-            
-            lobbyUI.SetActive(false);
-            Locator.Get.Messenger.OnReceiveMessage(MessageType.ChangeGameState, GameState.Menu);
+        }
+        
+        public void ObservedUpdated(LocalGameState observed)
+        {
+            if (observed.State == GameState.Menu)
+                ReturnToMainMenu();
         }
 
         private void HostSession()
