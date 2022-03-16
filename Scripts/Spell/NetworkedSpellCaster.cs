@@ -64,12 +64,12 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
                 SynchronizeCharacterControllerVelocityServerRpc(characterController.Motor.GetState().BaseVelocity);
         }
 
-        public void HandleCastReleased(InputAction.CallbackContext _)
+        public void HandleCastReleased()
         {
             if (healthComponent.IsDead) return;
             
-            // if (castPosition.TryGetComponent(out PreviewComponent previewComponent))
-            //     previewComponent.Hide();
+            if (castPosition.TryGetComponent(out PreviewComponent previewComponent))
+                previewComponent.Hide();
 
             CastSpellServerRpc(
                 GetLagCompCastPosition(activeSpell, IsHost),
@@ -77,7 +77,7 @@ namespace forloopcowboy_unity_tools.Scripts.Spell
             );
         }
 
-        public void HandleCastPressed(InputAction.CallbackContext _)
+        public void HandleCastPressed()
         {
             if (healthComponent.IsAlive && activeSpell != null && castPosition.TryGetComponent(out PreviewComponent previewComponent))
             {

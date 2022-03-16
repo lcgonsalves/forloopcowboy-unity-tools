@@ -21,6 +21,13 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
 
         private void Start()
         {
+            if (localPlayerCameraController == null)
+            {
+                var cameraObj = GameObject.FindGameObjectWithTag("PlayerCamera");
+                if (cameraObj.TryGetComponent(out PlayerCameraController controller))
+                    localPlayerCameraController = controller;
+            }
+
             NetworkManager.Singleton.PrefabHandler.AddHandler(playerPrefab, this);
         }
 

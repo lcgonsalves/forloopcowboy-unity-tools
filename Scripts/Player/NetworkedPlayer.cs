@@ -167,19 +167,6 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 
                 if (IsOwner)
                 {
-                    if (previousCharacterReference != null)
-                    {
-                        // clear previous character's spell casting event
-                        var prevSpellCaster = previousCharacterReference.GetComponent<NetworkedSpellCaster>();
-
-                        inputSettings.castSpell.action.started -= prevSpellCaster.HandleCastPressed;
-                        inputSettings.castSpell.action.canceled -= prevSpellCaster.HandleCastReleased;
-                    }
-                    
-                    // assign cast actions to new spell caster
-                    inputSettings.castSpell.action.started += SpellCaster.HandleCastPressed;
-                    inputSettings.castSpell.action.canceled += SpellCaster.HandleCastReleased;
-
                     cameraController.SetFollowTransform(cameraFollowPoint);
 
                     // Ignore the character's collider(s) for camera obstruction checks
@@ -213,6 +200,9 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 inputSettings.DisableAll();
                 inputSettings.escape.action.performed -= ToggleCursorLockState;
                 inputSettings.respawn.action.performed -= HandleRespawnButtonPress;
+                
+                inputSettings.castSpell.action.started -= HandleCastPressed;
+                inputSettings.castSpell.action.canceled -= HandleCastReleased;
             }
         }
 
@@ -231,6 +221,8 @@ namespace forloopcowboy_unity_tools.Scripts.Player
                 inputSettings.EnableAll();
                 inputSettings.escape.action.performed += ToggleCursorLockState;
                 inputSettings.respawn.action.performed += HandleRespawnButtonPress;
+                inputSettings.castSpell.action.started += HandleCastPressed;
+                inputSettings.castSpell.action.canceled += HandleCastReleased;
                 
                 Cursor.lockState = CursorLockMode.Locked;
             }
@@ -251,6 +243,18 @@ namespace forloopcowboy_unity_tools.Scripts.Player
             }
         }
 
+        private void HandleCastPressed(InputAction.CallbackContext _)
+        {
+            if (SpellCaster != null)
+                SpellCaster.HandleCastPressed();
+        }
+
+        private void HandleCastReleased(InputAction.CallbackContext _)
+        {
+            if (SpellCaster != null)
+                SpellCaster.HandleCastReleased();
+        }
+        
         [ServerRpc]
         private void DestroyPreviousCharacterServerRpc()
         {
@@ -392,6 +396,17 @@ namespace forloopcowboy_unity_tools.Scripts.Player
         {
             AssignNewCharacterServerRpc(character);
             AssignNewCharacterClientRpc(character);
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+
+            if (IsOwner && IsClient)
+            {
+                Debug.Log("Cleanup");
+                OnDisable();
+            }
         }
     }
 }

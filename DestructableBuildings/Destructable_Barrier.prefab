@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 7288143155746781621}
   - component: {fileID: 7674101300029281348}
   - component: {fileID: 7350876271684007137}
-  - component: {fileID: 6505053601034620514}
-  - component: {fileID: 4501174573708894757}
+  - component: {fileID: 2871714179385027331}
+  - component: {fileID: 508967045365244601}
   m_Layer: 0
   m_Name: Barrier_sh_10
   m_TagString: Untagged
@@ -84,7 +84,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6505053601034620514
+--- !u!114 &2871714179385027331
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -112,7 +112,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 4501174573708894757}
+    meshCollider: {fileID: 508967045365244601}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -267,7 +267,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &4501174573708894757
+--- !u!64 &508967045365244601
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -292,8 +292,8 @@ GameObject:
   - component: {fileID: 3580955511183742370}
   - component: {fileID: 1520894682904661903}
   - component: {fileID: 5918819981355087882}
-  - component: {fileID: 5499463351418416303}
-  - component: {fileID: 3819377853182991496}
+  - component: {fileID: 1792864686842635197}
+  - component: {fileID: 1347604445767343975}
   m_Layer: 0
   m_Name: Barrier_sh_6
   m_TagString: Untagged
@@ -365,7 +365,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5499463351418416303
+--- !u!114 &1792864686842635197
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -393,7 +393,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 3819377853182991496}
+    meshCollider: {fileID: 1347604445767343975}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -548,7 +548,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &3819377853182991496
+--- !u!64 &1347604445767343975
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -573,8 +573,8 @@ GameObject:
   - component: {fileID: 7729657959973572952}
   - component: {fileID: 3891335559839191740}
   - component: {fileID: 6024744248301440963}
-  - component: {fileID: 2631222401940686348}
-  - component: {fileID: 7061796665157830355}
+  - component: {fileID: 4412615369370698957}
+  - component: {fileID: 1615272899996619875}
   m_Layer: 0
   m_Name: Barrier_sh_4
   m_TagString: Untagged
@@ -646,7 +646,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &2631222401940686348
+--- !u!114 &4412615369370698957
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -674,7 +674,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 7061796665157830355}
+    meshCollider: {fileID: 1615272899996619875}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -829,7 +829,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &7061796665157830355
+--- !u!64 &1615272899996619875
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -854,8 +854,8 @@ GameObject:
   - component: {fileID: 4796598887223383296}
   - component: {fileID: 3746261822993212644}
   - component: {fileID: 5639049893597049117}
-  - component: {fileID: 6713562529179515331}
-  - component: {fileID: 553321516332410628}
+  - component: {fileID: 2371294729565772866}
+  - component: {fileID: 8070195913648388092}
   m_Layer: 0
   m_Name: Barrier_sh_5
   m_TagString: Untagged
@@ -927,7 +927,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6713562529179515331
+--- !u!114 &2371294729565772866
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -955,7 +955,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 553321516332410628}
+    meshCollider: {fileID: 8070195913648388092}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -1110,7 +1110,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &553321516332410628
+--- !u!64 &8070195913648388092
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1135,8 +1135,8 @@ GameObject:
   - component: {fileID: 843061431942990578}
   - component: {fileID: 3572391774292298185}
   - component: {fileID: 2568982627456818762}
-  - component: {fileID: 8666469479181972441}
-  - component: {fileID: 4612255305767634697}
+  - component: {fileID: 5266518532140090938}
+  - component: {fileID: 5877793620245081641}
   m_Layer: 0
   m_Name: Barrier_sh_9
   m_TagString: Untagged
@@ -1208,7 +1208,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8666469479181972441
+--- !u!114 &5266518532140090938
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1236,7 +1236,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 4612255305767634697}
+    meshCollider: {fileID: 5877793620245081641}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -1391,7 +1391,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &4612255305767634697
+--- !u!64 &5877793620245081641
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1416,8 +1416,8 @@ GameObject:
   - component: {fileID: 2185790022343962777}
   - component: {fileID: 1809041252693249178}
   - component: {fileID: 8632351852255101790}
-  - component: {fileID: 3881831634401721549}
-  - component: {fileID: 4819171099904386397}
+  - component: {fileID: 7710521615574287704}
+  - component: {fileID: 2756814428223391637}
   m_Layer: 0
   m_Name: Barrier_sh_7
   m_TagString: Untagged
@@ -1490,7 +1490,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3881831634401721549
+--- !u!114 &7710521615574287704
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1518,7 +1518,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 4819171099904386397}
+    meshCollider: {fileID: 2756814428223391637}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -1673,7 +1673,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &4819171099904386397
+--- !u!64 &2756814428223391637
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1768,7 +1768,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1176557133362301024
 Transform:
   m_ObjectHideFlags: 0
@@ -1965,16 +1965,16 @@ MonoBehaviour:
   rfMeshes: []
   subIds: []
   fragments:
-  - {fileID: 7463613841880533544}
-  - {fileID: 8346451113182245448}
-  - {fileID: 6496268400662740687}
-  - {fileID: 2631222401940686348}
-  - {fileID: 6713562529179515331}
-  - {fileID: 5499463351418416303}
-  - {fileID: 3881831634401721549}
-  - {fileID: 6663589420083005715}
-  - {fileID: 8666469479181972441}
-  - {fileID: 6505053601034620514}
+  - {fileID: 4621527271242359727}
+  - {fileID: 4325680407241410653}
+  - {fileID: 1100442377604136982}
+  - {fileID: 4412615369370698957}
+  - {fileID: 2371294729565772866}
+  - {fileID: 1792864686842635197}
+  - {fileID: 7710521615574287704}
+  - {fileID: 2358017104756220250}
+  - {fileID: 5266518532140090938}
+  - {fileID: 2871714179385027331}
   cacheRotation: {x: 0, y: 0, z: 0, w: 0}
   transForm: {fileID: 1176557133362301024}
   rootChild: {fileID: 0}
@@ -2039,16 +2039,16 @@ MonoBehaviour:
   checkConnectivity: 0
   connectivityCheckNeed: 0
   rigidList:
-  - {fileID: 7463613841880533544}
-  - {fileID: 8346451113182245448}
-  - {fileID: 6496268400662740687}
-  - {fileID: 2631222401940686348}
-  - {fileID: 6713562529179515331}
-  - {fileID: 5499463351418416303}
-  - {fileID: 3881831634401721549}
-  - {fileID: 6663589420083005715}
-  - {fileID: 8666469479181972441}
-  - {fileID: 6505053601034620514}
+  - {fileID: 4621527271242359727}
+  - {fileID: 4325680407241410653}
+  - {fileID: 1100442377604136982}
+  - {fileID: 4412615369370698957}
+  - {fileID: 2371294729565772866}
+  - {fileID: 1792864686842635197}
+  - {fileID: 7710521615574287704}
+  - {fileID: 2358017104756220250}
+  - {fileID: 5266518532140090938}
+  - {fileID: 2871714179385027331}
   cluster:
     id: 1
     tm: {fileID: 1176557133362301024}
@@ -2090,9 +2090,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 3172039917509116351}
       mf: {fileID: 7800430303491684381}
-      col: {fileID: 4265763522873279326}
+      col: {fileID: 6435481236088947454}
       rb: {fileID: 0}
-      rigid: {fileID: 7463613841880533544}
+      rigid: {fileID: 4621527271242359727}
     - id: 1
       sz: 2.3603487
       uny: 0
@@ -2117,9 +2117,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 2317104591919299326}
       mf: {fileID: 48122305911157539}
-      col: {fileID: 5458028013885899029}
+      col: {fileID: 6336623192701537482}
       rb: {fileID: 0}
-      rigid: {fileID: 8346451113182245448}
+      rigid: {fileID: 4325680407241410653}
     - id: 2
       sz: 2.2081146
       uny: 0
@@ -2145,9 +2145,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 5494165444062666488}
       mf: {fileID: 5386639643758610760}
-      col: {fileID: 3343792518256406820}
+      col: {fileID: 4822843133952681612}
       rb: {fileID: 0}
-      rigid: {fileID: 6496268400662740687}
+      rigid: {fileID: 1100442377604136982}
     - id: 3
       sz: 2.2156184
       uny: 0
@@ -2173,9 +2173,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 7729657959973572952}
       mf: {fileID: 3891335559839191740}
-      col: {fileID: 7061796665157830355}
+      col: {fileID: 1615272899996619875}
       rb: {fileID: 0}
-      rigid: {fileID: 2631222401940686348}
+      rigid: {fileID: 4412615369370698957}
     - id: 4
       sz: 2.3160825
       uny: 0
@@ -2204,9 +2204,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 4796598887223383296}
       mf: {fileID: 3746261822993212644}
-      col: {fileID: 553321516332410628}
+      col: {fileID: 8070195913648388092}
       rb: {fileID: 0}
-      rigid: {fileID: 6713562529179515331}
+      rigid: {fileID: 2371294729565772866}
     - id: 5
       sz: 2.1091084
       uny: 0
@@ -2231,9 +2231,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 3580955511183742370}
       mf: {fileID: 1520894682904661903}
-      col: {fileID: 3819377853182991496}
+      col: {fileID: 1347604445767343975}
       rb: {fileID: 0}
-      rigid: {fileID: 5499463351418416303}
+      rigid: {fileID: 1792864686842635197}
     - id: 6
       sz: 2.21014
       uny: 0
@@ -2259,9 +2259,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 2185790022343962777}
       mf: {fileID: 1809041252693249178}
-      col: {fileID: 4819171099904386397}
+      col: {fileID: 2756814428223391637}
       rb: {fileID: 0}
-      rigid: {fileID: 3881831634401721549}
+      rigid: {fileID: 7710521615574287704}
     - id: 7
       sz: 1.8429093
       uny: 0
@@ -2287,9 +2287,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 8030571619715825620}
       mf: {fileID: 2711257799498929151}
-      col: {fileID: 8261608531110951403}
+      col: {fileID: 603412439327178523}
       rb: {fileID: 0}
-      rigid: {fileID: 6663589420083005715}
+      rigid: {fileID: 2358017104756220250}
     - id: 8
       sz: 1.927365
       uny: 0
@@ -2314,9 +2314,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 843061431942990578}
       mf: {fileID: 3572391774292298185}
-      col: {fileID: 4612255305767634697}
+      col: {fileID: 5877793620245081641}
       rb: {fileID: 0}
-      rigid: {fileID: 8666469479181972441}
+      rigid: {fileID: 5266518532140090938}
     - id: 9
       sz: 2.569382
       uny: 0
@@ -2341,9 +2341,9 @@ MonoBehaviour:
       sSt: 0
       tm: {fileID: 7288143155746781621}
       mf: {fileID: 7674101300029281348}
-      col: {fileID: 4501174573708894757}
+      col: {fileID: 508967045365244601}
       rb: {fileID: 0}
-      rigid: {fileID: 6505053601034620514}
+      rigid: {fileID: 2871714179385027331}
     areaCollapse: 0.942
     minimumArea: 0.942
     maximumArea: 1.241
@@ -2664,8 +2664,8 @@ GameObject:
   - component: {fileID: 8030571619715825620}
   - component: {fileID: 2711257799498929151}
   - component: {fileID: 7798276832166185274}
-  - component: {fileID: 6663589420083005715}
-  - component: {fileID: 8261608531110951403}
+  - component: {fileID: 2358017104756220250}
+  - component: {fileID: 603412439327178523}
   m_Layer: 0
   m_Name: Barrier_sh_8
   m_TagString: Untagged
@@ -2738,7 +2738,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6663589420083005715
+--- !u!114 &2358017104756220250
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2766,7 +2766,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 8261608531110951403}
+    meshCollider: {fileID: 603412439327178523}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -2921,7 +2921,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &8261608531110951403
+--- !u!64 &603412439327178523
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2946,8 +2946,8 @@ GameObject:
   - component: {fileID: 2317104591919299326}
   - component: {fileID: 48122305911157539}
   - component: {fileID: 1531660393060615199}
-  - component: {fileID: 8346451113182245448}
-  - component: {fileID: 5458028013885899029}
+  - component: {fileID: 4325680407241410653}
+  - component: {fileID: 6336623192701537482}
   m_Layer: 0
   m_Name: Barrier_sh_2
   m_TagString: Untagged
@@ -3019,7 +3019,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8346451113182245448
+--- !u!114 &4325680407241410653
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3047,7 +3047,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 5458028013885899029}
+    meshCollider: {fileID: 6336623192701537482}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -3202,7 +3202,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &5458028013885899029
+--- !u!64 &6336623192701537482
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3227,8 +3227,8 @@ GameObject:
   - component: {fileID: 3172039917509116351}
   - component: {fileID: 7800430303491684381}
   - component: {fileID: 5807423715066253004}
-  - component: {fileID: 7463613841880533544}
-  - component: {fileID: 4265763522873279326}
+  - component: {fileID: 4621527271242359727}
+  - component: {fileID: 6435481236088947454}
   m_Layer: 0
   m_Name: Barrier_sh_1
   m_TagString: Untagged
@@ -3300,7 +3300,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &7463613841880533544
+--- !u!114 &4621527271242359727
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3328,7 +3328,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 4265763522873279326}
+    meshCollider: {fileID: 6435481236088947454}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -3483,7 +3483,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &4265763522873279326
+--- !u!64 &6435481236088947454
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3508,8 +3508,8 @@ GameObject:
   - component: {fileID: 5494165444062666488}
   - component: {fileID: 5386639643758610760}
   - component: {fileID: 6259082840214326675}
-  - component: {fileID: 6496268400662740687}
-  - component: {fileID: 3343792518256406820}
+  - component: {fileID: 1100442377604136982}
+  - component: {fileID: 4822843133952681612}
   m_Layer: 0
   m_Name: Barrier_sh_3
   m_TagString: Untagged
@@ -3582,7 +3582,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &6496268400662740687
+--- !u!114 &1100442377604136982
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3610,7 +3610,7 @@ MonoBehaviour:
     solverIterations: 6
     dampening: 0.7
     rigidBody: {fileID: 0}
-    meshCollider: {fileID: 3343792518256406820}
+    meshCollider: {fileID: 4822843133952681612}
     clusterColliders: []
     ignoreList: 
   activation:
@@ -3765,7 +3765,7 @@ MonoBehaviour:
   dustList: []
   restriction: {fileID: 0}
   sound: {fileID: 0}
---- !u!64 &3343792518256406820
+--- !u!64 &4822843133952681612
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

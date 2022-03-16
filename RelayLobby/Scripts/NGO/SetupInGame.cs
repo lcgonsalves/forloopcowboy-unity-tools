@@ -44,7 +44,7 @@ namespace LobbyRelaySample.ngo
         /// </summary>
         private void CreateNetworkManager()
         {
-            m_inGameManagerObj = NetworkManager.Singleton.gameObject; // GameObject.Instantiate(m_prefabNetworkManager);
+            m_inGameManagerObj = GameObject.Instantiate(m_prefabNetworkManager);
             m_networkManager = m_inGameManagerObj.GetComponentInChildren<NetworkManager>();
             m_inGameRunner = m_inGameManagerObj.GetComponentInChildren<InGameRunner>();
             // m_inGameRunner.Initialize(OnConnectionVerified, m_lobby.PlayerCount, OnGameEnd, m_localUser);
@@ -109,8 +109,7 @@ namespace LobbyRelaySample.ngo
         {
             if (m_doesNeedCleanup)
             {
-                // GameObject.Destroy(m_inGameManagerObj); // Since this destroys the NetworkManager, that will kick off cleaning up networked objects.
-                m_networkManager.DisconnectClient(m_networkManager.LocalClientId);
+                GameObject.Destroy(m_inGameManagerObj); // Since this destroys the NetworkManager, that will kick off cleaning up networked objects.
                 SetMenuVisibility(true);
                 m_lobby.RelayNGOCode = null;
                 m_doesNeedCleanup = false;

@@ -114,7 +114,7 @@ namespace forloopcowboy_unity_tools.Scripts.Core.Networking
         /// </summary>
         private void StartDeathCountdown()
         {
-            deathCountdown = this.RunAsyncWithDelay(
+            if (gameObject.activeInHierarchy) deathCountdown = this.RunAsyncWithDelay(
                 MaxLifetimeAfterBounceSeconds,
                 ReturnToPool
             );
